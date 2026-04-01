@@ -39,7 +39,7 @@ You MUST respond with EXACTLY this JSON. No markdown. No code fences. Raw JSON o
     },
     {
       "title": "What to Say",
-      "content": "Scripts only. No explanation. No coaching language. Exactly this format — write real words, not descriptions:\n\nSay:\n\"Write the actual sentence here. Short. Declarative. No qualifiers.\"\n\nNot this:\n\"Write the passive version they would normally say.\"\n\nIf they push back:\n\"Write the exact response. One or two sentences.\""
+      "content": "A conversation script in sequence. No explanation, no framing, no coaching language — just the lines. Use this exact format, writing real words for their situation:\n\nOpening:\n\"A direct, calm first sentence that opens the conversation without softening it.\"\n\nThe issue:\n\"Name the specific behavior or situation plainly. One sentence.\"\n\nThe impact:\n\"State what this is affecting — work, results, the team, the relationship. One sentence.\"\n\nWhat needs to change:\n\"Name the expectation clearly. One sentence.\"\n\nIf they push back:\n\"A firm, non-emotional response. One or two sentences. No apology. No over-explaining.\"\n\nRules for every line: no 'I just wanted to,' no 'I was wondering if,' no 'maybe,' no 'sort of,' no 'I feel like.' Each line is a statement, not a request for permission."
     },
     {
       "title": "What to Do",

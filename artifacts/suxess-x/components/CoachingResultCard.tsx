@@ -70,46 +70,110 @@ function getSectionStyle(title: string): SectionStyle {
   return DEFAULT_STYLE;
 }
 
-function SectionCard({ section }: { section: CoachingSection }) {
-  const s = getSectionStyle(section.title);
-  const isScript = section.title.toLowerCase().includes("what to say");
+const SCRIPT_LABELS = ["Opening", "The issue", "The impact", "What needs to change", "If they push back"];
+
+function stripQuotes(s: string): string {
+  return s.replace(/^[\u201c\u201d"'\s]+|[\u201c\u201d"'\s]+$/g, "").trim();
+}
+
+function parseScriptLines(content: string): { label: string; line: string }[] {
+  const result: { label: string; line: string }[] = [];
+
+  for (let i = 0; i < SCRIPT_LABELS.length; i++) {
+    const label = SCRIPT_LABELS[i];
+    const nextLabel = SCRIPT_LABELS[i + 1];
+    const startToken = label + ":";
+    const startIdx = content.indexOf(startToken);
+    if (startIdx === -1) continue;
+
+    const afterLabel = content.slice(startIdx + startToken.length);
+    let chunk = afterLabel;
+    if (nextLabel) {
+      const endIdx = afterLabel.indexOf(nextLabel + ":");
+      if (endIdx !== -1) chunk = afterLabel.slice(0, endIdx);
+    }
+    result.push({ label, line: stripQuotes(chunk) });
+  }
+
+  if (result.length === 0) {
+    return [{ label: "", line: content.trim() }];
+  }
+  return result;
+}
+
+function ScriptCard({ section }: { section: CoachingSection }) {
+  const s = SECTION_STYLES["What to Say"];
+  const lines = parseScriptLines(section.content);
 
   const styles = StyleSheet.create({
-    card: {
-      borderRadius: 14,
-      marginBottom: 10,
-      overflow: "hidden",
-    },
+    card: { borderRadius: 14, marginBottom: 10, overflow: "hidden" },
     header: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: s.accentColor,
-      paddingVertical: 10,
-      paddingHorizontal: 16,
-      gap: 8,
+      flexDirection: "row", alignItems: "center",
+      backgroundColor: s.accentColor, paddingVertical: 10, paddingHorizontal: 16, gap: 8,
     },
-    icon: {
-      fontSize: 14,
+    icon: { fontSize: 14 },
+    title: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#ffffff", textTransform: "uppercase", letterSpacing: 1, flex: 1 },
+    body: { backgroundColor: s.backgroundColor, paddingVertical: 14, paddingHorizontal: 16 },
+    lineBlock: { marginBottom: 14 },
+    lineBlockLast: { marginBottom: 0 },
+    label: { fontSize: 11, fontFamily: "Inter_700Bold", color: s.accentColor, textTransform: "uppercase", letterSpacing: 0.9, marginBottom: 6 },
+    pushBackLabel: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#dc2626", textTransform: "uppercase", letterSpacing: 0.9, marginBottom: 6 },
+    quote: {
+      fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", lineHeight: 23,
+      borderLeftWidth: 3, borderLeftColor: s.accentColor, paddingLeft: 12, paddingVertical: 4,
     },
-    title: {
-      fontSize: 12,
-      fontFamily: "Inter_700Bold",
-      color: "#ffffff",
-      textTransform: "uppercase",
-      letterSpacing: 1,
-      flex: 1,
+    pushBackQuote: {
+      fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", lineHeight: 23,
+      borderLeftWidth: 3, borderLeftColor: "#dc2626", paddingLeft: 12, paddingVertical: 4,
     },
-    body: {
-      backgroundColor: s.backgroundColor,
-      paddingVertical: 14,
-      paddingHorizontal: 16,
+    divider: { height: 1, backgroundColor: "#dbeafe", marginBottom: 14 },
+  });
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.header}>
+        <Text style={styles.icon}>{s.icon}</Text>
+        <Text style={styles.title}>{section.title}</Text>
+      </View>
+      <View style={styles.body}>
+        {lines.map((item, i) => {
+          const isPushBack = item.label.toLowerCase().includes("push back");
+          const isLast = i === lines.length - 1;
+          return (
+            <View key={i} style={isLast ? styles.lineBlockLast : styles.lineBlock}>
+              {item.label ? (
+                <>
+                  {isPushBack && <View style={styles.divider} />}
+                  <Text style={isPushBack ? styles.pushBackLabel : styles.label}>{item.label}</Text>
+                  <Text style={isPushBack ? styles.pushBackQuote : styles.quote}>"{item.line}"</Text>
+                </>
+              ) : (
+                <Text style={styles.quote}>{item.line}</Text>
+              )}
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function SectionCard({ section }: { section: CoachingSection }) {
+  const isScript = section.title.toLowerCase().includes("what to say");
+  if (isScript) return <ScriptCard section={section} />;
+
+  const s = getSectionStyle(section.title);
+
+  const styles = StyleSheet.create({
+    card: { borderRadius: 14, marginBottom: 10, overflow: "hidden" },
+    header: {
+      flexDirection: "row", alignItems: "center",
+      backgroundColor: s.accentColor, paddingVertical: 10, paddingHorizontal: 16, gap: 8,
     },
-    content: {
-      fontSize: 15,
-      fontFamily: isScript ? "Inter_500Medium" : "Inter_400Regular",
-      color: "#1a1a2e",
-      lineHeight: 24,
-    },
+    icon: { fontSize: 14 },
+    title: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#ffffff", textTransform: "uppercase", letterSpacing: 1, flex: 1 },
+    body: { backgroundColor: s.backgroundColor, paddingVertical: 14, paddingHorizontal: 16 },
+    content: { fontSize: 15, fontFamily: "Inter_400Regular", color: "#1a1a2e", lineHeight: 24 },
   });
 
   return (
