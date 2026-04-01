@@ -52,12 +52,6 @@ const SECTION_STYLES: Record<string, SectionStyle> = {
     backgroundColor: "#fffbeb",
     labelColor: "#b45309",
   },
-  "Consequence": {
-    icon: "⚠️",
-    accentColor: "#9a3412",
-    backgroundColor: "#fff7ed",
-    labelColor: "#9a3412",
-  },
 };
 
 const DEFAULT_STYLE: SectionStyle = {
