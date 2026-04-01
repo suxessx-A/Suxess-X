@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -14,50 +14,119 @@ interface CoachingResultCardProps {
   onReset: () => void;
 }
 
-const SECTION_ICON = "🔹";
+type SectionStyle = {
+  icon: string;
+  accentColor: string;
+  backgroundColor: string;
+  labelColor: string;
+};
 
-function SectionCard({ section, index, colors }: { section: CoachingSection; index: number; colors: ReturnType<typeof useColors> }) {
+const SECTION_STYLES: Record<string, SectionStyle> = {
+  "Where You're Playing Small": {
+    icon: "🪞",
+    accentColor: "#dc2626",
+    backgroundColor: "#fff5f5",
+    labelColor: "#b91c1c",
+  },
+  "Authority Shift": {
+    icon: "⚡",
+    accentColor: "#7c3aed",
+    backgroundColor: "#faf5ff",
+    labelColor: "#6d28d9",
+  },
+  "What to Say": {
+    icon: "💬",
+    accentColor: "#0369a1",
+    backgroundColor: "#f0f9ff",
+    labelColor: "#0369a1",
+  },
+  "What to Do": {
+    icon: "✅",
+    accentColor: "#15803d",
+    backgroundColor: "#f0fdf4",
+    labelColor: "#15803d",
+  },
+  "Bold Move": {
+    icon: "🔥",
+    accentColor: "#b45309",
+    backgroundColor: "#fffbeb",
+    labelColor: "#b45309",
+  },
+  "Consequence": {
+    icon: "⚠️",
+    accentColor: "#9a3412",
+    backgroundColor: "#fff7ed",
+    labelColor: "#9a3412",
+  },
+};
+
+const DEFAULT_STYLE: SectionStyle = {
+  icon: "🔹",
+  accentColor: "#7c3aed",
+  backgroundColor: "#faf5ff",
+  labelColor: "#6d28d9",
+};
+
+function getSectionStyle(title: string): SectionStyle {
+  for (const key of Object.keys(SECTION_STYLES)) {
+    if (title.toLowerCase().includes(key.toLowerCase())) {
+      return SECTION_STYLES[key];
+    }
+  }
+  return DEFAULT_STYLE;
+}
+
+function SectionCard({ section }: { section: CoachingSection }) {
+  const s = getSectionStyle(section.title);
+  const isScript = section.title.toLowerCase().includes("what to say");
+
   const styles = StyleSheet.create({
     card: {
-      backgroundColor: colors.card,
-      borderRadius: colors.radius,
-      padding: 20,
-      marginBottom: 12,
-      borderLeftWidth: 3,
-      borderLeftColor: colors.primary,
+      borderRadius: 14,
+      marginBottom: 10,
+      overflow: "hidden",
     },
-    titleRow: {
+    header: {
       flexDirection: "row",
       alignItems: "center",
-      marginBottom: 10,
+      backgroundColor: s.accentColor,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
       gap: 8,
     },
     icon: {
       fontSize: 14,
     },
     title: {
-      fontSize: 13,
+      fontSize: 12,
       fontFamily: "Inter_700Bold",
-      color: colors.primary,
+      color: "#ffffff",
       textTransform: "uppercase",
-      letterSpacing: 0.9,
+      letterSpacing: 1,
       flex: 1,
+    },
+    body: {
+      backgroundColor: s.backgroundColor,
+      paddingVertical: 14,
+      paddingHorizontal: 16,
     },
     content: {
       fontSize: 15,
-      fontFamily: "Inter_400Regular",
-      color: colors.foreground,
-      lineHeight: 23,
+      fontFamily: isScript ? "Inter_500Medium" : "Inter_400Regular",
+      color: "#1a1a2e",
+      lineHeight: 24,
     },
   });
 
   return (
     <View style={styles.card}>
-      <View style={styles.titleRow}>
-        <Text style={styles.icon}>{SECTION_ICON}</Text>
+      <View style={styles.header}>
+        <Text style={styles.icon}>{s.icon}</Text>
         <Text style={styles.title}>{section.title}</Text>
       </View>
-      <Text style={styles.content}>{section.content}</Text>
+      <View style={styles.body}>
+        <Text style={styles.content}>{section.content}</Text>
+      </View>
     </View>
   );
 }
@@ -71,84 +140,81 @@ export function CoachingResultCard({ result, onReset }: CoachingResultCardProps)
     },
     headlineBand: {
       backgroundColor: colors.primary,
-      borderRadius: colors.radius,
-      paddingVertical: 20,
+      borderRadius: 16,
+      paddingVertical: 22,
       paddingHorizontal: 20,
-      marginBottom: 20,
+      marginBottom: 16,
     },
     headlineLabel: {
       fontSize: 11,
       fontFamily: "Inter_600SemiBold",
-      color: "rgba(255,255,255,0.6)",
+      color: "rgba(255,255,255,0.55)",
       textTransform: "uppercase",
-      letterSpacing: 1.2,
+      letterSpacing: 1.4,
       marginBottom: 8,
     },
     headline: {
-      fontSize: 20,
+      fontSize: 21,
       fontFamily: "Inter_700Bold",
       color: "#ffffff",
-      lineHeight: 28,
+      lineHeight: 29,
     },
-    divider: {
-      height: 1,
-      backgroundColor: colors.border,
-      marginBottom: 20,
-      marginTop: 4,
-    },
-    sectionHeader: {
+    sectionGroupLabel: {
       fontSize: 11,
       fontFamily: "Inter_600SemiBold",
       color: colors.mutedForeground,
       textTransform: "uppercase",
       letterSpacing: 1.2,
-      marginBottom: 14,
+      marginBottom: 12,
+      marginTop: 4,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginVertical: 16,
     },
     affirmationBox: {
-      backgroundColor: colors.surface1,
-      borderRadius: colors.radius,
-      paddingVertical: 20,
+      backgroundColor: colors.primary,
+      borderRadius: 16,
+      paddingVertical: 22,
       paddingHorizontal: 20,
-      marginTop: 8,
-      marginBottom: 12,
-      alignItems: "center",
+      marginBottom: 10,
     },
-    affirmationQuote: {
-      fontSize: 22,
-      color: "rgba(255,255,255,0.4)",
-      fontFamily: "Inter_700Bold",
-      alignSelf: "flex-start",
-      lineHeight: 22,
-      marginBottom: 4,
+    affirmationLabel: {
+      fontSize: 11,
+      fontFamily: "Inter_600SemiBold",
+      color: "rgba(255,255,255,0.55)",
+      textTransform: "uppercase",
+      letterSpacing: 1.2,
+      marginBottom: 10,
     },
     affirmationText: {
-      fontSize: 16,
+      fontSize: 17,
       fontFamily: "Inter_600SemiBold",
       color: "#ffffff",
-      textAlign: "center",
-      lineHeight: 24,
+      lineHeight: 26,
     },
     nextStepBox: {
       backgroundColor: colors.goldLight,
-      borderRadius: colors.radius,
+      borderRadius: 16,
       paddingVertical: 18,
       paddingHorizontal: 18,
-      marginBottom: 28,
+      marginBottom: 24,
       flexDirection: "row",
       alignItems: "flex-start",
     },
     nextStepIconWrap: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
+      width: 34,
+      height: 34,
+      borderRadius: 17,
       backgroundColor: colors.gold,
       alignItems: "center",
       justifyContent: "center",
-      marginRight: 12,
-      marginTop: 1,
+      marginRight: 13,
+      marginTop: 2,
     },
     nextStepIcon: {
-      fontSize: 15,
+      fontSize: 16,
     },
     nextStepContent: {
       flex: 1,
@@ -156,24 +222,24 @@ export function CoachingResultCard({ result, onReset }: CoachingResultCardProps)
     nextStepLabel: {
       fontSize: 11,
       fontFamily: "Inter_700Bold",
-      color: colors.gold,
+      color: "#92400e",
       textTransform: "uppercase",
       letterSpacing: 1,
       marginBottom: 6,
     },
     nextStepText: {
       fontSize: 15,
-      fontFamily: "Inter_500Medium",
+      fontFamily: "Inter_600SemiBold",
       color: "#78350f",
       lineHeight: 22,
     },
     resetButton: {
       borderWidth: 2,
       borderColor: colors.primary,
-      borderRadius: colors.radius,
-      paddingVertical: 15,
+      borderRadius: 16,
+      paddingVertical: 16,
       alignItems: "center",
-      marginBottom: 32,
+      marginBottom: 36,
     },
     resetButtonText: {
       fontSize: 15,
@@ -189,16 +255,16 @@ export function CoachingResultCard({ result, onReset }: CoachingResultCardProps)
         <Text style={styles.headline}>{result.headline}</Text>
       </View>
 
-      <Text style={styles.sectionHeader}>Breakdown</Text>
+      <Text style={styles.sectionGroupLabel}>Executive Breakdown</Text>
 
       {result.sections.map((section, i) => (
-        <SectionCard key={i} section={section} index={i} colors={colors} />
+        <SectionCard key={i} section={section} />
       ))}
 
       <View style={styles.divider} />
 
       <View style={styles.affirmationBox}>
-        <Text style={styles.affirmationQuote}>"</Text>
+        <Text style={styles.affirmationLabel}>Remember This</Text>
         <Text style={styles.affirmationText}>{result.affirmation}</Text>
       </View>
 
@@ -207,7 +273,7 @@ export function CoachingResultCard({ result, onReset }: CoachingResultCardProps)
           <Text style={styles.nextStepIcon}>⚡</Text>
         </View>
         <View style={styles.nextStepContent}>
-          <Text style={styles.nextStepLabel}>Your Next Move</Text>
+          <Text style={styles.nextStepLabel}>Your Next Move — Next 24 Hours</Text>
           <Text style={styles.nextStepText}>{result.nextStep}</Text>
         </View>
       </View>
