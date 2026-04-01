@@ -1,17 +1,23 @@
 import React, { createContext, useContext, useState } from "react";
 
 export type FlowType = "conversation" | "stuck" | "visibility" | "negotiate" | "mindset";
+export type CoachingStrategy = "DIRECT_CONVERSATION" | "INDIRECT_INFLUENCE" | "STRATEGIC_CONTAINMENT";
 
-export interface CoachingSection {
-  title: string;
-  content: string;
+export interface CoachingScript {
+  opening: string;
+  issue: string;
+  impact: string;
+  ask: string;
+  pushback: string;
 }
 
 export interface CoachingResult {
-  headline: string;
-  sections: CoachingSection[];
-  affirmation: string;
-  nextStep: string;
+  strategy: CoachingStrategy;
+  reframe: string;
+  breakdown: string;
+  script: CoachingScript | null;
+  tactics: string[];
+  nextSteps: string[];
 }
 
 interface CoachingContextValue {
@@ -28,46 +34,65 @@ interface CoachingContextValue {
 
 const CoachingContext = createContext<CoachingContextValue | null>(null);
 
-function safeParseCoachingResult(raw: unknown): CoachingResult {
-  if (typeof raw !== "object" || raw === null) {
-    return {
-      headline: "Your Coaching Insight",
-      sections: [{ title: "Coaching", content: String(raw) }],
-      affirmation: "You have what it takes to move through this.",
-      nextStep: "Take one concrete step toward your goal today.",
+function str(v: unknown, fallback: string): string {
+  return typeof v === "string" && v.trim() ? v.trim() : fallback;
+}
+
+function safeParseResult(raw: unknown): CoachingResult {
+  const fallback: CoachingResult = {
+    strategy: "DIRECT_CONVERSATION",
+    reframe: "The situation is clearer than it feels.",
+    breakdown: "You know what needs to happen. The question is timing and approach.",
+    script: {
+      opening: "I want to talk about something that has been affecting my work.",
+      issue: "There is a pattern I need to address directly.",
+      impact: "This is affecting my ability to deliver and my standing on this team.",
+      ask: "I need this to change, and I want to agree on how.",
+      pushback: "I hear you. And this still needs to be resolved.",
+    },
+    tactics: [
+      "1. Write down exactly what you want to say — one paragraph, no hedging.",
+      "2. Schedule the conversation within 48 hours.",
+      "3. Say your opening line out loud before the meeting.",
+    ],
+    nextSteps: ["Send a calendar invite today with the subject: Quick alignment — something I need to discuss."],
+  };
+
+  if (typeof raw !== "object" || raw === null) return fallback;
+  const obj = raw as Record<string, unknown>;
+
+  const rawStrategy = String(obj.strategy ?? "").trim().toUpperCase();
+  const strategy: CoachingStrategy =
+    rawStrategy === "INDIRECT_INFLUENCE" ? "INDIRECT_INFLUENCE"
+    : rawStrategy === "STRATEGIC_CONTAINMENT" ? "STRATEGIC_CONTAINMENT"
+    : "DIRECT_CONVERSATION";
+
+  const reframe = str(obj.reframe, fallback.reframe);
+  const breakdown = str(obj.breakdown, fallback.breakdown);
+
+  let script: CoachingScript | null = null;
+  if (strategy === "DIRECT_CONVERSATION" && typeof obj.script === "object" && obj.script !== null) {
+    const s = obj.script as Record<string, unknown>;
+    script = {
+      opening: str(s.opening, "I want to address something directly."),
+      issue: str(s.issue, "There is a behavior that needs to change."),
+      impact: str(s.impact, "This is affecting my work and credibility."),
+      ask: str(s.ask, "I need this resolved."),
+      pushback: str(s.pushback, "I understand. This still needs to be addressed."),
     };
   }
 
-  const obj = raw as Record<string, unknown>;
+  const tactics: string[] = Array.isArray(obj.tactics)
+    ? obj.tactics.filter((t) => typeof t === "string" && t.trim()).map((t) => String(t).trim())
+    : fallback.tactics;
 
-  const headline = typeof obj.headline === "string" && obj.headline.trim()
-    ? obj.headline.trim()
-    : "Your Coaching Insight";
+  const nextSteps: string[] = Array.isArray(obj.nextSteps)
+    ? obj.nextSteps.filter((s) => typeof s === "string" && s.trim()).map((s) => String(s).trim())
+    : typeof obj.nextSteps === "string" && (obj.nextSteps as string).trim()
+    ? [(obj.nextSteps as string).trim()]
+    : fallback.nextSteps;
 
-  const affirmation = typeof obj.affirmation === "string" && obj.affirmation.trim()
-    ? obj.affirmation.trim()
-    : "You have what it takes to move through this.";
-
-  const nextStep = typeof obj.nextStep === "string" && obj.nextStep.trim()
-    ? obj.nextStep.trim()
-    : "Take one concrete step toward your goal today.";
-
-  let sections: CoachingSection[] = [];
-  if (Array.isArray(obj.sections)) {
-    sections = obj.sections
-      .filter((s): s is Record<string, unknown> => typeof s === "object" && s !== null)
-      .map((s) => ({
-        title: typeof s.title === "string" ? s.title.trim() : "Insight",
-        content: typeof s.content === "string" ? s.content.trim() : "",
-      }))
-      .filter((s) => s.content.length > 0);
-  }
-
-  if (sections.length === 0) {
-    sections = [{ title: "Coaching", content: "Please try again for a full coaching response." }];
-  }
-
-  return { headline, sections, affirmation, nextStep };
+  return { strategy, reframe, breakdown, script, tactics, nextSteps };
 }
 
 export function CoachingProvider({ children }: { children: React.ReactNode }) {
@@ -108,19 +133,17 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ flowType: activeFlow, answers }),
       });
-      if (!response.ok) {
-        throw new Error("Server returned an error");
-      }
+      if (!response.ok) throw new Error("Server error");
       const text = await response.text();
       const stripped = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
       let parsed: unknown;
       try {
         parsed = JSON.parse(stripped);
       } catch {
-        parsed = { headline: "Your Coaching Insight", sections: [{ title: "Coaching", content: stripped }], affirmation: "You have what it takes.", nextStep: "Take one concrete step today." };
+        parsed = null;
       }
-      setResult(safeParseCoachingResult(parsed));
-    } catch (err) {
+      setResult(safeParseResult(parsed));
+    } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
@@ -128,19 +151,7 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <CoachingContext.Provider
-      value={{
-        activeFlow,
-        answers,
-        result,
-        isLoading,
-        error,
-        setActiveFlow,
-        setAnswer,
-        resetFlow,
-        submitFlow,
-      }}
-    >
+    <CoachingContext.Provider value={{ activeFlow, answers, result, isLoading, error, setActiveFlow, setAnswer, resetFlow, submitFlow }}>
       {children}
     </CoachingContext.Provider>
   );

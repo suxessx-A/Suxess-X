@@ -1,0 +1,112 @@
+I want to upgrade my coaching logic from “conversation generator” to “decision + strategy engine.”
+
+Right now the app jumps straight to advice and scripts. This is wrong.
+
+I need you to refactor the coaching generation logic to include a STRATEGY LAYER before any output.
+
+---
+
+STEP 1: Add a STRATEGY CHECK before generating coaching
+
+Evaluate the situation using these inputs:
+- Power dynamic (user vs other person)
+- Likelihood the other person will change behavior
+- Risk of escalation or backlash
+- Urgency of the issue
+
+---
+
+STEP 2: Based on evaluation, choose ONE of three strategies:
+
+1. DIRECT_CONVERSATION
+Use when:
+- User has reasonable influence
+- Low political risk
+- Behavior is likely to change with feedback
+
+2. INDIRECT_INFLUENCE
+Use when:
+- Direct confrontation may fail or backfire
+- Need to shift perception, build allies, or adjust positioning
+
+3. STRATEGIC_CONTAINMENT
+Use when:
+- Low power / high risk
+- Person is unlikely to change
+- Focus on protecting reputation and documenting patterns
+
+---
+
+STEP 3: Generate output BASED ON STRATEGY
+
+If DIRECT_CONVERSATION:
+- Include:
+  - Sharp reframe
+  - Structured breakdown
+  - FULL conversation script (Opening, Issue, Impact, Ask, Pushback response)
+  - Tactical execution steps
+
+If INDIRECT_INFLUENCE:
+- DO NOT include confrontation script
+- Include:
+  - Behavioral adjustments
+  - Influence tactics (framing, positioning, visibility, allies)
+  - Specific actions to shift dynamics
+
+If STRATEGIC_CONTAINMENT:
+- Focus on:
+  - Risk management
+  - Documentation
+  - Escalation strategy (if needed)
+  - Protecting credibility
+
+---
+
+STEP 4: Enforce communication style rules
+
+All outputs must:
+- Be direct, not polite
+- Be specific, not vague
+- Remove hedging and soft language
+- Use decisive, leadership language
+- Include exact wording ONLY when strategy = DIRECT_CONVERSATION
+
+Avoid:
+- Generic encouragement
+- Clichés
+- Over-explaining emotions
+
+---
+
+STEP 5: Update API response structure
+
+Return structured JSON like:
+
+{
+  "strategy": "DIRECT_CONVERSATION" | "INDIRECT_INFLUENCE" | "STRATEGIC_CONTAINMENT",
+  "reframe": "...",
+  "breakdown": "...",
+  "script": { ... } OR null,
+  "tactics": [ ... ],
+  "nextSteps": [ ... ]
+}
+
+---
+
+STEP 6: Update frontend rendering
+
+- Show STRATEGY at the top
+- Conditionally render sections based on strategy
+- Only show “What to Say” if strategy = DIRECT_CONVERSATION
+- Rename sections:
+  - “Executive Breakdown”
+  - “Authority Move”
+  - “What to Say” (only when relevant)
+  - “What to Do”
+  - “Next 24 Hours”
+
+---
+
+Do not simplify this.
+Do not default to direct conversation.
+Force the system to choose the highest-leverage strategy before generating advice.

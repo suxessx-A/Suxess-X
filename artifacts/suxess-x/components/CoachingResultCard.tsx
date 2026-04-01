@@ -1,189 +1,165 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
+import React from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useColors } from "@/hooks/useColors";
-import { CoachingResult, CoachingSection } from "@/context/CoachingContext";
+import { CoachingResult, CoachingScript, CoachingStrategy } from "@/context/CoachingContext";
 
 interface CoachingResultCardProps {
   result: CoachingResult;
   onReset: () => void;
 }
 
-type SectionStyle = {
+const STRATEGY_CONFIG: Record<CoachingStrategy, {
+  label: string;
+  description: string;
+  color: string;
+  bg: string;
   icon: string;
-  accentColor: string;
-  backgroundColor: string;
-  labelColor: string;
-};
-
-const SECTION_STYLES: Record<string, SectionStyle> = {
-  "Where You're Playing Small": {
-    icon: "🪞",
-    accentColor: "#dc2626",
-    backgroundColor: "#fff5f5",
-    labelColor: "#b91c1c",
-  },
-  "Authority Shift": {
+}> = {
+  DIRECT_CONVERSATION: {
+    label: "Direct Conversation",
+    description: "You have the leverage. Use it.",
+    color: "#7c3aed",
+    bg: "#faf5ff",
     icon: "⚡",
-    accentColor: "#7c3aed",
-    backgroundColor: "#faf5ff",
-    labelColor: "#6d28d9",
   },
-  "What to Say": {
-    icon: "💬",
-    accentColor: "#0369a1",
-    backgroundColor: "#f0f9ff",
-    labelColor: "#0369a1",
+  INDIRECT_INFLUENCE: {
+    label: "Indirect Influence",
+    description: "Positioning and influence will move this faster than confrontation.",
+    color: "#0369a1",
+    bg: "#f0f9ff",
+    icon: "♟",
   },
-  "What to Do": {
-    icon: "✅",
-    accentColor: "#15803d",
-    backgroundColor: "#f0fdf4",
-    labelColor: "#15803d",
-  },
-  "Bold Move": {
-    icon: "🔥",
-    accentColor: "#b45309",
-    backgroundColor: "#fffbeb",
-    labelColor: "#b45309",
+  STRATEGIC_CONTAINMENT: {
+    label: "Strategic Containment",
+    description: "Protect your position. Do not escalate directly.",
+    color: "#b45309",
+    bg: "#fffbeb",
+    icon: "🛡",
   },
 };
 
-const DEFAULT_STYLE: SectionStyle = {
-  icon: "🔹",
-  accentColor: "#7c3aed",
-  backgroundColor: "#faf5ff",
-  labelColor: "#6d28d9",
-};
-
-function getSectionStyle(title: string): SectionStyle {
-  for (const key of Object.keys(SECTION_STYLES)) {
-    if (title.toLowerCase().includes(key.toLowerCase())) {
-      return SECTION_STYLES[key];
-    }
-  }
-  return DEFAULT_STYLE;
-}
-
-const SCRIPT_LABELS = ["Opening", "The issue", "The impact", "What needs to change", "If they push back"];
-
-function stripQuotes(s: string): string {
-  return s.replace(/^[\u201c\u201d"'\s]+|[\u201c\u201d"'\s]+$/g, "").trim();
-}
-
-function parseScriptLines(content: string): { label: string; line: string }[] {
-  const result: { label: string; line: string }[] = [];
-
-  for (let i = 0; i < SCRIPT_LABELS.length; i++) {
-    const label = SCRIPT_LABELS[i];
-    const nextLabel = SCRIPT_LABELS[i + 1];
-    const startToken = label + ":";
-    const startIdx = content.indexOf(startToken);
-    if (startIdx === -1) continue;
-
-    const afterLabel = content.slice(startIdx + startToken.length);
-    let chunk = afterLabel;
-    if (nextLabel) {
-      const endIdx = afterLabel.indexOf(nextLabel + ":");
-      if (endIdx !== -1) chunk = afterLabel.slice(0, endIdx);
-    }
-    result.push({ label, line: stripQuotes(chunk) });
-  }
-
-  if (result.length === 0) {
-    return [{ label: "", line: content.trim() }];
-  }
-  return result;
-}
-
-function ScriptCard({ section }: { section: CoachingSection }) {
-  const s = SECTION_STYLES["What to Say"];
-  const lines = parseScriptLines(section.content);
-
-  const styles = StyleSheet.create({
-    card: { borderRadius: 14, marginBottom: 10, overflow: "hidden" },
-    header: {
-      flexDirection: "row", alignItems: "center",
-      backgroundColor: s.accentColor, paddingVertical: 10, paddingHorizontal: 16, gap: 8,
+function StrategyBadge({ strategy }: { strategy: CoachingStrategy }) {
+  const cfg = STRATEGY_CONFIG[strategy];
+  const s = StyleSheet.create({
+    wrap: {
+      backgroundColor: cfg.bg,
+      borderRadius: 14,
+      borderWidth: 1.5,
+      borderColor: cfg.color,
+      padding: 16,
+      marginBottom: 14,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
     },
-    icon: { fontSize: 14 },
-    title: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#ffffff", textTransform: "uppercase", letterSpacing: 1, flex: 1 },
-    body: { backgroundColor: s.backgroundColor, paddingVertical: 14, paddingHorizontal: 16 },
-    lineBlock: { marginBottom: 14 },
-    lineBlockLast: { marginBottom: 0 },
-    label: { fontSize: 11, fontFamily: "Inter_700Bold", color: s.accentColor, textTransform: "uppercase", letterSpacing: 0.9, marginBottom: 6 },
-    pushBackLabel: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#dc2626", textTransform: "uppercase", letterSpacing: 0.9, marginBottom: 6 },
-    quote: {
-      fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", lineHeight: 23,
-      borderLeftWidth: 3, borderLeftColor: s.accentColor, paddingLeft: 12, paddingVertical: 4,
+    iconWrap: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: cfg.color,
+      alignItems: "center",
+      justifyContent: "center",
     },
-    pushBackQuote: {
-      fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", lineHeight: 23,
-      borderLeftWidth: 3, borderLeftColor: "#dc2626", paddingLeft: 12, paddingVertical: 4,
-    },
-    divider: { height: 1, backgroundColor: "#dbeafe", marginBottom: 14 },
+    icon: { fontSize: 18, color: "#fff" },
+    textWrap: { flex: 1 },
+    eyebrow: { fontSize: 10, fontFamily: "Inter_600SemiBold", color: cfg.color, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 3 },
+    label: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#1a1a2e" },
+    desc: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#4b5563", marginTop: 2, lineHeight: 18 },
   });
-
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <Text style={styles.icon}>{s.icon}</Text>
-        <Text style={styles.title}>{section.title}</Text>
-      </View>
-      <View style={styles.body}>
-        {lines.map((item, i) => {
-          const isPushBack = item.label.toLowerCase().includes("push back");
-          const isLast = i === lines.length - 1;
-          return (
-            <View key={i} style={isLast ? styles.lineBlockLast : styles.lineBlock}>
-              {item.label ? (
-                <>
-                  {isPushBack && <View style={styles.divider} />}
-                  <Text style={isPushBack ? styles.pushBackLabel : styles.label}>{item.label}</Text>
-                  <Text style={isPushBack ? styles.pushBackQuote : styles.quote}>"{item.line}"</Text>
-                </>
-              ) : (
-                <Text style={styles.quote}>{item.line}</Text>
-              )}
-            </View>
-          );
-        })}
+    <View style={s.wrap}>
+      <View style={s.iconWrap}><Text style={s.icon}>{cfg.icon}</Text></View>
+      <View style={s.textWrap}>
+        <Text style={s.eyebrow}>Strategy Selected</Text>
+        <Text style={s.label}>{cfg.label}</Text>
+        <Text style={s.desc}>{cfg.desc}</Text>
       </View>
     </View>
   );
 }
 
-function SectionCard({ section }: { section: CoachingSection }) {
-  const isScript = section.title.toLowerCase().includes("what to say");
-  if (isScript) return <ScriptCard section={section} />;
-
-  const s = getSectionStyle(section.title);
-
-  const styles = StyleSheet.create({
+function Block({ label, color, bg, children }: { label: string; color: string; bg: string; children: React.ReactNode }) {
+  const s = StyleSheet.create({
     card: { borderRadius: 14, marginBottom: 10, overflow: "hidden" },
-    header: {
-      flexDirection: "row", alignItems: "center",
-      backgroundColor: s.accentColor, paddingVertical: 10, paddingHorizontal: 16, gap: 8,
-    },
-    icon: { fontSize: 14 },
-    title: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#ffffff", textTransform: "uppercase", letterSpacing: 1, flex: 1 },
-    body: { backgroundColor: s.backgroundColor, paddingVertical: 14, paddingHorizontal: 16 },
-    content: { fontSize: 15, fontFamily: "Inter_400Regular", color: "#1a1a2e", lineHeight: 24 },
+    header: { backgroundColor: color, paddingVertical: 10, paddingHorizontal: 16 },
+    headerText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#fff", textTransform: "uppercase", letterSpacing: 1 },
+    body: { backgroundColor: bg, paddingVertical: 14, paddingHorizontal: 16 },
+  });
+  return (
+    <View style={s.card}>
+      <View style={s.header}><Text style={s.headerText}>{label}</Text></View>
+      <View style={s.body}>{children}</View>
+    </View>
+  );
+}
+
+function BodyText({ children }: { children: string }) {
+  return <Text style={{ fontSize: 15, fontFamily: "Inter_400Regular", color: "#1a1a2e", lineHeight: 24 }}>{children}</Text>;
+}
+
+function ScriptSection({ script, strategy }: { script: CoachingScript; strategy: CoachingStrategy }) {
+  const cfg = STRATEGY_CONFIG[strategy];
+  const s = StyleSheet.create({
+    card: { borderRadius: 14, marginBottom: 10, overflow: "hidden" },
+    header: { backgroundColor: cfg.color, paddingVertical: 10, paddingHorizontal: 16 },
+    headerText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#fff", textTransform: "uppercase", letterSpacing: 1 },
+    body: { backgroundColor: "#f0f9ff", paddingTop: 14, paddingBottom: 14, paddingHorizontal: 16 },
+    row: { marginBottom: 14 },
+    rowLast: { marginBottom: 0 },
+    label: { fontSize: 10, fontFamily: "Inter_700Bold", color: cfg.color, textTransform: "uppercase", letterSpacing: 1, marginBottom: 5 },
+    pushBackLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#dc2626", textTransform: "uppercase", letterSpacing: 1, marginBottom: 5 },
+    quote: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", lineHeight: 23, borderLeftWidth: 3, borderLeftColor: cfg.color, paddingLeft: 12, paddingVertical: 3 },
+    pushBackQuote: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", lineHeight: 23, borderLeftWidth: 3, borderLeftColor: "#dc2626", paddingLeft: 12, paddingVertical: 3 },
+    divider: { height: 1, backgroundColor: "#bfdbfe", marginBottom: 14 },
+  });
+
+  const lines: { label: string; text: string; isPushback?: boolean }[] = [
+    { label: "Opening", text: script.opening },
+    { label: "The Issue", text: script.issue },
+    { label: "The Impact", text: script.impact },
+    { label: "What You Need", text: script.ask },
+    { label: "If They Push Back", text: script.pushback, isPushback: true },
+  ];
+
+  return (
+    <View style={s.card}>
+      <View style={s.header}><Text style={s.headerText}>💬  What to Say</Text></View>
+      <View style={s.body}>
+        {lines.map((line, i) => (
+          <View key={i} style={i === lines.length - 1 ? s.rowLast : s.row}>
+            {line.isPushback && <View style={s.divider} />}
+            <Text style={line.isPushback ? s.pushBackLabel : s.label}>{line.label}</Text>
+            <Text style={line.isPushback ? s.pushBackQuote : s.quote}>"{line.text}"</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function TacticsList({ tactics, strategy }: { tactics: string[]; strategy: CoachingStrategy }) {
+  const cfg = STRATEGY_CONFIG[strategy];
+  const label =
+    strategy === "DIRECT_CONVERSATION" ? "What to Do"
+    : strategy === "INDIRECT_INFLUENCE" ? "Authority Move"
+    : "Containment Moves";
+
+  const s = StyleSheet.create({
+    card: { borderRadius: 14, marginBottom: 10, overflow: "hidden" },
+    header: { backgroundColor: cfg.color, paddingVertical: 10, paddingHorizontal: 16 },
+    headerText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#fff", textTransform: "uppercase", letterSpacing: 1 },
+    body: { backgroundColor: cfg.bg, paddingVertical: 14, paddingHorizontal: 16 },
+    tactic: { fontSize: 15, fontFamily: "Inter_400Regular", color: "#1a1a2e", lineHeight: 24, marginBottom: 10 },
+    tacticLast: { fontSize: 15, fontFamily: "Inter_400Regular", color: "#1a1a2e", lineHeight: 24 },
   });
 
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <Text style={styles.icon}>{s.icon}</Text>
-        <Text style={styles.title}>{section.title}</Text>
-      </View>
-      <View style={styles.body}>
-        <Text style={styles.content}>{section.content}</Text>
+    <View style={s.card}>
+      <View style={s.header}><Text style={s.headerText}>{label}</Text></View>
+      <View style={s.body}>
+        {tactics.map((t, i) => (
+          <Text key={i} style={i === tactics.length - 1 ? s.tacticLast : s.tactic}>{t}</Text>
+        ))}
       </View>
     </View>
   );
@@ -191,153 +167,56 @@ function SectionCard({ section }: { section: CoachingSection }) {
 
 export function CoachingResultCard({ result, onReset }: CoachingResultCardProps) {
   const colors = useColors();
+  const cfg = STRATEGY_CONFIG[result.strategy];
 
-  const styles = StyleSheet.create({
-    scroll: {
-      flex: 1,
-    },
-    headlineBand: {
-      backgroundColor: colors.primary,
-      borderRadius: 16,
-      paddingVertical: 22,
-      paddingHorizontal: 20,
-      marginBottom: 16,
-    },
-    headlineLabel: {
-      fontSize: 11,
-      fontFamily: "Inter_600SemiBold",
-      color: "rgba(255,255,255,0.55)",
-      textTransform: "uppercase",
-      letterSpacing: 1.4,
-      marginBottom: 8,
-    },
-    headline: {
-      fontSize: 21,
-      fontFamily: "Inter_700Bold",
-      color: "#ffffff",
-      lineHeight: 29,
-    },
-    sectionGroupLabel: {
-      fontSize: 11,
-      fontFamily: "Inter_600SemiBold",
-      color: colors.mutedForeground,
-      textTransform: "uppercase",
-      letterSpacing: 1.2,
-      marginBottom: 12,
-      marginTop: 4,
-    },
-    divider: {
-      height: 1,
-      backgroundColor: colors.border,
-      marginVertical: 16,
-    },
-    affirmationBox: {
-      backgroundColor: colors.primary,
-      borderRadius: 16,
-      paddingVertical: 22,
-      paddingHorizontal: 20,
-      marginBottom: 10,
-    },
-    affirmationLabel: {
-      fontSize: 11,
-      fontFamily: "Inter_600SemiBold",
-      color: "rgba(255,255,255,0.55)",
-      textTransform: "uppercase",
-      letterSpacing: 1.2,
-      marginBottom: 10,
-    },
-    affirmationText: {
-      fontSize: 17,
-      fontFamily: "Inter_600SemiBold",
-      color: "#ffffff",
-      lineHeight: 26,
-    },
-    nextStepBox: {
-      backgroundColor: colors.goldLight,
-      borderRadius: 16,
-      paddingVertical: 18,
-      paddingHorizontal: 18,
-      marginBottom: 24,
-      flexDirection: "row",
-      alignItems: "flex-start",
-    },
-    nextStepIconWrap: {
-      width: 34,
-      height: 34,
-      borderRadius: 17,
-      backgroundColor: colors.gold,
-      alignItems: "center",
-      justifyContent: "center",
-      marginRight: 13,
-      marginTop: 2,
-    },
-    nextStepIcon: {
-      fontSize: 16,
-    },
-    nextStepContent: {
-      flex: 1,
-    },
-    nextStepLabel: {
-      fontSize: 11,
-      fontFamily: "Inter_700Bold",
-      color: "#92400e",
-      textTransform: "uppercase",
-      letterSpacing: 1,
-      marginBottom: 6,
-    },
-    nextStepText: {
-      fontSize: 15,
-      fontFamily: "Inter_600SemiBold",
-      color: "#78350f",
-      lineHeight: 22,
-    },
-    resetButton: {
-      borderWidth: 2,
-      borderColor: colors.primary,
-      borderRadius: 16,
-      paddingVertical: 16,
-      alignItems: "center",
-      marginBottom: 36,
-    },
-    resetButtonText: {
-      fontSize: 15,
-      fontFamily: "Inter_600SemiBold",
-      color: colors.primary,
-    },
+  const s = StyleSheet.create({
+    scroll: { flex: 1 },
+    groupLabel: { fontSize: 10, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10, marginTop: 6 },
+    divider: { height: 1, backgroundColor: colors.border, marginVertical: 14 },
+    affirmationBox: { backgroundColor: cfg.color, borderRadius: 16, paddingVertical: 20, paddingHorizontal: 20, marginBottom: 10 },
+    affirmationLabel: { fontSize: 10, fontFamily: "Inter_600SemiBold", color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 },
+    affirmationText: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "#fff", lineHeight: 24 },
+    nextBox: { backgroundColor: colors.goldLight, borderRadius: 16, paddingVertical: 18, paddingHorizontal: 18, marginBottom: 28, flexDirection: "row", alignItems: "flex-start" },
+    nextIconWrap: { width: 34, height: 34, borderRadius: 17, backgroundColor: colors.gold, alignItems: "center", justifyContent: "center", marginRight: 13, marginTop: 2 },
+    nextIcon: { fontSize: 16 },
+    nextContent: { flex: 1 },
+    nextLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#92400e", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 },
+    nextText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#78350f", lineHeight: 22 },
+    resetBtn: { borderWidth: 2, borderColor: colors.primary, borderRadius: 16, paddingVertical: 16, alignItems: "center", marginBottom: 36 },
+    resetBtnText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: colors.primary },
   });
 
   return (
-    <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-      <View style={styles.headlineBand}>
-        <Text style={styles.headlineLabel}>Your Coaching</Text>
-        <Text style={styles.headline}>{result.headline}</Text>
-      </View>
+    <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
+      <StrategyBadge strategy={result.strategy} />
 
-      <Text style={styles.sectionGroupLabel}>Executive Breakdown</Text>
+      <Block label="Executive Breakdown" color="#374151" bg="#f9fafb">
+        <BodyText>{result.reframe}</BodyText>
+        {result.breakdown ? (
+          <Text style={{ fontSize: 15, fontFamily: "Inter_400Regular", color: "#4b5563", lineHeight: 24, marginTop: 10 }}>
+            {result.breakdown}
+          </Text>
+        ) : null}
+      </Block>
 
-      {result.sections.map((section, i) => (
-        <SectionCard key={i} section={section} />
-      ))}
+      {result.script && (
+        <ScriptSection script={result.script} strategy={result.strategy} />
+      )}
 
-      <View style={styles.divider} />
+      <TacticsList tactics={result.tactics} strategy={result.strategy} />
 
-      <View style={styles.affirmationBox}>
-        <Text style={styles.affirmationLabel}>Remember This</Text>
-        <Text style={styles.affirmationText}>{result.affirmation}</Text>
-      </View>
+      <View style={s.divider} />
 
-      <View style={styles.nextStepBox}>
-        <View style={styles.nextStepIconWrap}>
-          <Text style={styles.nextStepIcon}>⚡</Text>
+      <View style={s.nextBox}>
+        <View style={s.nextIconWrap}><Text style={s.nextIcon}>⚡</Text></View>
+        <View style={s.nextContent}>
+          <Text style={s.nextLabel}>Next 24 Hours</Text>
+          <Text style={s.nextText}>{result.nextSteps.join("\n")}</Text>
         </View>
-        <View style={styles.nextStepContent}>
-          <Text style={styles.nextStepLabel}>Your Next Move — Next 24 Hours</Text>
-          <Text style={styles.nextStepText}>{result.nextStep}</Text>
-        </View>
       </View>
 
-      <TouchableOpacity style={styles.resetButton} onPress={onReset} activeOpacity={0.8}>
-        <Text style={styles.resetButtonText}>Start a New Flow</Text>
+      <TouchableOpacity style={s.resetBtn} onPress={onReset} activeOpacity={0.8}>
+        <Text style={s.resetBtnText}>Start a New Flow</Text>
       </TouchableOpacity>
     </ScrollView>
   );
