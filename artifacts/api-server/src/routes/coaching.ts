@@ -18,9 +18,12 @@ const EVALUATE_PROMPT = `You are a senior executive strategy advisor. Analyse th
 
 STEP 1 — CLASSIFY into exactly one of:
 - INTERPERSONAL: involves conflict, a difficult conversation, negotiation, feedback, or a relationship problem with another person
-- POSITIONING: career growth, visibility, recognition, promotion, being seen, stepping up, credibility
+- POSITIONING: career growth, visibility, recognition, promotion, being seen, stepping up, credibility — the user knows what they want and needs to get there externally
 - PERFORMANCE: execution, deliverables, overwhelm, productivity, workload management
-- INTERNAL: mindset, confidence, self-doubt, motivation, burnout, mental state
+- INTERNAL: feeling stuck, lost, or unclear on direction; uncertainty about goals or next steps; lack of clarity on what they want; second-guessing decisions; avoidance, overthinking, or waiting; mindset blocks, confidence, self-doubt, motivation, burnout
+
+CRITICAL CLASSIFICATION RULE:
+If the user expresses uncertainty about direction, confusion about what they want, or feeling stuck/lost — classify as INTERNAL, even if they mention career or visibility. The key signal is internal confusion, not external positioning. POSITIONING is for users who know what they want and need tactical help getting there.
 
 STEP 2 — If INTERPERSONAL, also choose one strategy:
 - DIRECT_CONVERSATION: user has leverage, low political risk, other party likely to respond
@@ -122,17 +125,28 @@ Do NOT include communication scripts or interpersonal advice. Focus on execution
 
 IF problemType = INTERNAL:
 
-Do NOT include conversation scripts or external action advice. Focus on mindset, thought patterns, and state control.
+Do NOT include visibility advice, networking advice, communication scripts, or external positioning.
+Focus on decision-making, clarity, and momentum — not reflection or self-analysis.
+The user is stuck because they are waiting for certainty that will not come. The answer is action, not more thinking.
 
-- reframe: One sharp sentence that breaks the current thought pattern. Not motivational — accurate.
-- breakdown: 2-3 sentences naming the thought loop and what it is costing them. Name the narrative, not the emotion.
+- reframe: One sharp sentence that reframes stuck as a decision problem, not a knowledge problem. Clarity comes from action, not from more thinking.
+- breakdown: 2-3 sentences naming exactly what is happening internally — the avoidance pattern, overthinking loop, or waiting behaviour. Name the mechanism, not the feeling.
 - script: null
 - sections: [
-    { "title": "The Pattern", "content": "Name the specific thought loop in one plain sentence. What is the story they are running?" },
-    { "title": "Reframe", "content": "The new lens to apply to this situation. One to two sentences, specific to their context. Not a platitude." },
-    { "title": "State Tools", "content": "3 numbered tools to shift state. Each is a specific physical or cognitive action they can do in the next 10 minutes." }
+    {
+      "title": "Decision Framework",
+      "content": "3 diagnostic questions that cut through the stuck feeling. Each question forces a binary or concrete answer — not more reflection. Example format: '1. If you had to choose a direction today with no new information, what would it be? 2. What is the smallest test you could run this week to find out if that direction is right? 3. What are you actually afraid of — what is the worst realistic outcome if you try and it does not work out?' Write the actual questions tailored to their situation."
+    },
+    {
+      "title": "Break the Loop",
+      "content": "One specific action to take in the next 48 hours that forces forward movement. Not a reflection exercise — a test, an attempt, a conversation, or a commitment. Name exactly what to do, with whom, and by when. The goal is information through action, not comfort through planning."
+    },
+    {
+      "title": "Win Condition",
+      "content": "Define what clarity looks like for this person — not a perfect plan, but a clear enough signal to move. One sentence naming the signal: 'You will know you have moved past stuck when...' Then one sentence naming what that enables next."
+    }
   ]
-- nextSteps: [ "One internal action to do in the next 60 minutes — specific and behavioural" ]
+- nextSteps: [ "One decision to make or one action to take before tomorrow morning. Name it specifically — not 'think about it.' Write what they will do, where, and when." ]
 
 ---
 
