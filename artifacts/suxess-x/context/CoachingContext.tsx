@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 
 export type FlowType = "conversation" | "stuck" | "visibility" | "negotiate" | "mindset";
+export type ProblemType = "INTERPERSONAL" | "POSITIONING" | "PERFORMANCE" | "INTERNAL";
 export type CoachingStrategy = "DIRECT_CONVERSATION" | "INDIRECT_INFLUENCE" | "STRATEGIC_CONTAINMENT";
 
 export interface StrategyOption {
@@ -9,6 +10,7 @@ export interface StrategyOption {
 }
 
 export interface StrategyRecommendation {
+  problemType: ProblemType;
   recommendedStrategy: CoachingStrategy;
   assessment: Record<CoachingStrategy, string>;
   options: StrategyOption[];
@@ -22,12 +24,18 @@ export interface CoachingScript {
   pushback: string;
 }
 
+export interface CoachingSection {
+  title: string;
+  content: string;
+}
+
 export interface CoachingResult {
-  strategy: CoachingStrategy;
+  problemType: ProblemType;
+  strategy: CoachingStrategy | null;
   reframe: string;
   breakdown: string;
   script: CoachingScript | null;
-  tactics: string[];
+  sections: CoachingSection[];
   nextSteps: string[];
 }
 
@@ -43,7 +51,7 @@ interface CoachingContextValue {
   setAnswer: (key: string, value: string) => void;
   resetFlow: () => void;
   evaluateFlow: () => Promise<void>;
-  submitFlow: (strategy: CoachingStrategy) => Promise<void>;
+  submitFlow: (strategy: CoachingStrategy | null) => Promise<void>;
 }
 
 const CoachingContext = createContext<CoachingContextValue | null>(null);
@@ -53,42 +61,51 @@ function str(v: unknown, fallback: string): string {
 }
 
 const VALID_STRATEGIES: CoachingStrategy[] = ["DIRECT_CONVERSATION", "INDIRECT_INFLUENCE", "STRATEGIC_CONTAINMENT"];
+const VALID_PROBLEM_TYPES: ProblemType[] = ["INTERPERSONAL", "POSITIONING", "PERFORMANCE", "INTERNAL"];
+
+function parseProblemType(v: unknown): ProblemType {
+  const s = String(v ?? "").trim().toUpperCase() as ProblemType;
+  return VALID_PROBLEM_TYPES.includes(s) ? s : "INTERPERSONAL";
+}
+
+function parseStrategy(v: unknown): CoachingStrategy {
+  const s = String(v ?? "").trim().toUpperCase() as CoachingStrategy;
+  return VALID_STRATEGIES.includes(s) ? s : "DIRECT_CONVERSATION";
+}
 
 function safeParseRecommendation(raw: unknown): StrategyRecommendation {
-  const defaultOptions: StrategyOption[] = [
-    { type: "DIRECT_CONVERSATION", label: "Address it directly" },
-    { type: "INDIRECT_INFLUENCE", label: "Shift perception and influence dynamics" },
-    { type: "STRATEGIC_CONTAINMENT", label: "Protect your position and manage risk" },
-  ];
   const defaultAssessment: Record<CoachingStrategy, string> = {
     DIRECT_CONVERSATION: "A direct approach is most likely to move things forward in your situation.",
     INDIRECT_INFLUENCE: "Shifting perception and influence is a higher-leverage move here than direct confrontation.",
     STRATEGIC_CONTAINMENT: "Protecting your position and managing risk is the most important focus right now.",
   };
   const fallback: StrategyRecommendation = {
+    problemType: "INTERPERSONAL",
     recommendedStrategy: "DIRECT_CONVERSATION",
     assessment: defaultAssessment,
-    options: defaultOptions,
+    options: [
+      { type: "DIRECT_CONVERSATION", label: "Address it directly" },
+      { type: "INDIRECT_INFLUENCE", label: "Shift perception and influence dynamics" },
+      { type: "STRATEGIC_CONTAINMENT", label: "Protect your position and manage risk" },
+    ],
   };
   if (typeof raw !== "object" || raw === null) return fallback;
   const obj = raw as Record<string, unknown>;
-  const rawStrategy = String(obj.recommendedStrategy ?? "").trim().toUpperCase();
-  const recommendedStrategy: CoachingStrategy =
-    rawStrategy === "INDIRECT_INFLUENCE" ? "INDIRECT_INFLUENCE"
-    : rawStrategy === "STRATEGIC_CONTAINMENT" ? "STRATEGIC_CONTAINMENT"
-    : "DIRECT_CONVERSATION";
+
+  const problemType = parseProblemType(obj.problemType);
+  const recommendedStrategy = parseStrategy(obj.recommendedStrategy);
 
   let assessment = defaultAssessment;
   if (typeof obj.assessment === "object" && obj.assessment !== null) {
     const a = obj.assessment as Record<string, unknown>;
-    const parsed: Partial<Record<CoachingStrategy, string>> = {};
-    for (const key of VALID_STRATEGIES) {
-      parsed[key] = str(a[key], defaultAssessment[key]);
-    }
-    assessment = parsed as Record<CoachingStrategy, string>;
+    assessment = {
+      DIRECT_CONVERSATION: str(a.DIRECT_CONVERSATION, defaultAssessment.DIRECT_CONVERSATION),
+      INDIRECT_INFLUENCE: str(a.INDIRECT_INFLUENCE, defaultAssessment.INDIRECT_INFLUENCE),
+      STRATEGIC_CONTAINMENT: str(a.STRATEGIC_CONTAINMENT, defaultAssessment.STRATEGIC_CONTAINMENT),
+    };
   }
 
-  let options = defaultOptions;
+  let options = fallback.options;
   if (Array.isArray(obj.options) && obj.options.length === 3) {
     const parsed = obj.options.map((o: unknown) => {
       if (typeof o !== "object" || o === null) return null;
@@ -99,11 +116,13 @@ function safeParseRecommendation(raw: unknown): StrategyRecommendation {
     });
     if (parsed.every(Boolean)) options = parsed as StrategyOption[];
   }
-  return { recommendedStrategy, assessment, options };
+
+  return { problemType, recommendedStrategy, assessment, options };
 }
 
-function safeParseResult(raw: unknown, chosenStrategy: CoachingStrategy): CoachingResult {
+function safeParseResult(raw: unknown, problemType: ProblemType, chosenStrategy: CoachingStrategy | null): CoachingResult {
   const fallback: CoachingResult = {
+    problemType,
     strategy: chosenStrategy,
     reframe: "The situation is clearer than it feels.",
     breakdown: "You know what needs to happen. The question is timing and approach.",
@@ -114,19 +133,24 @@ function safeParseResult(raw: unknown, chosenStrategy: CoachingStrategy): Coachi
       ask: "I need this to change, and I want to agree on how.",
       pushback: "I hear you. And this still needs to be resolved.",
     } : null,
-    tactics: [
-      "1. Write down exactly what you want to say — one paragraph, no hedging.",
-      "2. Schedule the conversation within 48 hours.",
-      "3. Say your opening line out loud before the meeting.",
-    ],
+    sections: [{ title: "What to Do", content: "1. Identify your highest-leverage action.\n2. Execute it before end of day.\n3. Reassess tomorrow morning." }],
     nextSteps: ["Take one concrete action today that moves this forward."],
   };
+
   if (typeof raw !== "object" || raw === null) return fallback;
   const obj = raw as Record<string, unknown>;
+
+  const parsedProblemType = parseProblemType(obj.problemType ?? problemType);
+  const rawStrategyStr = String(obj.strategy ?? "").trim().toUpperCase();
+  const parsedStrategy: CoachingStrategy | null = VALID_STRATEGIES.includes(rawStrategyStr as CoachingStrategy)
+    ? (rawStrategyStr as CoachingStrategy)
+    : null;
+
   const reframe = str(obj.reframe, fallback.reframe);
   const breakdown = str(obj.breakdown, fallback.breakdown);
+
   let script: CoachingScript | null = null;
-  if (chosenStrategy === "DIRECT_CONVERSATION" && typeof obj.script === "object" && obj.script !== null) {
+  if (parsedStrategy === "DIRECT_CONVERSATION" && typeof obj.script === "object" && obj.script !== null) {
     const s = obj.script as Record<string, unknown>;
     script = {
       opening: str(s.opening, "I want to address something directly."),
@@ -136,15 +160,21 @@ function safeParseResult(raw: unknown, chosenStrategy: CoachingStrategy): Coachi
       pushback: str(s.pushback, "I understand. This still needs to be addressed."),
     };
   }
-  const tactics: string[] = Array.isArray(obj.tactics)
-    ? obj.tactics.filter((t) => typeof t === "string" && t.trim()).map((t) => String(t).trim())
-    : fallback.tactics;
+
+  let sections: CoachingSection[] = fallback.sections;
+  if (Array.isArray(obj.sections) && obj.sections.length > 0) {
+    const parsed = obj.sections
+      .filter((s): s is Record<string, unknown> => typeof s === "object" && s !== null)
+      .map((s) => ({ title: str(s.title, "Insight"), content: str(s.content, "") }))
+      .filter((s) => s.content.length > 0);
+    if (parsed.length > 0) sections = parsed;
+  }
+
   const nextSteps: string[] = Array.isArray(obj.nextSteps)
     ? obj.nextSteps.filter((s) => typeof s === "string" && s.trim()).map((s) => String(s).trim())
-    : typeof obj.nextSteps === "string" && (obj.nextSteps as string).trim()
-    ? [(obj.nextSteps as string).trim()]
     : fallback.nextSteps;
-  return { strategy: chosenStrategy, reframe, breakdown, script, tactics, nextSteps };
+
+  return { problemType: parsedProblemType, strategy: parsedStrategy, reframe, breakdown, script, sections, nextSteps };
 }
 
 function getBase(): string {
@@ -206,22 +236,23 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const submitFlow = async (strategy: CoachingStrategy) => {
+  const submitFlow = async (strategy: CoachingStrategy | null) => {
     if (!activeFlow) return;
+    const problemType = recommendation?.problemType ?? "INTERPERSONAL";
     setIsLoading(true);
     setError(null);
     try {
       const response = await fetch(`${getBase()}/api/coaching/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ flowType: activeFlow, answers, strategy }),
+        body: JSON.stringify({ flowType: activeFlow, answers, problemType, strategy }),
       });
       if (!response.ok) throw new Error("Server error");
       const text = await response.text();
       const stripped = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
       let parsed: unknown;
       try { parsed = JSON.parse(stripped); } catch { parsed = null; }
-      setResult(safeParseResult(parsed, strategy));
+      setResult(safeParseResult(parsed, problemType, strategy));
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {

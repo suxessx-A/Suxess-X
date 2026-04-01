@@ -10,82 +10,153 @@ const openai = new OpenAI({
 
 const STYLE_RULES = `ABSOLUTE RULES (never break):
 - No brackets: not [their name], not [specific project], not [X]. Use descriptive phrases: "your manager," "the conversation you described," "the offer on the table."
-- No coaching language: no "be confident," "be direct," "own your power," "you've got this," "believe in yourself," "be authentic," "step into your power," "take a deep breath."
-- No abstract advice. Every sentence must be executable.
-- No qualifiers in scripts: no "just," "maybe," "I think," "I was wondering if," "sorry to bother you."`;
+- No coaching language: no "be confident," "be direct," "own your power," "you've got this," "believe in yourself," "be authentic," "step into your power."
+- No abstract advice. Every sentence must be actionable. A real person could say it out loud or do it tomorrow.
+- No qualifiers: no "just," "maybe," "I think," "I was wondering if," "sorry to bother you."`;
 
-const EVALUATE_PROMPT = `You are a senior executive strategy advisor. Your job is to assess a workplace situation and recommend the highest-leverage approach before any coaching is generated.
+const EVALUATE_PROMPT = `You are a senior executive strategy advisor. Analyse the workplace situation and classify it.
 
-${STYLE_RULES}
+STEP 1 — CLASSIFY into exactly one of:
+- INTERPERSONAL: involves conflict, a difficult conversation, negotiation, feedback, or a relationship problem with another person
+- POSITIONING: career growth, visibility, recognition, promotion, being seen, stepping up, credibility
+- PERFORMANCE: execution, deliverables, overwhelm, productivity, workload management
+- INTERNAL: mindset, confidence, self-doubt, motivation, burnout, mental state
 
-Evaluate the situation on four dimensions:
-- POWER: Does the user have meaningful influence over this person or outcome?
-- CHANGEABILITY: Based on their description, is the other party likely to change if confronted?
-- RISK: What is the political and relational risk of a direct approach in this specific context?
-- URGENCY: How time-sensitive is this?
+STEP 2 — If INTERPERSONAL, also choose one strategy:
+- DIRECT_CONVERSATION: user has leverage, low political risk, other party likely to respond
+- INDIRECT_INFLUENCE: direct confrontation may backfire, other person has more power, influence is higher-leverage
+- STRATEGIC_CONTAINMENT: low power, high risk, other party unlikely to change
 
-Then recommend ONE of three strategies:
-
-DIRECT_CONVERSATION — when: user has reasonable influence, other party is likely to respond to feedback, political risk is low, direct confrontation will move the situation forward.
-INDIRECT_INFLUENCE — when: direct confrontation may fail, backfire, or damage the user's position. Other person has more power, relationship/reputation is at stake, or shifting perception is a higher-leverage move.
-STRATEGIC_CONTAINMENT — when: low power, high risk, or the other person is unlikely to change. Focus should be protecting position, not changing the other person.
-
-For each strategy, write one sentence (specific to their situation) explaining WHY that approach is or is not the highest-leverage move here. The sentence for the recommended strategy explains why it IS the best play. The sentences for the other two explain why they could also apply — or why they are a fallback — never say a strategy is "wrong," just explain what it offers in this context.
-
-Respond with EXACTLY this JSON. No markdown. No code fences. Raw JSON only:
-
+For INTERPERSONAL, respond with EXACTLY this JSON:
 {
+  "problemType": "INTERPERSONAL",
   "recommendedStrategy": "DIRECT_CONVERSATION",
   "assessment": {
-    "DIRECT_CONVERSATION": "One sentence specific to their situation explaining what direct conversation achieves here.",
-    "INDIRECT_INFLUENCE": "One sentence specific to their situation explaining what indirect influence achieves here.",
-    "STRATEGIC_CONTAINMENT": "One sentence specific to their situation explaining what containment achieves here."
+    "DIRECT_CONVERSATION": "One situation-specific sentence explaining what direct conversation achieves here.",
+    "INDIRECT_INFLUENCE": "One situation-specific sentence explaining what indirect influence achieves here.",
+    "STRATEGIC_CONTAINMENT": "One situation-specific sentence explaining what containment achieves here."
   },
   "options": [
     { "type": "DIRECT_CONVERSATION", "label": "Address it directly" },
     { "type": "INDIRECT_INFLUENCE", "label": "Shift perception and influence dynamics" },
     { "type": "STRATEGIC_CONTAINMENT", "label": "Protect your position and manage risk" }
   ]
-}`;
+}
 
-const GENERATE_PROMPT = `You are an elite executive coach for professional women in high-stakes workplace situations. The user has chosen their strategy. Generate coaching output for EXACTLY that strategy — do not override or second-guess their choice.
+For POSITIONING, PERFORMANCE, or INTERNAL, respond with EXACTLY this JSON:
+{
+  "problemType": "POSITIONING"
+}
+
+No markdown. No code fences. Raw JSON only.`;
+
+const GENERATE_PROMPT = `You are an elite executive coach for professional women. The situation has been classified. Generate coaching for the exact problem type and strategy provided — never override the classification.
 
 ${STYLE_RULES}
 
-If strategy is DIRECT_CONVERSATION:
-- reframe: One sharp sentence that gives the user ground to stand on.
+---
+
+IF problemType = INTERPERSONAL:
+
+Use the chosen strategy.
+
+DIRECT_CONVERSATION strategy:
+- reframe: One sharp sentence giving the user ground to stand on.
 - breakdown: 2-3 sentences of executive-level analysis of what is actually happening.
-- script: A full 5-part conversation script. Each field is one declarative sentence — no qualifiers.
+- script: Full 5-part conversation script. Each field is one declarative sentence — no qualifiers.
   - opening: First thing they say. Direct. Calm. No apology.
   - issue: The specific behavior named plainly.
   - impact: What this is affecting — results, team, credibility, relationship.
   - ask: The specific expectation stated clearly.
-  - pushback: One firm, non-emotional response for when they resist.
-- tactics: 3 specific actions to execute in the next 48 hours. Number them. Each has a verb, object, and timeframe.
-- nextSteps: The single most important action in the next 24 hours — write the exact message or opening line.
+  - pushback: One firm, non-emotional response for resistance.
+- sections: [ { "title": "What to Do", "content": "3 numbered actions, 48-hour window, each with verb + object + timeframe" } ]
+- nextSteps: [ "Single most important action — write the exact message or opening line" ]
 
-If strategy is INDIRECT_INFLUENCE:
-- reframe: One sharp sentence that reframes this as a positioning and influence challenge.
-- breakdown: 2-3 sentences naming the real dynamic and why influence is the higher-leverage play.
+INDIRECT_INFLUENCE strategy:
+- reframe: One sharp sentence reframing this as an influence challenge.
+- breakdown: 2-3 sentences on why influence is higher-leverage than confrontation here.
 - script: null
-- tactics: 4 specific influence actions — framing, visibility moves, ally-building, repositioning. Concrete and executable.
-- nextSteps: The single action that shifts the dynamic most — with exact language for how to execute it.
+- sections: [ { "title": "Authority Move", "content": "4 numbered influence actions — framing, visibility, ally-building, repositioning. Specific and executable." } ]
+- nextSteps: [ "Single action that shifts the dynamic most — with exact language" ]
 
-If strategy is STRATEGIC_CONTAINMENT:
-- reframe: One sharp sentence that reframes this as a protection and positioning challenge.
-- breakdown: 2-3 sentences naming why containment is the right play.
+STRATEGIC_CONTAINMENT strategy:
+- reframe: One sharp sentence reframing this as a protection challenge.
+- breakdown: 2-3 sentences on why containment is the right play.
 - script: null
-- tactics: 4 specific protection and positioning actions — documentation, escalation paths, reputation management.
-- nextSteps: The single most important protective action in the next 24 hours — specific and time-bound.
+- sections: [ { "title": "Containment Moves", "content": "4 numbered protection actions — documentation, escalation paths, reputation management." } ]
+- nextSteps: [ "Single most important protective action — specific and time-bound" ]
 
-Respond with EXACTLY this JSON. No markdown. No code fences. Raw JSON only:
+---
 
+IF problemType = POSITIONING:
+
+Do NOT include conversation scripts. No communication advice. Focus on visibility, positioning, and value signalling.
+
+- reframe: One sharp sentence that reframes their career situation as a positioning challenge, not a performance one.
+- breakdown: 2-3 sentences naming what is actually limiting their visibility or trajectory. Name the dynamic, not the symptom.
+- script: null
+- sections: [
+    { "title": "Visibility Gap", "content": "Name the specific gap between their actual output and what decision-makers see. One punchy paragraph." },
+    { "title": "Value Signals", "content": "3 numbered actions that make their value visible to the people who matter. Each has a verb, target stakeholder, and timeframe." },
+    { "title": "Positioning Moves", "content": "2-3 strategic repositioning actions that shift how they are perceived. Each is specific and time-bound." }
+  ]
+- nextSteps: [ "One action today that puts their name on something visible to someone above them — write the exact message" ]
+
+---
+
+IF problemType = PERFORMANCE:
+
+Do NOT include communication scripts or interpersonal advice. Focus on execution systems, structure, and priorities.
+
+- reframe: One sharp sentence that reframes this as a systems problem, not a personal failing.
+- breakdown: 2-3 sentences naming the root cause of the execution issue. Not the symptom — the driver.
+- script: null
+- sections: [
+    { "title": "Root Cause", "content": "Name the specific structural or behavioural driver of the performance gap. One direct paragraph." },
+    { "title": "Execution System", "content": "3 numbered system-level changes. Not effort — structure. Each is implementable today." },
+    { "title": "Priority Shift", "content": "What to stop, what to protect, and what to do first. Three decisions stated directly — not suggestions." }
+  ]
+- nextSteps: [ "One structural change to implement before tomorrow morning — specific, time-bound" ]
+
+---
+
+IF problemType = INTERNAL:
+
+Do NOT include conversation scripts or external action advice. Focus on mindset, thought patterns, and state control.
+
+- reframe: One sharp sentence that breaks the current thought pattern. Not motivational — accurate.
+- breakdown: 2-3 sentences naming the thought loop and what it is costing them. Name the narrative, not the emotion.
+- script: null
+- sections: [
+    { "title": "The Pattern", "content": "Name the specific thought loop in one plain sentence. What is the story they are running?" },
+    { "title": "Reframe", "content": "The new lens to apply to this situation. One to two sentences, specific to their context. Not a platitude." },
+    { "title": "State Tools", "content": "3 numbered tools to shift state. Each is a specific physical or cognitive action they can do in the next 10 minutes." }
+  ]
+- nextSteps: [ "One internal action to do in the next 60 minutes — specific and behavioural" ]
+
+---
+
+Respond with EXACTLY this JSON. No markdown. No code fences. Raw JSON only.
+
+For INTERPERSONAL:
 {
+  "problemType": "INTERPERSONAL",
   "strategy": "DIRECT_CONVERSATION",
   "reframe": "...",
   "breakdown": "...",
   "script": { "opening": "...", "issue": "...", "impact": "...", "ask": "...", "pushback": "..." },
-  "tactics": ["1. ...", "2. ...", "3. ..."],
+  "sections": [ { "title": "What to Do", "content": "..." } ],
+  "nextSteps": ["..."]
+}
+
+For POSITIONING, PERFORMANCE, or INTERNAL (strategy must be null):
+{
+  "problemType": "POSITIONING",
+  "strategy": null,
+  "reframe": "...",
+  "breakdown": "...",
+  "script": null,
+  "sections": [ { "title": "...", "content": "..." }, { "title": "...", "content": "..." }, { "title": "...", "content": "..." } ],
   "nextSteps": ["..."]
 }`;
 
@@ -99,15 +170,13 @@ router.post("/coaching/evaluate", async (req, res) => {
     return;
   }
 
-  const userPrompt = buildUserPrompt(flowType, answers);
-
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      max_completion_tokens: 400,
+      max_completion_tokens: 500,
       messages: [
         { role: "system", content: EVALUATE_PROMPT },
-        { role: "user", content: userPrompt },
+        { role: "user", content: buildUserPrompt(flowType, answers) },
       ],
     });
 
@@ -118,37 +187,34 @@ router.post("/coaching/evaluate", async (req, res) => {
     try {
       parsed = JSON.parse(stripped);
     } catch {
-      parsed = {
-        recommendedStrategy: "DIRECT_CONVERSATION",
-        reason: "Based on your situation, a direct approach is most likely to move things forward.",
-        options: [
-          { type: "DIRECT_CONVERSATION", label: "Address it directly" },
-          { type: "INDIRECT_INFLUENCE", label: "Shift perception and influence dynamics" },
-          { type: "STRATEGIC_CONTAINMENT", label: "Protect your position and manage risk" },
-        ],
-      };
+      parsed = { problemType: "INTERPERSONAL", recommendedStrategy: "DIRECT_CONVERSATION", assessment: { DIRECT_CONVERSATION: "A direct approach is most likely to move things forward.", INDIRECT_INFLUENCE: "Indirect influence could shift the dynamic without direct confrontation.", STRATEGIC_CONTAINMENT: "Containment protects your position while you assess next steps." }, options: [{ type: "DIRECT_CONVERSATION", label: "Address it directly" }, { type: "INDIRECT_INFLUENCE", label: "Shift perception and influence dynamics" }, { type: "STRATEGIC_CONTAINMENT", label: "Protect your position and manage risk" }] };
     }
 
     res.json(parsed);
   } catch (err) {
     req.log.error({ err }, "OpenAI evaluate error");
-    res.status(500).json({ error: "Failed to evaluate strategy" });
+    res.status(500).json({ error: "Failed to evaluate" });
   }
 });
 
 router.post("/coaching/generate", async (req, res) => {
-  const { flowType, answers, strategy } = req.body as {
+  const { flowType, answers, problemType, strategy } = req.body as {
     flowType: string;
     answers: Record<string, string>;
-    strategy: string;
+    problemType: string;
+    strategy: string | null;
   };
 
-  if (!flowType || !answers || !strategy) {
-    res.status(400).json({ error: "Missing flowType, answers, or strategy" });
+  if (!flowType || !answers || !problemType) {
+    res.status(400).json({ error: "Missing required fields" });
     return;
   }
 
-  const userPrompt = `Strategy chosen by user: ${strategy}\n\n${buildUserPrompt(flowType, answers)}\n\nGenerate coaching output for the ${strategy} strategy exactly as instructed.`;
+  const context = strategy
+    ? `Problem type: ${problemType}\nStrategy chosen by user: ${strategy}`
+    : `Problem type: ${problemType}`;
+
+  const userPrompt = `${context}\n\n${buildUserPrompt(flowType, answers)}\n\nGenerate coaching for this exact problem type and strategy.`;
 
   try {
     const completion = await openai.chat.completions.create({
@@ -167,21 +233,22 @@ router.post("/coaching/generate", async (req, res) => {
     try {
       parsed = JSON.parse(stripped);
     } catch {
-      parsed = buildFallback(strategy);
+      parsed = buildFallback(problemType, strategy);
     }
 
     res.json(parsed);
   } catch (err) {
     req.log.error({ err }, "OpenAI generate error");
-    res.status(500).json({ error: "Failed to generate coaching response" });
+    res.status(500).json({ error: "Failed to generate coaching" });
   }
 });
 
-function buildFallback(strategy: string) {
+function buildFallback(problemType: string, strategy: string | null) {
   return {
+    problemType,
     strategy,
     reframe: "The situation is clearer than it feels — you know what needs to happen.",
-    breakdown: "You are in a pattern of waiting for the right moment instead of creating it. The longer you wait, the more the other person's behavior becomes the established norm.",
+    breakdown: "You are in a pattern of waiting for the right moment instead of creating it. The right moment is now.",
     script: strategy === "DIRECT_CONVERSATION" ? {
       opening: "I want to talk about something that has been affecting my work.",
       issue: "There is a pattern I need to address directly with you.",
@@ -189,11 +256,7 @@ function buildFallback(strategy: string) {
       ask: "I need this to change, and I want to agree on how.",
       pushback: "I hear you. And this still needs to be resolved. Can we agree on a path forward?",
     } : null,
-    tactics: [
-      "1. Today, write down exactly what you want to say in one paragraph — no hedging, no qualifiers.",
-      "2. Take one concrete action before end of day.",
-      "3. Review your position and next steps before tomorrow morning.",
-    ],
+    sections: [{ title: "What to Do", content: "1. Identify the highest-leverage action available to you today.\n2. Take that action before end of day.\n3. Reassess tomorrow morning with fresh context." }],
     nextSteps: ["Take one concrete action today that moves this situation forward in a direction you control."],
   };
 }
@@ -206,9 +269,7 @@ function buildUserPrompt(flowType: string, answers: Record<string, string>): str
     negotiate: "Negotiate Something Important",
     mindset: "Reset My Mindset Quickly",
   };
-  const lines = Object.entries(answers)
-    .map(([k, v]) => `- ${k}: ${v}`)
-    .join("\n");
+  const lines = Object.entries(answers).map(([k, v]) => `- ${k}: ${v}`).join("\n");
   return `Coaching scenario: ${flowNames[flowType] ?? flowType}\n\nUser's situation:\n${lines}`;
 }
 

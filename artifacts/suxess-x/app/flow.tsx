@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -349,8 +349,14 @@ export default function FlowScreen() {
     }
   };
 
-  const handleChooseStrategy = async (strategy: CoachingStrategy) => {
-    await submitFlow(strategy);
+  useEffect(() => {
+    if (recommendation && !result && !isLoading && recommendation.problemType !== "INTERPERSONAL") {
+      submitFlow(null);
+    }
+  }, [recommendation]);
+
+  const handleChooseStrategy = (strategy: CoachingStrategy) => {
+    submitFlow(strategy);
   };
 
   const handleReset = () => {
