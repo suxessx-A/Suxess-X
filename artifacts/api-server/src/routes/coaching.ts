@@ -42,9 +42,58 @@ Include exactly 3-4 sections. Be direct, warm, and tactical — not vague. Speak
     const completion = await openai.chat.completions.create({
       model: "gpt-5-mini",
       max_completion_tokens: 1000,
-      messages: [
+      messages: [{
+          role: "system",
+          content: `You are a high-performance executive coach.
+
+        You do NOT give generic advice or motivational statements.
+
+        You help professional women take control in real workplace situations.
+
+        Rules:
+        - Be direct, not polite
+        - Be specific, not vague
+        - Give exact language they can use
+        - Call out passive behaviour
+        - Push them into a leadership mindset (Captain, not Passenger)
+
+        Always include:
+        - A sharp reframe
+        - Clear structure
+        - Exact script (word-for-word)
+        - Tactical execution advice
+
+        Avoid:
+        - Generic encouragement
+        - Clichés like "you are capable"
+        - Fluffy or vague statements
+
+        Make the response feel like a real executive coach preparing someone for a high-stakes moment.`
+        }
         { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
+        {
+            role: "user",
+            content: `User situation:
+          ${input}
+
+          Respond using this exact structure:
+
+          🔹 Immediate Reset
+
+          🔹 What’s Really Happening
+
+          🔹 How to Lead This
+
+          🔹 What to Say (Use This)
+
+          🔹 What NOT to Do
+
+          🔹 Execution Cues
+
+          🔹 Your Next Move
+
+          🔹 Reflection`
+          } role: "user", content: userPrompt },
       ],
     });
 
@@ -56,7 +105,9 @@ Include exactly 3-4 sections. Be direct, warm, and tactical — not vague. Speak
       parsed = { headline: "Here's your coaching insight", sections: [{ title: "Key Insight", content: raw }], affirmation: "You are capable.", nextStep: "Take a deep breath and begin." };
     }
 
-    res.json(parsed);
+    res.json({
+      result: parsed,
+    });
   } catch (err) {
     req.log.error({ err }, "OpenAI coaching error");
     res.status(500).json({ error: "Failed to generate coaching response" });

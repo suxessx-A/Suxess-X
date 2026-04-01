@@ -61,7 +61,9 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ flowType: activeFlow, answers }),
       });
-      if (!response.ok) throw new Error("Failed to get coaching response");
+      if (!response.ok) {
+        throw new Error("Failed to get coaching response");
+      }
       const data = await response.json() as CoachingResult;
       setResult(data);
     } catch (err) {
