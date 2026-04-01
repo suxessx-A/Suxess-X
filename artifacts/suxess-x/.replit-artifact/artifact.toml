@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/"
+title = "Suxess X"
+version = "1.0.0"
+id = "artifacts/suxess-x"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/" ]
+localPort = 21709
+
+[services.development]
+run = "pnpm --filter @workspace/suxess-x run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/suxess-x", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/suxess-x", "run", "serve" ]
+
+[services.env]
+PORT = "21709"
+BASE_PATH = "/"

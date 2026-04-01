@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "4YjKOtAL1OEyxwichHkJC"
+uri = "file://artifacts/suxess-x/assets/images/icon.png"
+type = "image"
+title = "suxess-x app icon"
