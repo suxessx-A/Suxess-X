@@ -180,7 +180,8 @@ function StrategyPickerScreen({
   const topInset = Platform.OS === "web" ? 67 : insets.top;
   const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
   const [selected, setSelected] = useState<CoachingStrategy>(recommendation.recommendedStrategy);
-  const recMeta = STRATEGY_META[recommendation.recommendedStrategy];
+  const selectedMeta = STRATEGY_META[selected];
+  const whyText = recommendation.assessment[selected];
 
   const s = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
@@ -212,16 +213,16 @@ function StrategyPickerScreen({
       color: colors.foreground, lineHeight: 28, marginBottom: 16,
     },
     reasonCard: {
-      backgroundColor: recMeta.bg,
+      backgroundColor: selectedMeta.bg,
       borderRadius: 12,
       borderLeftWidth: 3,
-      borderLeftColor: recMeta.color,
+      borderLeftColor: selectedMeta.color,
       padding: 14,
       marginBottom: 20,
     },
     reasonLabel: {
       fontSize: 10, fontFamily: "Inter_700Bold",
-      color: recMeta.color, textTransform: "uppercase", letterSpacing: 1, marginBottom: 5,
+      color: selectedMeta.color, textTransform: "uppercase", letterSpacing: 1, marginBottom: 5,
     },
     reasonText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#1a1a2e", lineHeight: 20 },
     optionLabel: {
@@ -260,8 +261,8 @@ function StrategyPickerScreen({
         <Text style={s.title}>Choose your approach</Text>
 
         <View style={s.reasonCard}>
-          <Text style={s.reasonLabel}>Assessment</Text>
-          <Text style={s.reasonText}>{recommendation.reason}</Text>
+          <Text style={s.reasonLabel}>Why this approach</Text>
+          <Text style={s.reasonText}>{whyText}</Text>
         </View>
 
         {error && (

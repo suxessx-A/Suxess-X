@@ -10,7 +10,7 @@ export interface StrategyOption {
 
 export interface StrategyRecommendation {
   recommendedStrategy: CoachingStrategy;
-  reason: string;
+  assessment: Record<CoachingStrategy, string>;
   options: StrategyOption[];
 }
 
@@ -52,15 +52,22 @@ function str(v: unknown, fallback: string): string {
   return typeof v === "string" && v.trim() ? v.trim() : fallback;
 }
 
+const VALID_STRATEGIES: CoachingStrategy[] = ["DIRECT_CONVERSATION", "INDIRECT_INFLUENCE", "STRATEGIC_CONTAINMENT"];
+
 function safeParseRecommendation(raw: unknown): StrategyRecommendation {
   const defaultOptions: StrategyOption[] = [
     { type: "DIRECT_CONVERSATION", label: "Address it directly" },
     { type: "INDIRECT_INFLUENCE", label: "Shift perception and influence dynamics" },
     { type: "STRATEGIC_CONTAINMENT", label: "Protect your position and manage risk" },
   ];
+  const defaultAssessment: Record<CoachingStrategy, string> = {
+    DIRECT_CONVERSATION: "A direct approach is most likely to move things forward in your situation.",
+    INDIRECT_INFLUENCE: "Shifting perception and influence is a higher-leverage move here than direct confrontation.",
+    STRATEGIC_CONTAINMENT: "Protecting your position and managing risk is the most important focus right now.",
+  };
   const fallback: StrategyRecommendation = {
     recommendedStrategy: "DIRECT_CONVERSATION",
-    reason: "Based on your situation, a direct approach is most likely to move things forward.",
+    assessment: defaultAssessment,
     options: defaultOptions,
   };
   if (typeof raw !== "object" || raw === null) return fallback;
@@ -70,20 +77,29 @@ function safeParseRecommendation(raw: unknown): StrategyRecommendation {
     rawStrategy === "INDIRECT_INFLUENCE" ? "INDIRECT_INFLUENCE"
     : rawStrategy === "STRATEGIC_CONTAINMENT" ? "STRATEGIC_CONTAINMENT"
     : "DIRECT_CONVERSATION";
-  const reason = str(obj.reason, fallback.reason);
+
+  let assessment = defaultAssessment;
+  if (typeof obj.assessment === "object" && obj.assessment !== null) {
+    const a = obj.assessment as Record<string, unknown>;
+    const parsed: Partial<Record<CoachingStrategy, string>> = {};
+    for (const key of VALID_STRATEGIES) {
+      parsed[key] = str(a[key], defaultAssessment[key]);
+    }
+    assessment = parsed as Record<CoachingStrategy, string>;
+  }
+
   let options = defaultOptions;
   if (Array.isArray(obj.options) && obj.options.length === 3) {
     const parsed = obj.options.map((o: unknown) => {
       if (typeof o !== "object" || o === null) return null;
       const op = o as Record<string, unknown>;
       const t = String(op.type ?? "").trim().toUpperCase() as CoachingStrategy;
-      const validTypes: CoachingStrategy[] = ["DIRECT_CONVERSATION", "INDIRECT_INFLUENCE", "STRATEGIC_CONTAINMENT"];
-      if (!validTypes.includes(t)) return null;
+      if (!VALID_STRATEGIES.includes(t)) return null;
       return { type: t, label: str(op.label, t) };
     });
     if (parsed.every(Boolean)) options = parsed as StrategyOption[];
   }
-  return { recommendedStrategy, reason, options };
+  return { recommendedStrategy, assessment, options };
 }
 
 function safeParseResult(raw: unknown, chosenStrategy: CoachingStrategy): CoachingResult {

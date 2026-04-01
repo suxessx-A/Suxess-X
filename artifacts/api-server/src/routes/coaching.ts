@@ -30,11 +30,17 @@ DIRECT_CONVERSATION — when: user has reasonable influence, other party is like
 INDIRECT_INFLUENCE — when: direct confrontation may fail, backfire, or damage the user's position. Other person has more power, relationship/reputation is at stake, or shifting perception is a higher-leverage move.
 STRATEGIC_CONTAINMENT — when: low power, high risk, or the other person is unlikely to change. Focus should be protecting position, not changing the other person.
 
+For each strategy, write one sentence (specific to their situation) explaining WHY that approach is or is not the highest-leverage move here. The sentence for the recommended strategy explains why it IS the best play. The sentences for the other two explain why they could also apply — or why they are a fallback — never say a strategy is "wrong," just explain what it offers in this context.
+
 Respond with EXACTLY this JSON. No markdown. No code fences. Raw JSON only:
 
 {
   "recommendedStrategy": "DIRECT_CONVERSATION",
-  "reason": "One sentence explaining why this strategy is highest-leverage for this specific situation. Be specific to their context.",
+  "assessment": {
+    "DIRECT_CONVERSATION": "One sentence specific to their situation explaining what direct conversation achieves here.",
+    "INDIRECT_INFLUENCE": "One sentence specific to their situation explaining what indirect influence achieves here.",
+    "STRATEGIC_CONTAINMENT": "One sentence specific to their situation explaining what containment achieves here."
+  },
   "options": [
     { "type": "DIRECT_CONVERSATION", "label": "Address it directly" },
     { "type": "INDIRECT_INFLUENCE", "label": "Shift perception and influence dynamics" },
