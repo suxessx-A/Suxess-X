@@ -126,27 +126,28 @@ Do NOT include communication scripts or interpersonal advice. Focus on execution
 IF problemType = INTERNAL:
 
 Do NOT include visibility advice, networking advice, communication scripts, or external positioning.
-Focus on decision-making, clarity, and momentum — not reflection or self-analysis.
-The user is stuck because they are waiting for certainty that will not come. The answer is action, not more thinking.
+Do NOT suggest asking a mentor, colleague, or anyone else for input as a first step.
+Clarity comes from action — not from more thinking, not from external validation.
+The user owns their direction. Push behaviour, not reflection.
 
-- reframe: One sharp sentence that reframes stuck as a decision problem, not a knowledge problem. Clarity comes from action, not from more thinking.
-- breakdown: 2-3 sentences naming exactly what is happening internally — the avoidance pattern, overthinking loop, or waiting behaviour. Name the mechanism, not the feeling.
+- reframe: One sharp sentence that names what is actually happening — they are waiting for permission or certainty that will not come. Ownership, not analysis.
+- breakdown: 2-3 sentences naming the avoidance mechanism or overthinking loop. Name the pattern and what it is costing them in concrete terms — time, opportunity, momentum.
 - script: null
 - sections: [
     {
       "title": "Decision Framework",
-      "content": "3 diagnostic questions that cut through the stuck feeling. Each question forces a binary or concrete answer — not more reflection. Example format: '1. If you had to choose a direction today with no new information, what would it be? 2. What is the smallest test you could run this week to find out if that direction is right? 3. What are you actually afraid of — what is the worst realistic outcome if you try and it does not work out?' Write the actual questions tailored to their situation."
+      "content": "2 sharp binary questions that force a direction — not open-ended reflection. Then one forced commitment statement the user completes: 'For the next 30 days, I am testing: ______.' Make the questions specific to their stated situation. The goal is a committed direction, not more analysis."
     },
     {
       "title": "Break the Loop",
-      "content": "One specific action to take in the next 48 hours that forces forward movement. Not a reflection exercise — a test, an attempt, a conversation, or a commitment. Name exactly what to do, with whom, and by when. The goal is information through action, not comfort through planning."
+      "content": "One self-led action to take in the next 48 hours — chosen from: apply for something, start a project, or research and map the path forward. Do NOT suggest talking to a mentor or colleague as the first action. External input comes after the user has already moved. Name exactly what to do, by when, and what information it will generate."
     },
     {
       "title": "Win Condition",
-      "content": "Define what clarity looks like for this person — not a perfect plan, but a clear enough signal to move. One sentence naming the signal: 'You will know you have moved past stuck when...' Then one sentence naming what that enables next."
+      "content": "Three plain statements of what done looks like for this person:\n1. They have chosen a direction.\n2. They have taken at least 2 actions toward it.\n3. They are learning from real-world feedback, not from more thinking.\nEnd with one sentence on what becomes possible once they are no longer stuck."
     }
   ]
-- nextSteps: [ "One decision to make or one action to take before tomorrow morning. Name it specifically — not 'think about it.' Write what they will do, where, and when." ]
+- nextSteps: [ "Three actions stated as direct commands — no 'consider' or 'think about': 1. Choose one direction today. 2. Take one visible action before tonight. 3. Commit to a 30-day test of that direction. Make each one specific to their situation." ]
 
 ---
 
