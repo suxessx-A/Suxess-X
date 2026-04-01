@@ -2,9 +2,14 @@ import React, { createContext, useContext, useState } from "react";
 
 export type FlowType = "conversation" | "stuck" | "visibility" | "negotiate" | "mindset";
 
+export interface CoachingSection {
+  title: string;
+  content: string;
+}
+
 export interface CoachingResult {
   headline: string;
-  sections: { title: string; content: string }[];
+  sections: CoachingSection[];
   affirmation: string;
   nextStep: string;
 }
@@ -22,6 +27,48 @@ interface CoachingContextValue {
 }
 
 const CoachingContext = createContext<CoachingContextValue | null>(null);
+
+function safeParseCoachingResult(raw: unknown): CoachingResult {
+  if (typeof raw !== "object" || raw === null) {
+    return {
+      headline: "Your Coaching Insight",
+      sections: [{ title: "Coaching", content: String(raw) }],
+      affirmation: "You have what it takes to move through this.",
+      nextStep: "Take one concrete step toward your goal today.",
+    };
+  }
+
+  const obj = raw as Record<string, unknown>;
+
+  const headline = typeof obj.headline === "string" && obj.headline.trim()
+    ? obj.headline.trim()
+    : "Your Coaching Insight";
+
+  const affirmation = typeof obj.affirmation === "string" && obj.affirmation.trim()
+    ? obj.affirmation.trim()
+    : "You have what it takes to move through this.";
+
+  const nextStep = typeof obj.nextStep === "string" && obj.nextStep.trim()
+    ? obj.nextStep.trim()
+    : "Take one concrete step toward your goal today.";
+
+  let sections: CoachingSection[] = [];
+  if (Array.isArray(obj.sections)) {
+    sections = obj.sections
+      .filter((s): s is Record<string, unknown> => typeof s === "object" && s !== null)
+      .map((s) => ({
+        title: typeof s.title === "string" ? s.title.trim() : "Insight",
+        content: typeof s.content === "string" ? s.content.trim() : "",
+      }))
+      .filter((s) => s.content.length > 0);
+  }
+
+  if (sections.length === 0) {
+    sections = [{ title: "Coaching", content: "Please try again for a full coaching response." }];
+  }
+
+  return { headline, sections, affirmation, nextStep };
+}
 
 export function CoachingProvider({ children }: { children: React.ReactNode }) {
   const [activeFlow, setActiveFlowState] = useState<FlowType | null>(null);
@@ -62,10 +109,17 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({ flowType: activeFlow, answers }),
       });
       if (!response.ok) {
-        throw new Error("Failed to get coaching response");
+        throw new Error("Server returned an error");
       }
-      const data = await response.json() as CoachingResult;
-      setResult(data);
+      const text = await response.text();
+      const stripped = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(stripped);
+      } catch {
+        parsed = { headline: "Your Coaching Insight", sections: [{ title: "Coaching", content: stripped }], affirmation: "You have what it takes.", nextStep: "Take one concrete step today." };
+      }
+      setResult(safeParseCoachingResult(parsed));
     } catch (err) {
       setError("Something went wrong. Please try again.");
     } finally {
