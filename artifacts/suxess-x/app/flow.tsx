@@ -314,12 +314,6 @@ export default function FlowScreen() {
   const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
 
   useEffect(() => {
-    if (!activeFlow) {
-      router.replace("/");
-    }
-  }, [activeFlow]);
-
-  useEffect(() => {
     setCurrentStep(0);
   }, [activeFlow]);
 
@@ -333,7 +327,7 @@ export default function FlowScreen() {
 
   const handleBack = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
-    else resetFlow();
+    else { resetFlow(); router.back(); }
   };
 
   const handleBackFromPicker = () => {
@@ -357,7 +351,9 @@ export default function FlowScreen() {
   };
 
   useEffect(() => {
+    console.log("[auto-submit] recommendation=", recommendation?.problemType, "result=", !!result, "isLoading=", isLoading);
     if (recommendation && !result && !isLoading && recommendation.problemType !== "INTERPERSONAL") {
+      console.log("[auto-submit] firing submitFlow(null) for", recommendation.problemType);
       submitFlow(null);
     }
   }, [recommendation]);
@@ -368,6 +364,7 @@ export default function FlowScreen() {
 
   const handleReset = () => {
     resetFlow();
+    router.back();
   };
 
   const styles = StyleSheet.create({

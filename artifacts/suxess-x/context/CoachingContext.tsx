@@ -223,13 +223,14 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ flowType: activeFlow, answers }),
       });
-      if (!response.ok) throw new Error("Server error");
+      if (!response.ok) throw new Error(`Server error ${response.status}`);
       const text = await response.text();
       const stripped = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
       let parsed: unknown;
       try { parsed = JSON.parse(stripped); } catch { parsed = null; }
       setRecommendation(safeParseRecommendation(parsed));
-    } catch {
+    } catch (err) {
+      console.error("[evaluate] error:", err);
       setError("Something went wrong. Please try again.");
     } finally {
       setIsEvaluating(false);
@@ -237,23 +238,29 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
   };
 
   const submitFlow = async (strategy: CoachingStrategy | null) => {
-    if (!activeFlow) return;
+    if (!activeFlow) {
+      console.error("[submitFlow] called with no activeFlow — aborting");
+      return;
+    }
     const problemType = recommendation?.problemType ?? "INTERPERSONAL";
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${getBase()}/api/coaching/generate`, {
+      const base = getBase();
+      console.log("[submitFlow] base=", base, "activeFlow=", activeFlow, "problemType=", problemType, "strategy=", strategy);
+      const response = await fetch(`${base}/api/coaching/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ flowType: activeFlow, answers, problemType, strategy }),
       });
-      if (!response.ok) throw new Error("Server error");
+      if (!response.ok) throw new Error(`Server error ${response.status}`);
       const text = await response.text();
       const stripped = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
       let parsed: unknown;
       try { parsed = JSON.parse(stripped); } catch { parsed = null; }
       setResult(safeParseResult(parsed, problemType, strategy));
-    } catch {
+    } catch (err) {
+      console.error("[submitFlow] error:", err);
       setError("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
