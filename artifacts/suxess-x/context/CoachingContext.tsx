@@ -27,6 +27,7 @@ export interface CoachingScript {
 export interface CoachingSection {
   title: string;
   content: string;
+  premium?: boolean;
 }
 
 export interface CoachingResult {
@@ -41,14 +42,14 @@ export interface CoachingResult {
 
 interface CoachingContextValue {
   activeFlow: FlowType | null;
-  answers: Record<string, string>;
+  answers: Record<string, string | string[]>;
   recommendation: StrategyRecommendation | null;
   result: CoachingResult | null;
   isEvaluating: boolean;
   isLoading: boolean;
   error: string | null;
   setActiveFlow: (flow: FlowType | null) => void;
-  setAnswer: (key: string, value: string) => void;
+  setAnswer: (key: string, value: string | string[]) => void;
   resetFlow: () => void;
   evaluateFlow: () => Promise<void>;
   submitFlow: (strategy: CoachingStrategy | null) => Promise<void>;
@@ -165,7 +166,11 @@ function safeParseResult(raw: unknown, problemType: ProblemType, chosenStrategy:
   if (Array.isArray(obj.sections) && obj.sections.length > 0) {
     const parsed = obj.sections
       .filter((s): s is Record<string, unknown> => typeof s === "object" && s !== null)
-      .map((s) => ({ title: str(s.title, "Insight"), content: str(s.content, "") }))
+      .map((s) => ({
+        title: str(s.title, "Insight"),
+        content: str(s.content, ""),
+        premium: s.premium === true,
+      }))
       .filter((s) => s.content.length > 0);
     if (parsed.length > 0) sections = parsed;
   }
@@ -184,7 +189,7 @@ function getBase(): string {
 
 export function CoachingProvider({ children }: { children: React.ReactNode }) {
   const [activeFlow, setActiveFlowState] = useState<FlowType | null>(null);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [recommendation, setRecommendation] = useState<StrategyRecommendation | null>(null);
   const [result, setResult] = useState<CoachingResult | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
@@ -199,7 +204,7 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
     setError(null);
   };
 
-  const setAnswer = (key: string, value: string) => {
+  const setAnswer = (key: string, value: string | string[]) => {
     setAnswers((prev) => ({ ...prev, [key]: value }));
   };
 

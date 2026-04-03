@@ -72,21 +72,21 @@ DIRECT_CONVERSATION strategy:
   - impact: What this is affecting — results, team, credibility, relationship.
   - ask: The specific expectation stated clearly.
   - pushback: One firm, non-emotional response for resistance.
-- sections: [ { "title": "What to Do", "content": "3 numbered actions, 48-hour window, each with verb + object + timeframe" } ]
+- sections: [ { "title": "What to Do", "content": "3 numbered actions, 48-hour window, each with verb + object + timeframe", "premium": false } ]
 - nextSteps: [ "Single most important action — write the exact message or opening line" ]
 
 INDIRECT_INFLUENCE strategy:
 - reframe: One sharp sentence reframing this as an influence challenge.
 - breakdown: 2-3 sentences on why influence is higher-leverage than confrontation here.
 - script: null
-- sections: [ { "title": "Authority Move", "content": "4 numbered influence actions — framing, visibility, ally-building, repositioning. Specific and executable." } ]
+- sections: [ { "title": "Authority Move", "content": "4 numbered influence actions — framing, visibility, ally-building, repositioning. Specific and executable.", "premium": false } ]
 - nextSteps: [ "Single action that shifts the dynamic most — with exact language" ]
 
 STRATEGIC_CONTAINMENT strategy:
 - reframe: One sharp sentence reframing this as a protection challenge.
 - breakdown: 2-3 sentences on why containment is the right play.
 - script: null
-- sections: [ { "title": "Containment Moves", "content": "4 numbered protection actions — documentation, escalation paths, reputation management." } ]
+- sections: [ { "title": "Containment Moves", "content": "4 numbered protection actions — documentation, escalation paths, reputation management.", "premium": false } ]
 - nextSteps: [ "Single most important protective action — specific and time-bound" ]
 
 ---
@@ -99,9 +99,9 @@ Do NOT include conversation scripts. No communication advice. Focus on visibilit
 - breakdown: 2-3 sentences naming what is actually limiting their visibility or trajectory. Name the dynamic, not the symptom.
 - script: null
 - sections: [
-    { "title": "Visibility Gap", "content": "Name the specific gap between their actual output and what decision-makers see. One punchy paragraph." },
-    { "title": "Value Signals", "content": "3 numbered actions that make their value visible to the people who matter. Each has a verb, target stakeholder, and timeframe." },
-    { "title": "Positioning Moves", "content": "2-3 strategic repositioning actions that shift how they are perceived. Each is specific and time-bound." }
+    { "title": "Visibility Gap", "content": "Name the specific gap between their actual output and what decision-makers see. One punchy paragraph.", "premium": false },
+    { "title": "Value Signals", "content": "3 numbered actions that make their value visible to the people who matter. Each has a verb, target stakeholder, and timeframe.", "premium": false },
+    { "title": "Positioning Moves", "content": "2-3 strategic repositioning actions that shift how they are perceived. Each is specific and time-bound.", "premium": false }
   ]
 - nextSteps: [ "One action today that puts their name on something visible to someone above them — write the exact message" ]
 
@@ -115,15 +115,50 @@ Do NOT include communication scripts or interpersonal advice. Focus on execution
 - breakdown: 2-3 sentences naming the root cause of the execution issue. Not the symptom — the driver.
 - script: null
 - sections: [
-    { "title": "Root Cause", "content": "Name the specific structural or behavioural driver of the performance gap. One direct paragraph." },
-    { "title": "Execution System", "content": "3 numbered system-level changes. Not effort — structure. Each is implementable today." },
-    { "title": "Priority Shift", "content": "What to stop, what to protect, and what to do first. Three decisions stated directly — not suggestions." }
+    { "title": "Root Cause", "content": "Name the specific structural or behavioural driver of the performance gap. One direct paragraph.", "premium": false },
+    { "title": "Execution System", "content": "3 numbered system-level changes. Not effort — structure. Each is implementable today.", "premium": false },
+    { "title": "Priority Shift", "content": "What to stop, what to protect, and what to do first. Three decisions stated directly — not suggestions.", "premium": false }
   ]
 - nextSteps: [ "One structural change to implement before tomorrow morning — specific, time-bound" ]
 
 ---
 
-IF problemType = INTERNAL:
+IF problemType = INTERNAL AND the coaching scenario is "I Feel Stuck in My Career":
+
+This is a career direction problem. The user has mapped their strengths, what they want more and less of, 2-3 potential directions, their 3-year success picture, and identified who they can speak with. Generate a structured career coaching output.
+
+Do NOT include generic mindset advice. Do NOT suggest journalling or reflection. Do NOT tell them to "explore their feelings." Every sentence is a directive or an insight with evidence from their answers.
+
+- reframe: One sharp sentence that names the move they are making — from confusion to committed direction. Frame it as a transition, not a pep talk.
+- breakdown: 2-3 sentences synthesizing what their answers reveal about what they actually want. Identify the throughline across their skills, wants, and directions. Be specific. Do not be generic.
+- script: null
+- sections: [
+    {
+      "title": "Clarity Map",
+      "content": "Synthesize the user's transferable strengths and priorities into a 3-4 sentence portrait of what they are optimising for. Name the pattern that connects their skills and their wants. End with: 'The thread connecting your strengths and priorities is [specific insight based on their answers].'",
+      "premium": false
+    },
+    {
+      "title": "Direction Options",
+      "content": "For each of the 2-3 directions the user selected, write:\n[Direction]: What this role actually involves day-to-day (2 sentences). What success looks like in that role (1 sentence). Whether it maps to the user's stated skills and priorities (1 sentence — be direct: strong match, partial match, or misalignment).\n\nEnd with one sentence naming which direction has the strongest signal based on their specific answers.",
+      "premium": false
+    },
+    {
+      "title": "Outreach Scripts",
+      "content": "For each of the people the user identified as contacts: write the exact opening message (2-3 sentences, no qualifiers, specific to the direction being explored), then the 2 specific validation questions to ask in that conversation. Make the questions precise enough to distinguish whether this path is right for them.",
+      "premium": true
+    },
+    {
+      "title": "Follow-Up Strategy",
+      "content": "Three concrete actions after each conversation:\n1. How to synthesize what you learned in under 10 minutes.\n2. The exact follow-up message to send within 48 hours.\n3. How to use what you heard to sharpen or eliminate a direction.",
+      "premium": true
+    }
+  ]
+- nextSteps: [ "Three direct commands for the next 7 days — no 'consider' or 'think about':\n1. [Specific action toward the strongest-signal direction — concrete and time-bound]\n2. [Reach out to the first person identified — include the opening line to send]\n3. [Reach out to the second person identified — include the opening line to send]\nMake each one specific to their situation." ]
+
+---
+
+IF problemType = INTERNAL AND the scenario is NOT "I Feel Stuck in My Career":
 
 Do NOT include visibility advice, networking advice, communication scripts, or external positioning.
 Do NOT suggest asking a mentor, colleague, or anyone else for input as a first step.
@@ -136,15 +171,18 @@ The user owns their direction. Push behaviour, not reflection.
 - sections: [
     {
       "title": "Decision Framework",
-      "content": "2 sharp binary questions that force a direction — not open-ended reflection. Then one forced commitment statement the user completes: 'For the next 30 days, I am testing: ______.' Make the questions specific to their stated situation. The goal is a committed direction, not more analysis."
+      "content": "2 sharp binary questions that force a direction — not open-ended reflection. Then one forced commitment statement the user completes: 'For the next 30 days, I am testing: ______.' Make the questions specific to their stated situation. The goal is a committed direction, not more analysis.",
+      "premium": false
     },
     {
       "title": "Break the Loop",
-      "content": "One self-led action to take in the next 48 hours — chosen from: apply for something, start a project, or research and map the path forward. Do NOT suggest talking to a mentor or colleague as the first action. External input comes after the user has already moved. Name exactly what to do, by when, and what information it will generate."
+      "content": "One self-led action to take in the next 48 hours — chosen from: apply for something, start a project, or research and map the path forward. Do NOT suggest talking to a mentor or colleague as the first action. External input comes after the user has already moved. Name exactly what to do, by when, and what information it will generate.",
+      "premium": false
     },
     {
       "title": "Win Condition",
-      "content": "Three plain statements of what done looks like for this person:\n1. They have chosen a direction.\n2. They have taken at least 2 actions toward it.\n3. They are learning from real-world feedback, not from more thinking.\nEnd with one sentence on what becomes possible once they are no longer stuck."
+      "content": "Three plain statements of what done looks like for this person:\n1. They have chosen a direction.\n2. They have taken at least 2 actions toward it.\n3. They are learning from real-world feedback, not from more thinking.\nEnd with one sentence on what becomes possible once they are no longer stuck.",
+      "premium": false
     }
   ]
 - nextSteps: [ "Three actions stated as direct commands — no 'consider' or 'think about': 1. Choose one direction today. 2. Take one visible action before tonight. 3. Commit to a 30-day test of that direction. Make each one specific to their situation." ]
@@ -160,7 +198,7 @@ For INTERPERSONAL:
   "reframe": "...",
   "breakdown": "...",
   "script": { "opening": "...", "issue": "...", "impact": "...", "ask": "...", "pushback": "..." },
-  "sections": [ { "title": "What to Do", "content": "..." } ],
+  "sections": [ { "title": "What to Do", "content": "...", "premium": false } ],
   "nextSteps": ["..."]
 }
 
@@ -171,14 +209,18 @@ For POSITIONING, PERFORMANCE, or INTERNAL (strategy must be null):
   "reframe": "...",
   "breakdown": "...",
   "script": null,
-  "sections": [ { "title": "...", "content": "..." }, { "title": "...", "content": "..." }, { "title": "...", "content": "..." } ],
+  "sections": [
+    { "title": "...", "content": "...", "premium": false },
+    { "title": "...", "content": "...", "premium": false },
+    { "title": "...", "content": "...", "premium": false }
+  ],
   "nextSteps": ["..."]
 }`;
 
 router.post("/coaching/evaluate", async (req, res) => {
   const { flowType, answers } = req.body as {
     flowType: string;
-    answers: Record<string, string>;
+    answers: Record<string, string | string[]>;
   };
   if (!flowType || !answers) {
     res.status(400).json({ error: "Missing flowType or answers" });
@@ -215,7 +257,7 @@ router.post("/coaching/evaluate", async (req, res) => {
 router.post("/coaching/generate", async (req, res) => {
   const { flowType, answers, problemType, strategy } = req.body as {
     flowType: string;
-    answers: Record<string, string>;
+    answers: Record<string, string | string[]>;
     problemType: string;
     strategy: string | null;
   };
@@ -271,12 +313,12 @@ function buildFallback(problemType: string, strategy: string | null) {
       ask: "I need this to change, and I want to agree on how.",
       pushback: "I hear you. And this still needs to be resolved. Can we agree on a path forward?",
     } : null,
-    sections: [{ title: "What to Do", content: "1. Identify the highest-leverage action available to you today.\n2. Take that action before end of day.\n3. Reassess tomorrow morning with fresh context." }],
+    sections: [{ title: "What to Do", content: "1. Identify the highest-leverage action available to you today.\n2. Take that action before end of day.\n3. Reassess tomorrow morning with fresh context.", premium: false }],
     nextSteps: ["Take one concrete action today that moves this situation forward in a direction you control."],
   };
 }
 
-function buildUserPrompt(flowType: string, answers: Record<string, string>): string {
+function buildUserPrompt(flowType: string, answers: Record<string, string | string[]>): string {
   const flowNames: Record<string, string> = {
     conversation: "Handle a Tough Conversation",
     stuck: "I Feel Stuck in My Career",
@@ -284,7 +326,10 @@ function buildUserPrompt(flowType: string, answers: Record<string, string>): str
     negotiate: "Negotiate Something Important",
     mindset: "Reset My Mindset Quickly",
   };
-  const lines = Object.entries(answers).map(([k, v]) => `- ${k}: ${v}`).join("\n");
+  const lines = Object.entries(answers).map(([k, v]) => {
+    const val = Array.isArray(v) ? v.join(", ") : v;
+    return `- ${k}: ${val}`;
+  }).join("\n");
   return `Coaching scenario: ${flowNames[flowType] ?? flowType}\n\nUser's situation:\n${lines}`;
 }
 

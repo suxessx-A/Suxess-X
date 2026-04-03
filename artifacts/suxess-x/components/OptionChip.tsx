@@ -6,9 +6,10 @@ interface OptionChipProps {
   label: string;
   selected: boolean;
   onPress: () => void;
+  disabled?: boolean;
 }
 
-export function OptionChip({ label, selected, onPress }: OptionChipProps) {
+export function OptionChip({ label, selected, onPress, disabled = false }: OptionChipProps) {
   const colors = useColors();
 
   const styles = StyleSheet.create({
@@ -18,8 +19,9 @@ export function OptionChip({ label, selected, onPress }: OptionChipProps) {
       borderRadius: 12,
       marginBottom: 10,
       borderWidth: 2,
-      backgroundColor: selected ? colors.primary : colors.card,
-      borderColor: selected ? colors.primary : colors.border,
+      backgroundColor: selected ? colors.primary : disabled ? "#f9fafb" : colors.card,
+      borderColor: selected ? colors.primary : disabled ? "#e5e7eb" : colors.border,
+      opacity: disabled ? 0.5 : 1,
       shadowColor: selected ? colors.primary : "transparent",
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: selected ? 0.2 : 0,
@@ -29,12 +31,17 @@ export function OptionChip({ label, selected, onPress }: OptionChipProps) {
     label: {
       fontSize: 15,
       fontFamily: selected ? "Inter_600SemiBold" : "Inter_400Regular",
-      color: selected ? colors.primaryForeground : colors.foreground,
+      color: selected ? colors.primaryForeground : disabled ? "#9ca3af" : colors.foreground,
     },
   });
 
   return (
-    <TouchableOpacity style={styles.chip} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={styles.chip}
+      onPress={onPress}
+      activeOpacity={0.7}
+      disabled={disabled}
+    >
       <Text style={styles.label}>{label}</Text>
     </TouchableOpacity>
   );

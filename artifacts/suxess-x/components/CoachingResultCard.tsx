@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useColors } from "@/hooks/useColors";
-import { CoachingResult, CoachingScript, CoachingStrategy, ProblemType } from "@/context/CoachingContext";
+import { CoachingResult, CoachingScript, CoachingSection, CoachingStrategy, ProblemType } from "@/context/CoachingContext";
 
 interface CoachingResultCardProps {
   result: CoachingResult;
@@ -20,7 +20,7 @@ const PROBLEM_TYPE_THEME: Record<ProblemType, ThemeConfig & { label: string; ico
   INTERPERSONAL: { label: "Interpersonal",   eyebrow: "Problem Type", icon: "💬", color: "#7c3aed", bg: "#faf5ff", border: "#ddd6fe" },
   POSITIONING:   { label: "Positioning",     eyebrow: "Problem Type", icon: "♟", color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd" },
   PERFORMANCE:   { label: "Performance",     eyebrow: "Problem Type", icon: "⚙", color: "#15803d", bg: "#f0fdf4", border: "#bbf7d0" },
-  INTERNAL:      { label: "Mindset & State", eyebrow: "Problem Type", icon: "🧠", color: "#b45309", bg: "#fffbeb", border: "#fde68a" },
+  INTERNAL:      { label: "Career Clarity",  eyebrow: "Problem Type", icon: "🧭", color: "#7c3aed", bg: "#faf5ff", border: "#ddd6fe" },
 };
 
 const SECTION_ICONS: Record<string, string> = {
@@ -30,15 +30,16 @@ const SECTION_ICONS: Record<string, string> = {
   "Root Cause": "🔍",
   "Execution System": "⚙",
   "Priority Shift": "⚡",
-  "The Pattern": "🪞",
-  "Reframe": "🔄",
-  "State Tools": "🛠",
   "Decision Framework": "🧭",
   "Break the Loop": "⚡",
   "Win Condition": "🎯",
   "What to Do": "✅",
   "Authority Move": "♟",
   "Containment Moves": "🛡",
+  "Clarity Map": "🔍",
+  "Direction Options": "🗺",
+  "Outreach Scripts": "✉",
+  "Follow-Up Strategy": "📋",
 };
 
 function HeaderBadge({ result }: { result: CoachingResult }) {
@@ -140,7 +141,7 @@ function ScriptSection({ script, strategy }: { script: CoachingScript; strategy:
 }
 
 function SectionCard({ section, problemType, strategy }: {
-  section: { title: string; content: string };
+  section: CoachingSection;
   problemType: ProblemType;
   strategy: CoachingStrategy | null;
 }) {
@@ -162,6 +163,62 @@ function SectionCard({ section, problemType, strategy }: {
       </View>
       <View style={s.body}>
         <Text style={s.content}>{section.content}</Text>
+      </View>
+    </View>
+  );
+}
+
+function PremiumLockCard({ section }: { section: CoachingSection }) {
+  const icon = SECTION_ICONS[section.title] ?? "🔒";
+
+  const s = StyleSheet.create({
+    card: { borderRadius: 14, marginBottom: 10, overflow: "hidden", borderWidth: 1.5, borderColor: "#e5e7eb" },
+    header: {
+      backgroundColor: "#f3f4f6", paddingVertical: 10, paddingHorizontal: 16,
+      flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    },
+    headerLeft: { flexDirection: "row", alignItems: "center", gap: 6 },
+    headerText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#6b7280", textTransform: "uppercase", letterSpacing: 1 },
+    premiumBadge: {
+      backgroundColor: "#d4a017", borderRadius: 6,
+      paddingVertical: 3, paddingHorizontal: 8,
+    },
+    premiumBadgeText: { fontSize: 9, fontFamily: "Inter_700Bold", color: "#fff", textTransform: "uppercase", letterSpacing: 1 },
+    body: { backgroundColor: "#fafafa", paddingVertical: 20, paddingHorizontal: 16, alignItems: "center" },
+    lockIcon: { fontSize: 28, marginBottom: 10 },
+    lockTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#374151", marginBottom: 6, textAlign: "center" },
+    lockDesc: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#6b7280", lineHeight: 20, textAlign: "center", marginBottom: 16 },
+    unlockBtn: {
+      backgroundColor: "#d4a017", borderRadius: 12,
+      paddingVertical: 12, paddingHorizontal: 24,
+    },
+    unlockBtnText: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#fff" },
+  });
+
+  const descriptions: Record<string, string> = {
+    "Outreach Scripts": "Get the exact opening messages to send — personalised to each person and path.",
+    "Follow-Up Strategy": "Know exactly what to say after each conversation to keep momentum.",
+  };
+
+  return (
+    <View style={s.card}>
+      <View style={s.header}>
+        <View style={s.headerLeft}>
+          <Text style={s.headerText}>{icon}  {section.title}</Text>
+        </View>
+        <View style={s.premiumBadge}>
+          <Text style={s.premiumBadgeText}>Premium</Text>
+        </View>
+      </View>
+      <View style={s.body}>
+        <Text style={s.lockIcon}>🔒</Text>
+        <Text style={s.lockTitle}>{section.title}</Text>
+        <Text style={s.lockDesc}>
+          {descriptions[section.title] ?? "Unlock this section to access personalised guidance."}
+        </Text>
+        <TouchableOpacity style={s.unlockBtn} activeOpacity={0.85}>
+          <Text style={s.unlockBtnText}>Unlock Full Coaching</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -200,21 +257,25 @@ export function CoachingResultCard({ result, onReset }: CoachingResultCardProps)
         <ScriptSection script={result.script} strategy={result.strategy} />
       )}
 
-      {result.sections.map((section, i) => (
-        <SectionCard
-          key={i}
-          section={section}
-          problemType={result.problemType}
-          strategy={result.strategy}
-        />
-      ))}
+      {result.sections.map((section, i) =>
+        section.premium ? (
+          <PremiumLockCard key={i} section={section} />
+        ) : (
+          <SectionCard
+            key={i}
+            section={section}
+            problemType={result.problemType}
+            strategy={result.strategy}
+          />
+        )
+      )}
 
       <View style={s.divider} />
 
       <View style={s.nextBox}>
         <View style={s.nextIconWrap}><Text style={s.nextIcon}>⚡</Text></View>
         <View style={s.nextContent}>
-          <Text style={s.nextLabel}>Next 24 Hours</Text>
+          <Text style={s.nextLabel}>Your Next 7 Days</Text>
           <Text style={s.nextText}>{result.nextSteps.join("\n")}</Text>
         </View>
       </View>

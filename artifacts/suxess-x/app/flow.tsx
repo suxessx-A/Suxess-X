@@ -328,8 +328,22 @@ export default function FlowScreen() {
   const flowSteps = flows[activeFlow] ?? [];
   const step = flowSteps[currentStep];
   const totalSteps = flowSteps.length;
-  const selectedOption = step ? answers[step.key] : undefined;
   const isLastStep = currentStep === totalSteps - 1;
+
+  const isMultiSelect = step?.multiSelect === true;
+  const minSelect = step?.minSelect ?? 1;
+  const maxSelect = step?.maxSelect ?? 1;
+
+  const selectedSingle: string | undefined = step && !isMultiSelect
+    ? (answers[step.key] as string | undefined)
+    : undefined;
+  const selectedMulti: string[] = step && isMultiSelect
+    ? (Array.isArray(answers[step.key]) ? (answers[step.key] as string[]) : [])
+    : [];
+
+  const canProceed = isMultiSelect
+    ? selectedMulti.length >= minSelect
+    : !!selectedSingle;
 
   const handleBack = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
@@ -343,11 +357,20 @@ export default function FlowScreen() {
   const handleSelect = (option: string) => {
     if (!step) return;
     Haptics.selectionAsync();
-    setAnswer(step.key, option);
+    if (isMultiSelect) {
+      const current = Array.isArray(answers[step.key]) ? (answers[step.key] as string[]) : [];
+      if (current.includes(option)) {
+        setAnswer(step.key, current.filter((o) => o !== option));
+      } else if (current.length < maxSelect) {
+        setAnswer(step.key, [...current, option]);
+      }
+    } else {
+      setAnswer(step.key, option);
+    }
   };
 
   const handleNext = async () => {
-    if (!selectedOption) return;
+    if (!canProceed) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (isLastStep) {
       await evaluateFlow();
@@ -365,6 +388,13 @@ export default function FlowScreen() {
     router.back();
   };
 
+  const multiSelectCountLabel = (() => {
+    if (!isMultiSelect) return null;
+    const count = selectedMulti.length;
+    if (minSelect === maxSelect) return `${count} / ${maxSelect} selected`;
+    return `${count} selected (${minSelect}–${maxSelect} required)`;
+  })();
+
   const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
     header: {
@@ -379,25 +409,42 @@ export default function FlowScreen() {
     backArrow: { fontSize: 18, color: colors.primary },
     headerTitle: { fontSize: 17, fontFamily: "Inter_600SemiBold", color: colors.foreground, flex: 1 },
     content: { flex: 1, paddingHorizontal: 20, paddingTop: 24 },
+    phaseLabel: {
+      fontSize: 11, fontFamily: "Inter_700Bold", color: colors.primary,
+      textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 4,
+    },
     questionLabel: {
       fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground,
       textTransform: "uppercase", letterSpacing: 1, marginBottom: 10,
     },
     question: {
-      fontSize: 20, fontFamily: "Inter_700Bold", color: colors.foreground, lineHeight: 28, marginBottom: 24,
+      fontSize: 20, fontFamily: "Inter_700Bold", color: colors.foreground, lineHeight: 28, marginBottom: 6,
+    },
+    subtext: {
+      fontSize: 13, fontFamily: "Inter_400Regular", color: colors.mutedForeground, marginBottom: 20,
     },
     optionsScroll: { flex: 1 },
+    countBadge: {
+      alignSelf: "flex-end", marginBottom: 8,
+      backgroundColor: canProceed ? "#f0fdf4" : "#f9fafb",
+      borderRadius: 8, paddingVertical: 4, paddingHorizontal: 10,
+      borderWidth: 1, borderColor: canProceed ? "#bbf7d0" : "#e5e7eb",
+    },
+    countBadgeText: {
+      fontSize: 12, fontFamily: "Inter_600SemiBold",
+      color: canProceed ? "#15803d" : colors.mutedForeground,
+    },
     footer: {
       paddingHorizontal: 20, paddingTop: 16, paddingBottom: bottomInset + 12,
       borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.background,
     },
     nextButton: {
-      backgroundColor: selectedOption ? colors.primary : colors.border,
+      backgroundColor: canProceed ? colors.primary : colors.border,
       borderRadius: colors.radius, paddingVertical: 17, alignItems: "center",
     },
     nextButtonText: {
       fontSize: 16, fontFamily: "Inter_600SemiBold",
-      color: selectedOption ? "#ffffff" : colors.mutedForeground,
+      color: canProceed ? "#ffffff" : colors.mutedForeground,
     },
     loadingContainer: {
       flex: 1, alignItems: "center", justifyContent: "center", padding: 40,
@@ -494,17 +541,31 @@ export default function FlowScreen() {
 
         {step ? (
           <>
-            <Text style={styles.questionLabel}>Question {currentStep + 1}</Text>
+            {step.phase ? (
+              <Text style={styles.phaseLabel}>{step.phase}</Text>
+            ) : (
+              <Text style={styles.questionLabel}>Question {currentStep + 1}</Text>
+            )}
             <Text style={styles.question}>{step.question}</Text>
+            {step.subtext ? (
+              <Text style={styles.subtext}>{step.subtext}</Text>
+            ) : null}
             <ScrollView style={styles.optionsScroll} showsVerticalScrollIndicator={false}>
+              {multiSelectCountLabel ? (
+                <View style={styles.countBadge}>
+                  <Text style={styles.countBadgeText}>{multiSelectCountLabel}</Text>
+                </View>
+              ) : null}
               {step.options.map((option) => (
                 <OptionChip
                   key={option}
                   label={option}
-                  selected={selectedOption === option}
+                  selected={isMultiSelect ? selectedMulti.includes(option) : selectedSingle === option}
                   onPress={() => handleSelect(option)}
+                  disabled={isMultiSelect && !selectedMulti.includes(option) && selectedMulti.length >= maxSelect}
                 />
               ))}
+              <View style={{ height: 8 }} />
             </ScrollView>
           </>
         ) : null}
@@ -514,7 +575,7 @@ export default function FlowScreen() {
         <TouchableOpacity
           style={styles.nextButton}
           onPress={handleNext}
-          disabled={!selectedOption}
+          disabled={!canProceed}
           activeOpacity={0.85}
         >
           <Text style={styles.nextButtonText}>

@@ -1,7 +1,12 @@
 export type FlowStep = {
   key: string;
+  phase?: string;
   question: string;
+  subtext?: string;
   options: string[];
+  multiSelect?: boolean;
+  minSelect?: number;
+  maxSelect?: number;
 };
 
 export const flows: Record<string, FlowStep[]> = {
@@ -54,47 +59,113 @@ export const flows: Record<string, FlowStep[]> = {
 
   stuck: [
     {
-      key: "stuck_where",
-      question: "Where do you feel stuck?",
+      key: "skills",
+      phase: "Phase 1: Clarity",
+      question: "Which of these best describe your transferable strengths?",
+      subtext: "Choose your top 3–5",
       options: [
-        "Same role for too long — no advancement",
-        "Doing great work but unrecognized",
-        "Not sure what direction to go next",
-        "Keep getting passed over for opportunities",
-        "My skills don't match where I want to go",
+        "Strategic thinking & planning",
+        "Communication & influencing others",
+        "Data analysis & problem-solving",
+        "Project & stakeholder management",
+        "Team leadership & development",
+        "Technical or domain expertise",
+        "Client & partner relationship management",
+        "Process design & improvement",
+        "Financial or budget management",
+        "Creative direction & innovation",
+      ],
+      multiSelect: true,
+      minSelect: 3,
+      maxSelect: 5,
+    },
+    {
+      key: "wants_more",
+      phase: "Phase 1: Clarity",
+      question: "What do you want MORE of in your next chapter?",
+      subtext: "Choose exactly 3",
+      options: [
+        "Autonomy and real ownership",
+        "Creative or strategic problem-solving",
+        "Visible impact and measurable results",
+        "People leadership and team development",
+        "Cross-functional exposure",
+        "Technical depth and mastery",
+        "Work-life balance and sustainability",
+        "Compensation and meaningful recognition",
+        "Connection to a mission I believe in",
+      ],
+      multiSelect: true,
+      minSelect: 3,
+      maxSelect: 3,
+    },
+    {
+      key: "wants_less",
+      phase: "Phase 1: Clarity",
+      question: "What do you want LESS of going forward?",
+      subtext: "Choose exactly 3",
+      options: [
+        "Micromanagement and lack of trust",
+        "Repetitive, low-impact work",
+        "Unclear goals or constantly shifting priorities",
+        "Office politics and performative culture",
+        "Too many meetings, not enough doing",
+        "Isolation or lack of collaboration",
+        "Limited growth ceiling",
+        "Chronic under-resourcing or firefighting",
+        "Invisible work with no recognition",
+      ],
+      multiSelect: true,
+      minSelect: 3,
+      maxSelect: 3,
+    },
+    {
+      key: "directions",
+      phase: "Phase 2: Direction",
+      question: "Which directions are genuinely calling to you — even faintly?",
+      subtext: "Choose 2–3 that resonate",
+      options: [
+        "Senior individual contributor in my current function",
+        "People manager or team lead",
+        "Cross-functional or general management",
+        "Strategic, advisory, or consulting role",
+        "Move to a new industry or entirely new function",
+        "Entrepreneur or independent operator",
+        "Executive or C-suite track",
+        "Portfolio career: multiple roles or revenue streams",
+      ],
+      multiSelect: true,
+      minSelect: 2,
+      maxSelect: 3,
+    },
+    {
+      key: "success",
+      phase: "Phase 3: Reality Check",
+      question: "What does success look like for you in 3 years?",
+      options: [
+        "Leading a team with real accountability for outcomes",
+        "Recognized as the go-to expert in my domain",
+        "Running my own projects with full autonomy",
+        "At the table for decisions that actually matter",
+        "Building something of my own",
+        "Earning significantly more than I do today",
       ],
     },
     {
-      key: "timeframe",
-      question: "How long has this been the case?",
+      key: "outreach",
+      phase: "Phase 4: Action",
+      question: "Who could you realistically speak with in the next 7 days?",
+      subtext: "Choose 2 people you could actually contact",
       options: [
-        "A few months",
-        "6 months to a year",
-        "1-2 years",
-        "More than 2 years",
+        "A former colleague who made a similar transition",
+        "Someone I follow whose career path I admire",
+        "A mentor or sponsor who knows my work well",
+        "Someone from a professional community or event",
+        "I don't have the contact yet — I need to build it first",
       ],
-    },
-    {
-      key: "tried",
-      question: "What have you already tried?",
-      options: [
-        "Talked to my manager about it",
-        "Applied for internal roles",
-        "Updated my skills / taken courses",
-        "Networked internally",
-        "Not much yet — I don't know where to start",
-      ],
-    },
-    {
-      key: "priority",
-      question: "What matters most to you right now?",
-      options: [
-        "A promotion or title change",
-        "More interesting work",
-        "Better pay",
-        "A new environment / company",
-        "Finding clarity on what I actually want",
-      ],
+      multiSelect: true,
+      minSelect: 1,
+      maxSelect: 2,
     },
   ],
 
