@@ -313,10 +313,17 @@ export default function FlowScreen() {
   const topInset = Platform.OS === "web" ? 67 : insets.top;
   const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
 
-  if (!activeFlow) {
-    router.replace("/");
-    return null;
-  }
+  useEffect(() => {
+    if (!activeFlow) {
+      router.replace("/");
+    }
+  }, [activeFlow]);
+
+  useEffect(() => {
+    setCurrentStep(0);
+  }, [activeFlow]);
+
+  if (!activeFlow) return null;
 
   const flowSteps = flows[activeFlow] ?? [];
   const step = flowSteps[currentStep];
@@ -326,7 +333,7 @@ export default function FlowScreen() {
 
   const handleBack = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
-    else { resetFlow(); router.back(); }
+    else resetFlow();
   };
 
   const handleBackFromPicker = () => {
@@ -361,8 +368,6 @@ export default function FlowScreen() {
 
   const handleReset = () => {
     resetFlow();
-    setCurrentStep(0);
-    router.replace("/");
   };
 
   const styles = StyleSheet.create({
