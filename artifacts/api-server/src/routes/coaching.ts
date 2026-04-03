@@ -176,7 +176,7 @@ The user owns their direction. Push behaviour, not reflection.
     },
     {
       "title": "Break the Loop",
-      "content": "One self-led action to take in the next 48 hours — chosen from: apply for something, start a project, or research and map the path forward. Do NOT suggest talking to a mentor or colleague as the first action. External input comes after the user has already moved. Name exactly what to do, by when, and what information it will generate.",
+      "content": "Identify 2 people who currently hold one of the roles the user is considering. They must send both of them a direct message within 48 hours. The exact message to use: 'Hi [Name], I'm exploring a move into [area] and saw your experience. I'd value 15 minutes to understand what the role is actually like and what makes someone successful in it.' Tell the user exactly where to find these people (LinkedIn search terms, company names, or communities specific to their stated directions). Name the two outreach actions as non-negotiable — not optional, not 'if you feel ready.'",
       "premium": false
     },
     {
