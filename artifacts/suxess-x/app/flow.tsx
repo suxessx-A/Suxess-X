@@ -317,6 +317,12 @@ export default function FlowScreen() {
     setCurrentStep(0);
   }, [activeFlow]);
 
+  useEffect(() => {
+    if (recommendation && !result && !isLoading && recommendation.problemType !== "INTERPERSONAL") {
+      submitFlow(null);
+    }
+  }, [recommendation]);
+
   if (!activeFlow) return null;
 
   const flowSteps = flows[activeFlow] ?? [];
@@ -349,14 +355,6 @@ export default function FlowScreen() {
       setCurrentStep(currentStep + 1);
     }
   };
-
-  useEffect(() => {
-    console.log("[auto-submit] recommendation=", recommendation?.problemType, "result=", !!result, "isLoading=", isLoading);
-    if (recommendation && !result && !isLoading && recommendation.problemType !== "INTERPERSONAL") {
-      console.log("[auto-submit] firing submitFlow(null) for", recommendation.problemType);
-      submitFlow(null);
-    }
-  }, [recommendation]);
 
   const handleChooseStrategy = (strategy: CoachingStrategy) => {
     submitFlow(strategy);

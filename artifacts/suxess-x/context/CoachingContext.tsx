@@ -229,8 +229,7 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
       let parsed: unknown;
       try { parsed = JSON.parse(stripped); } catch { parsed = null; }
       setRecommendation(safeParseRecommendation(parsed));
-    } catch (err) {
-      console.error("[evaluate] error:", err);
+    } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setIsEvaluating(false);
@@ -238,17 +237,12 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
   };
 
   const submitFlow = async (strategy: CoachingStrategy | null) => {
-    if (!activeFlow) {
-      console.error("[submitFlow] called with no activeFlow — aborting");
-      return;
-    }
+    if (!activeFlow) return;
     const problemType = recommendation?.problemType ?? "INTERPERSONAL";
     setIsLoading(true);
     setError(null);
     try {
-      const base = getBase();
-      console.log("[submitFlow] base=", base, "activeFlow=", activeFlow, "problemType=", problemType, "strategy=", strategy);
-      const response = await fetch(`${base}/api/coaching/generate`, {
+      const response = await fetch(`${getBase()}/api/coaching/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ flowType: activeFlow, answers, problemType, strategy }),
@@ -259,8 +253,7 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
       let parsed: unknown;
       try { parsed = JSON.parse(stripped); } catch { parsed = null; }
       setResult(safeParseResult(parsed, problemType, strategy));
-    } catch (err) {
-      console.error("[submitFlow] error:", err);
+    } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
