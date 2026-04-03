@@ -145,7 +145,7 @@ Do NOT include generic mindset advice. Do NOT suggest journalling or reflection.
     },
     {
       "title": "Outreach Scripts",
-      "content": "For each of the people the user identified as contacts: write the exact opening message (2-3 sentences, no qualifiers, specific to the direction being explored), then the 2 specific validation questions to ask in that conversation. Make the questions precise enough to distinguish whether this path is right for them.",
+      "content": "For each of the people the user identified as contacts, write a personalised opening message using the most fitting variant below — adapted to reference the specific direction, role, or company where relevant. Keep each message to 2-3 sentences maximum.\n\nInternal (same company): 'Hi [Name], I'm positioning toward [area] and your path into this role is relevant to decisions I'm making. Would you have 15 minutes this week?'\n\nExternal (new company): 'Hi [Name], I'm evaluating a move into [area] and your work at [Company] stood out. I'd value 15 minutes on what the role actually demands and what makes someone successful in it.'\n\nHigh-signal (targeted): 'Hi [Name], I've been following your work on [specific project or area]. I'm evaluating a move in this direction and want to understand what the role requires beyond what a job description shows. Would 15 minutes be possible?'\n\nAfter each message, provide 2 specific validation questions to ask in the conversation — precise enough to reveal whether this path fits the user's skills and priorities as they stated them.",
       "premium": true
     },
     {
@@ -176,7 +176,7 @@ The user owns their direction. Push behaviour, not reflection.
     },
     {
       "title": "Break the Loop",
-      "content": "Identify 2 people who currently hold one of the roles the user is considering. They must send both of them a direct message within 48 hours. The exact message to use: 'Hi [Name], I'm exploring a move into [area] and saw your experience. I'd value 15 minutes to understand what the role is actually like and what makes someone successful in it.' Tell the user exactly where to find these people (LinkedIn search terms, company names, or communities specific to their stated directions). Name the two outreach actions as non-negotiable — not optional, not 'if you feel ready.'",
+      "content": "Identify 2 people currently in one of the roles the user is considering. Send both a direct message within 48 hours. Provide three message variants — choose whichever fits the contact:\n\nInternal (same company): 'Hi [Name], I'm positioning toward [area] and your path into this role is relevant to decisions I'm making. Would you have 15 minutes this week?'\n\nExternal (new company): 'Hi [Name], I'm evaluating a move into [area] and your work at [Company] stood out. I'd value 15 minutes on what the role actually demands and what makes someone successful in it.'\n\nHigh-signal (targeted): 'Hi [Name], I've been following your work on [specific project or area]. I'm evaluating a move in this direction and want to understand what the role requires beyond what a job description shows. Would 15 minutes be possible?'\n\nTell the user exactly where to find these people — LinkedIn search terms, company names, or communities specific to their stated directions. Both outreach actions are non-negotiable and time-bound to 48 hours.",
       "premium": false
     },
     {
