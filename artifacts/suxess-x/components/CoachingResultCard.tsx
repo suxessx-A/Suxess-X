@@ -11,16 +11,15 @@ interface CoachingResultCardProps {
 type ThemeConfig = { color: string; bg: string; border: string };
 
 const STRATEGY_THEME: Record<CoachingStrategy, ThemeConfig & { label: string; icon: string; eyebrow: string }> = {
-  DIRECT_CONVERSATION: { label: "Direct Conversation", eyebrow: "Strategy", icon: "⚡", color: "#7c3aed", bg: "#faf5ff", border: "#ddd6fe" },
-  INDIRECT_INFLUENCE:  { label: "Indirect Influence",  eyebrow: "Strategy", icon: "♟", color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd" },
-  STRATEGIC_CONTAINMENT: { label: "Strategic Containment", eyebrow: "Strategy", icon: "🛡", color: "#b45309", bg: "#fffbeb", border: "#fde68a" },
+  DIRECT_CONVERSATION: { label: "Challenge It Directly", eyebrow: "Challenger Mode", icon: "⚡", color: "#7c3aed", bg: "#faf5ff", border: "#ddd6fe" },
+  INDIRECT_INFLUENCE:  { label: "Shift the Dynamic",    eyebrow: "Challenger Mode", icon: "♟", color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd" },
+  STRATEGIC_CONTAINMENT: { label: "Hold the Standard",  eyebrow: "Challenger Mode", icon: "🛡", color: "#b45309", bg: "#fffbeb", border: "#fde68a" },
 };
 
 const PROBLEM_TYPE_THEME: Record<ProblemType, ThemeConfig & { label: string; icon: string; eyebrow: string }> = {
-  INTERPERSONAL: { label: "Interpersonal",   eyebrow: "Problem Type", icon: "💬", color: "#7c3aed", bg: "#faf5ff", border: "#ddd6fe" },
-  POSITIONING:   { label: "Positioning",     eyebrow: "Problem Type", icon: "♟", color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd" },
-  PERFORMANCE:   { label: "Performance",     eyebrow: "Problem Type", icon: "⚙", color: "#15803d", bg: "#f0fdf4", border: "#bbf7d0" },
-  INTERNAL:      { label: "Career Clarity",  eyebrow: "Problem Type", icon: "🧭", color: "#7c3aed", bg: "#faf5ff", border: "#ddd6fe" },
+  VICTIM:              { label: "Creator Activation",  eyebrow: "Role Shift",   icon: "🔥", color: "#7c3aed", bg: "#faf5ff", border: "#ddd6fe" },
+  AVOIDING_CHALLENGER: { label: "Challenger Mode",      eyebrow: "Role Shift",   icon: "⚡", color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd" },
+  OVERWHELMED:         { label: "Momentum Reset",       eyebrow: "Role Shift",   icon: "🚀", color: "#059669", bg: "#f0fdf4", border: "#a7f3d0" },
 };
 
 const SECTION_ICONS: Record<string, string> = {
@@ -40,13 +39,21 @@ const SECTION_ICONS: Record<string, string> = {
   "Direction Options": "🗺",
   "Outreach Scripts": "✉",
   "Follow-Up Strategy": "📋",
+  "Ownership Shift": "🔥",
+  "External Move": "⚡",
+  "Direction Lock": "🎯",
+  "State Change": "⚡",
+  "Momentum List": "📋",
+  "Back Online": "🚀",
+  "Challenger Script": "💬",
+  "Boundary Hold": "🛡",
+  "Standard Setter": "🎯",
 };
 
 function HeaderBadge({ result }: { result: CoachingResult }) {
   const theme = result.strategy
     ? STRATEGY_THEME[result.strategy]
     : PROBLEM_TYPE_THEME[result.problemType];
-  const ptTheme = PROBLEM_TYPE_THEME[result.problemType];
 
   const s = StyleSheet.create({
     wrap: {
@@ -71,12 +78,7 @@ function HeaderBadge({ result }: { result: CoachingResult }) {
       <View style={s.textWrap}>
         <Text style={s.eyebrow}>{theme.eyebrow}</Text>
         <Text style={s.label}>{theme.label}</Text>
-        {result.strategy && result.problemType !== "INTERPERSONAL" && (
-          <Text style={s.sub}>{ptTheme.label}</Text>
-        )}
-        {!result.strategy && (
-          <Text style={s.sub}>Tailored for your situation</Text>
-        )}
+        <Text style={s.sub}>Tailored for your situation</Text>
       </View>
     </View>
   );
@@ -93,7 +95,7 @@ function BreakdownBlock({ reframe, breakdown }: { reframe: string; breakdown: st
   });
   return (
     <View style={s.card}>
-      <View style={s.header}><Text style={s.headerText}>Executive Breakdown</Text></View>
+      <View style={s.header}><Text style={s.headerText}>Situation Analysis</Text></View>
       <View style={s.body}>
         <Text style={s.reframe}>{reframe}</Text>
         {breakdown ? <Text style={s.breakdown}>{breakdown}</Text> : null}
@@ -126,7 +128,7 @@ function ScriptSection({ script, strategy }: { script: CoachingScript; strategy:
   ];
   return (
     <View style={s.card}>
-      <View style={s.header}><Text style={s.headerText}>💬  What to Say</Text></View>
+      <View style={s.header}><Text style={s.headerText}>💬  Challenger Script</Text></View>
       <View style={s.body}>
         {lines.map((line, i) => (
           <View key={i} style={i === lines.length - 1 ? s.rowLast : s.row}>
@@ -196,8 +198,8 @@ function PremiumLockCard({ section }: { section: CoachingSection }) {
   });
 
   const descriptions: Record<string, string> = {
-    "Outreach Scripts": "Get the exact opening messages to send — personalised to each person and path.",
-    "Follow-Up Strategy": "Know exactly what to say after each conversation to keep momentum.",
+    "Outreach Scripts": "Get the exact messages to send — adapted to the person, the path, and the variant that fits.",
+    "Follow-Up Strategy": "Know exactly what to do after each conversation to keep momentum and sharpen your direction.",
   };
 
   return (
@@ -275,7 +277,7 @@ export function CoachingResultCard({ result, onReset }: CoachingResultCardProps)
       <View style={s.nextBox}>
         <View style={s.nextIconWrap}><Text style={s.nextIcon}>⚡</Text></View>
         <View style={s.nextContent}>
-          <Text style={s.nextLabel}>Your Next 7 Days</Text>
+          <Text style={s.nextLabel}>Your Next Steps</Text>
           <Text style={s.nextText}>{result.nextSteps.join("\n")}</Text>
         </View>
       </View>

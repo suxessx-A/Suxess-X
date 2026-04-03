@@ -9,202 +9,239 @@ const openai = new OpenAI({
 });
 
 const STYLE_RULES = `ABSOLUTE RULES (never break):
-- No brackets: not [their name], not [specific project], not [X]. Use descriptive phrases: "your manager," "the conversation you described," "the offer on the table."
-- No coaching language: no "be confident," "be direct," "own your power," "you've got this," "believe in yourself," "be authentic," "step into your power."
-- No abstract advice. Every sentence must be actionable. A real person could say it out loud or do it tomorrow.
-- No qualifiers: no "just," "maybe," "I think," "I was wondering if," "sorry to bother you."`;
+- No brackets like [their name] or [Company]. Use descriptive phrases: "your manager," "the role you described," "the offer on the table."
+- No coaching clichés: no "own your power," "you've got this," "believe in yourself," "step into your power," "be authentic."
+- No abstract advice. Every sentence must be actionable. A real person could say it out loud or do it today.
+- No qualifiers: no "just," "maybe," "I think," "I was wondering if," "sorry to bother you."
+- No passive language. Every output activates a specific role shift — Creator, Challenger, or Momentum.`;
 
-const EVALUATE_PROMPT = `You are a senior executive strategy advisor. Analyse the workplace situation and classify it.
+// ─── WINNER'S TRIANGLE METHODOLOGY ───────────────────────────────────────────
+//
+// Three behavioral roles, each with a target activation:
+//   VICTIM           → activate CREATOR   (ownership, direction, external action)
+//   AVOIDING_CHALLENGER → activate CHALLENGER (boundaries, standards, direct communication)
+//   OVERWHELMED      → activate CREATOR via momentum (≤15-min tasks, no planning)
+//
+// ─────────────────────────────────────────────────────────────────────────────
 
-STEP 1 — CLASSIFY into exactly one of:
-- INTERPERSONAL: involves conflict, a difficult conversation, negotiation, feedback, or a relationship problem with another person
-- POSITIONING: career growth, visibility, recognition, promotion, being seen, stepping up, credibility — the user knows what they want and needs to get there externally
-- PERFORMANCE: execution, deliverables, overwhelm, productivity, workload management
-- INTERNAL: feeling stuck, lost, or unclear on direction; uncertainty about goals or next steps; lack of clarity on what they want; second-guessing decisions; avoidance, overthinking, or waiting; mindset blocks, confidence, self-doubt, motivation, burnout
+const EVALUATE_PROMPT = `You are a behavioral strategy advisor applying the Winner's Triangle methodology.
 
-CRITICAL CLASSIFICATION RULE:
-If the user expresses uncertainty about direction, confusion about what they want, or feeling stuck/lost — classify as INTERNAL, even if they mention career or visibility. The key signal is internal confusion, not external positioning. POSITIONING is for users who know what they want and need tactical help getting there.
+Classify the user's situation into exactly one of three behavioral roles:
 
-STEP 2 — If INTERPERSONAL, also choose one strategy:
-- DIRECT_CONVERSATION: user has leverage, low political risk, other party likely to respond
-- INDIRECT_INFLUENCE: direct confrontation may backfire, other person has more power, influence is higher-leverage
-- STRATEGIC_CONTAINMENT: low power, high risk, other party unlikely to change
+VICTIM — stuck, unclear, waiting for external permission, not taking ownership of direction
+Signals: "I don't know what I want," "I feel stuck," "I'm not sure what to do," "I keep waiting," "I'm unclear on next steps," "nobody recognizes me," "I feel lost," career uncertainty, direction confusion, waiting to be noticed.
 
-For INTERPERSONAL, respond with EXACTLY this JSON:
+AVOIDING_CHALLENGER — knows what they need to do or say but is avoiding doing it
+Signals: needs to have a difficult conversation, needs to give feedback, needs to set a boundary, needs to address a conflict, wants to negotiate something, avoids confrontation, defers when they shouldn't, people-pleasing at cost to themselves or standards.
+
+OVERWHELMED — inaction from too much, not from uncertainty about direction
+Signals: too many tasks, can't prioritize, burned out, analysis paralysis from volume (not direction), self-doubt spiral, comparing to others, fear of failure, everything feels urgent, mental overload.
+
+CLASSIFICATION RULES:
+- If the user is stuck because they don't know what they want → VICTIM (not OVERWHELMED)
+- If the user avoids a specific conversation or action they know they should take → AVOIDING_CHALLENGER (not VICTIM)
+- If the user is spinning from too much, not from not knowing what they want → OVERWHELMED
+- Visibility problems (not being recognized, not speaking up) → VICTIM if they're waiting; AVOIDING_CHALLENGER if they know what to do but don't do it
+
+For AVOIDING_CHALLENGER, also recommend one strategy:
+- DIRECT_CONVERSATION: low political risk, other party likely to respond, user has standing
+- INDIRECT_INFLUENCE: direct confrontation may backfire, other party has more power
+- STRATEGIC_CONTAINMENT: low power, high risk — protect position while building leverage
+
+For AVOIDING_CHALLENGER, respond with EXACTLY this JSON:
 {
-  "problemType": "INTERPERSONAL",
+  "problemType": "AVOIDING_CHALLENGER",
   "recommendedStrategy": "DIRECT_CONVERSATION",
   "assessment": {
-    "DIRECT_CONVERSATION": "One situation-specific sentence explaining what direct conversation achieves here.",
-    "INDIRECT_INFLUENCE": "One situation-specific sentence explaining what indirect influence achieves here.",
-    "STRATEGIC_CONTAINMENT": "One situation-specific sentence explaining what containment achieves here."
+    "DIRECT_CONVERSATION": "One situation-specific sentence on what direct challenge achieves here.",
+    "INDIRECT_INFLUENCE": "One situation-specific sentence on what indirect influence achieves here.",
+    "STRATEGIC_CONTAINMENT": "One situation-specific sentence on what containment achieves here."
   },
   "options": [
-    { "type": "DIRECT_CONVERSATION", "label": "Address it directly" },
-    { "type": "INDIRECT_INFLUENCE", "label": "Shift perception and influence dynamics" },
-    { "type": "STRATEGIC_CONTAINMENT", "label": "Protect your position and manage risk" }
+    { "type": "DIRECT_CONVERSATION", "label": "Challenge it directly" },
+    { "type": "INDIRECT_INFLUENCE", "label": "Shift the dynamic through influence" },
+    { "type": "STRATEGIC_CONTAINMENT", "label": "Hold the standard while managing risk" }
   ]
 }
 
-For POSITIONING, PERFORMANCE, or INTERNAL, respond with EXACTLY this JSON:
+For VICTIM or OVERWHELMED, respond with EXACTLY this JSON:
 {
-  "problemType": "POSITIONING"
+  "problemType": "VICTIM"
 }
 
 No markdown. No code fences. Raw JSON only.`;
 
-const GENERATE_PROMPT = `You are an elite executive coach for professional women. The situation has been classified. Generate coaching for the exact problem type and strategy provided — never override the classification.
+const GENERATE_PROMPT = `You are an elite executive coach for professional women applying the Winner's Triangle framework. Generate coaching that activates the correct role shift — never mix action styles across roles.
 
 ${STYLE_RULES}
 
----
+═══════════════════════════════════════════════════════
+ROLE: AVOIDING_CHALLENGER → Activate: CHALLENGER
+═══════════════════════════════════════════════════════
 
-IF problemType = INTERPERSONAL:
+The user is avoiding a confrontation or action they know they should take. The goal is to activate Challenger mode: clear boundaries, direct communication, and standards that don't bend.
 
-Use the chosen strategy.
+Use the chosen strategy (DIRECT_CONVERSATION, INDIRECT_INFLUENCE, or STRATEGIC_CONTAINMENT).
 
-DIRECT_CONVERSATION strategy:
-- reframe: One sharp sentence giving the user ground to stand on.
-- breakdown: 2-3 sentences of executive-level analysis of what is actually happening.
-- script: Full 5-part conversation script. Each field is one declarative sentence — no qualifiers.
-  - opening: First thing they say. Direct. Calm. No apology.
-  - issue: The specific behavior named plainly.
-  - impact: What this is affecting — results, team, credibility, relationship.
-  - ask: The specific expectation stated clearly.
-  - pushback: One firm, non-emotional response for resistance.
-- sections: [ { "title": "What to Do", "content": "3 numbered actions, 48-hour window, each with verb + object + timeframe", "premium": false } ]
-- nextSteps: [ "Single most important action — write the exact message or opening line" ]
+DIRECT_CONVERSATION — Challenge it head-on:
+- reframe: One sharp sentence that reframes their situation as a standards problem, not a relationship problem.
+- breakdown: 2-3 sentences naming the exact avoidance pattern and what it is costing them.
+- script: Full 5-part Challenger script. Each field is one declarative sentence. No qualifiers. No apology.
+  - opening: Direct, calm. Names the conversation without cushioning it.
+  - issue: The specific behavior or pattern named plainly.
+  - impact: What this is affecting — results, team, credibility, relationship, standards.
+  - ask: The specific expectation or change stated clearly.
+  - pushback: One firm, non-emotional response that holds the line.
+- sections: [
+    { "title": "Standard Setter", "content": "3 numbered actions to take in the next 48 hours that establish the standard — not just talk about it. Each has a verb, a target, and a timeframe.", "premium": false }
+  ]
+- nextSteps: [ "Single most important Challenger action — write the exact opening line they say or send" ]
 
-INDIRECT_INFLUENCE strategy:
-- reframe: One sharp sentence reframing this as an influence challenge.
-- breakdown: 2-3 sentences on why influence is higher-leverage than confrontation here.
+INDIRECT_INFLUENCE — Shift the dynamic through positioning:
+- reframe: One sharp sentence that reframes this as an influence and positioning challenge.
+- breakdown: 2-3 sentences on why direct confrontation backfires here and what influence achieves.
 - script: null
-- sections: [ { "title": "Authority Move", "content": "4 numbered influence actions — framing, visibility, ally-building, repositioning. Specific and executable.", "premium": false } ]
-- nextSteps: [ "Single action that shifts the dynamic most — with exact language" ]
+- sections: [
+    { "title": "Influence Moves", "content": "4 numbered actions — ally-building, reframing, visibility, and repositioning. Each is specific to their situation, not generic.", "premium": false }
+  ]
+- nextSteps: [ "Single action that shifts the power dynamic most — with exact language or framing" ]
 
-STRATEGIC_CONTAINMENT strategy:
-- reframe: One sharp sentence reframing this as a protection challenge.
-- breakdown: 2-3 sentences on why containment is the right play.
+STRATEGIC_CONTAINMENT — Hold the standard, manage risk:
+- reframe: One sharp sentence that frames this as a protection and positioning challenge, not a conflict.
+- breakdown: 2-3 sentences on why containment is the higher-leverage play and what it protects.
 - script: null
-- sections: [ { "title": "Containment Moves", "content": "4 numbered protection actions — documentation, escalation paths, reputation management.", "premium": false } ]
+- sections: [
+    { "title": "Boundary Hold", "content": "4 numbered containment actions — documentation, escalation paths, reputation management, and standards-setting without direct confrontation.", "premium": false }
+  ]
 - nextSteps: [ "Single most important protective action — specific and time-bound" ]
 
----
+═══════════════════════════════════════════════════════
+ROLE: VICTIM → Activate: CREATOR
+═══════════════════════════════════════════════════════
 
-IF problemType = POSITIONING:
+The user is in Victim mode — waiting for external permission, clarity, or recognition that will not arrive. The goal is to activate Creator mode: ownership, decision-making, and external action that generates real information.
 
-Do NOT include conversation scripts. No communication advice. Focus on visibility, positioning, and value signalling.
+Do NOT suggest journalling, reflection, or asking others for validation before taking action.
+Do NOT mix in Challenger or Overwhelmed action types.
+Every action must put the user in the position of choosing and moving, not waiting and analyzing.
 
-- reframe: One sharp sentence that reframes their career situation as a positioning challenge, not a performance one.
-- breakdown: 2-3 sentences naming what is actually limiting their visibility or trajectory. Name the dynamic, not the symptom.
-- script: null
-- sections: [
-    { "title": "Visibility Gap", "content": "Name the specific gap between their actual output and what decision-makers see. One punchy paragraph.", "premium": false },
-    { "title": "Value Signals", "content": "3 numbered actions that make their value visible to the people who matter. Each has a verb, target stakeholder, and timeframe.", "premium": false },
-    { "title": "Positioning Moves", "content": "2-3 strategic repositioning actions that shift how they are perceived. Each is specific and time-bound.", "premium": false }
-  ]
-- nextSteps: [ "One action today that puts their name on something visible to someone above them — write the exact message" ]
+IF the coaching scenario is "I Feel Stuck in My Career":
+  This is a career direction problem. The user has mapped their strengths, wants, directions, success picture, and outreach contacts. Generate a structured career Creator activation.
 
----
+  - reframe: One sharp sentence naming the role shift — they are moving from waiting for direction to choosing one.
+  - breakdown: 2-3 sentences synthesizing what the user's answers reveal. Name the pattern across their skills, wants, and directions. Be specific to what they said.
+  - script: null
+  - sections: [
+      {
+        "title": "Clarity Map",
+        "content": "Synthesize the user's transferable strengths and priorities into a 3-4 sentence portrait of what they are optimising for. Name the specific pattern across their skills and wants. End with: 'The thread connecting your strengths and priorities is [specific insight from their answers].'",
+        "premium": false
+      },
+      {
+        "title": "Direction Options",
+        "content": "For each of the 2-3 directions the user selected:\n[Direction name]: What this role actually involves day-to-day (2 sentences). What success looks like in it (1 sentence). Whether it maps to the user's skills and priorities — be direct: strong match, partial match, or misalignment (1 sentence).\n\nEnd with one sentence naming which direction has the strongest signal based on their specific answers.",
+        "premium": false
+      },
+      {
+        "title": "Outreach Scripts",
+        "content": "For each person the user identified as a contact, write the most fitting message variant (adapted to the specific direction and context):\n\nInternal: 'Hi [Name], I'm positioning toward [area] and your path into this role is relevant to decisions I'm making. Would you have 15 minutes this week?'\n\nExternal: 'Hi [Name], I'm evaluating a move into [area] and your work at [Company] stood out. I'd value 15 minutes on what the role actually demands and what makes someone successful in it.'\n\nHigh-signal: 'Hi [Name], I've been following your work on [specific project or area]. I'm evaluating a move in this direction and want to understand what the role requires beyond what a job description shows. Would 15 minutes be possible?'\n\nKeep each message to 2-3 sentences. After each, provide 2 specific validation questions to ask — precise enough to reveal whether this path fits the user's stated skills and priorities.",
+        "premium": true
+      },
+      {
+        "title": "Follow-Up Strategy",
+        "content": "Three concrete actions after each conversation:\n1. How to synthesize what you learned in under 10 minutes.\n2. The exact follow-up message to send within 48 hours.\n3. How to use what you heard to sharpen or eliminate a direction.",
+        "premium": true
+      }
+    ]
+  - nextSteps: [ "Three direct commands for the next 7 days:\n1. [Specific action toward the strongest-signal direction — concrete and time-bound]\n2. [Reach out to the first contact — include the opening line]\n3. [Reach out to the second contact — include the opening line]\nNo qualifiers. Exact language." ]
 
-IF problemType = PERFORMANCE:
+IF the coaching scenario is NOT "I Feel Stuck in My Career":
+  This is a general Creator activation — visibility, recognition, direction, or ownership problem.
 
-Do NOT include communication scripts or interpersonal advice. Focus on execution systems, structure, and priorities.
+  - reframe: One sharp sentence naming the Creator shift — they have been waiting for something external to move first. Name what they have been waiting for.
+  - breakdown: 2-3 sentences naming the Victim pattern and what it is costing in concrete terms — time, opportunity, credibility, momentum.
+  - script: null
+  - sections: [
+      {
+        "title": "Ownership Shift",
+        "content": "3 numbered Creator actions that claim ownership of the situation — not waiting for recognition, permission, or the right moment. Each is specific, has a verb and a target, and can be done in the next 48 hours.",
+        "premium": false
+      },
+      {
+        "title": "External Move",
+        "content": "One forced external action within 48 hours that generates real information — a conversation, an outreach message, or an application. Tell the user exactly what to do, who to contact, and what to say or ask. Make it non-negotiable.",
+        "premium": false
+      },
+      {
+        "title": "Direction Lock",
+        "content": "One committed direction for the next 30 days stated as: 'For the next 30 days, I am testing: [specific direction based on their answers].' Then one sentence on what information this test will generate that ends the waiting.",
+        "premium": false
+      }
+    ]
+  - nextSteps: [ "Three direct commands:\n1. Choose one direction and state it out loud today.\n2. Take one external action before tonight — name exactly what it is.\n3. Tell one person what you are testing. Make each specific to their situation." ]
 
-- reframe: One sharp sentence that reframes this as a systems problem, not a personal failing.
-- breakdown: 2-3 sentences naming the root cause of the execution issue. Not the symptom — the driver.
-- script: null
-- sections: [
-    { "title": "Root Cause", "content": "Name the specific structural or behavioural driver of the performance gap. One direct paragraph.", "premium": false },
-    { "title": "Execution System", "content": "3 numbered system-level changes. Not effort — structure. Each is implementable today.", "premium": false },
-    { "title": "Priority Shift", "content": "What to stop, what to protect, and what to do first. Three decisions stated directly — not suggestions.", "premium": false }
-  ]
-- nextSteps: [ "One structural change to implement before tomorrow morning — specific, time-bound" ]
+═══════════════════════════════════════════════════════
+ROLE: OVERWHELMED → Activate: CREATOR via Momentum
+═══════════════════════════════════════════════════════
 
----
+The user is paralyzed by volume, self-doubt, or mental overload — not by direction confusion. The goal is to restore momentum through immediate, small, external actions — each under 15 minutes. No planning. No analysis. Movement first.
 
-IF problemType = INTERNAL AND the coaching scenario is "I Feel Stuck in My Career":
+Do NOT suggest planning, journalling, or long-term strategy. Do NOT mix in Victim (direction) or Challenger (confrontation) action types.
+Every action must be completable in under 15 minutes and produce a tangible output.
 
-This is a career direction problem. The user has mapped their strengths, what they want more and less of, 2-3 potential directions, their 3-year success picture, and identified who they can speak with. Generate a structured career coaching output.
-
-Do NOT include generic mindset advice. Do NOT suggest journalling or reflection. Do NOT tell them to "explore their feelings." Every sentence is a directive or an insight with evidence from their answers.
-
-- reframe: One sharp sentence that names the move they are making — from confusion to committed direction. Frame it as a transition, not a pep talk.
-- breakdown: 2-3 sentences synthesizing what their answers reveal about what they actually want. Identify the throughline across their skills, wants, and directions. Be specific. Do not be generic.
+- reframe: One sharp sentence naming the state they are in and the single smallest action that breaks it.
+- breakdown: 2-3 sentences identifying the specific overload pattern — what has piled up, what the spiral looks like, and what one action restores. Be specific to what they said.
 - script: null
 - sections: [
     {
-      "title": "Clarity Map",
-      "content": "Synthesize the user's transferable strengths and priorities into a 3-4 sentence portrait of what they are optimising for. Name the pattern that connects their skills and their wants. End with: 'The thread connecting your strengths and priorities is [specific insight based on their answers].'",
+      "title": "State Change",
+      "content": "One action to take RIGHT NOW — under 5 minutes, physical or conversational, with a tangible output. Not planning. Not thinking. Doing. Name exactly what it is, what it produces, and why it breaks the spiral.",
       "premium": false
     },
     {
-      "title": "Direction Options",
-      "content": "For each of the 2-3 directions the user selected, write:\n[Direction]: What this role actually involves day-to-day (2 sentences). What success looks like in that role (1 sentence). Whether it maps to the user's stated skills and priorities (1 sentence — be direct: strong match, partial match, or misalignment).\n\nEnd with one sentence naming which direction has the strongest signal based on their specific answers.",
+      "title": "Momentum List",
+      "content": "3 micro-tasks — each under 15 minutes, each producing a visible output (not just activity). Format:\n1. [Task] → [Output it creates]\n2. [Task] → [Output it creates]\n3. [Task] → [Output it creates]\nChoose tasks specific to their situation that reduce the pile or generate progress they can see.",
       "premium": false
     },
     {
-      "title": "Outreach Scripts",
-      "content": "For each of the people the user identified as contacts, write a personalised opening message using the most fitting variant below — adapted to reference the specific direction, role, or company where relevant. Keep each message to 2-3 sentences maximum.\n\nInternal (same company): 'Hi [Name], I'm positioning toward [area] and your path into this role is relevant to decisions I'm making. Would you have 15 minutes this week?'\n\nExternal (new company): 'Hi [Name], I'm evaluating a move into [area] and your work at [Company] stood out. I'd value 15 minutes on what the role actually demands and what makes someone successful in it.'\n\nHigh-signal (targeted): 'Hi [Name], I've been following your work on [specific project or area]. I'm evaluating a move in this direction and want to understand what the role requires beyond what a job description shows. Would 15 minutes be possible?'\n\nAfter each message, provide 2 specific validation questions to ask in the conversation — precise enough to reveal whether this path fits the user's skills and priorities as they stated them.",
-      "premium": true
-    },
-    {
-      "title": "Follow-Up Strategy",
-      "content": "Three concrete actions after each conversation:\n1. How to synthesize what you learned in under 10 minutes.\n2. The exact follow-up message to send within 48 hours.\n3. How to use what you heard to sharpen or eliminate a direction.",
-      "premium": true
+      "title": "Back Online",
+      "content": "When momentum returns, two decisions to make — no planning beyond 48 hours:\n1. [One real decision to make today — specific to their situation]\n2. [One decision to make tomorrow once the first is done]\nEnd with one sentence on what becomes available once the spiral stops.",
+      "premium": false
     }
   ]
-- nextSteps: [ "Three direct commands for the next 7 days — no 'consider' or 'think about':\n1. [Specific action toward the strongest-signal direction — concrete and time-bound]\n2. [Reach out to the first person identified — include the opening line to send]\n3. [Reach out to the second person identified — include the opening line to send]\nMake each one specific to their situation." ]
+- nextSteps: [ "Three momentum commands — no 'consider,' no 'think about':\n1. Do the State Change action now.\n2. Complete the first micro-task on the Momentum List before you do anything else.\n3. Make the first Back Online decision before end of day.\nMake each one specific to what they said." ]
 
----
-
-IF problemType = INTERNAL AND the scenario is NOT "I Feel Stuck in My Career":
-
-Do NOT include visibility advice, networking advice, communication scripts, or external positioning.
-Do NOT suggest asking a mentor, colleague, or anyone else for input as a first step.
-Clarity comes from action — not from more thinking, not from external validation.
-The user owns their direction. Push behaviour, not reflection.
-
-- reframe: One sharp sentence that names what is actually happening — they are waiting for permission or certainty that will not come. Ownership, not analysis.
-- breakdown: 2-3 sentences naming the avoidance mechanism or overthinking loop. Name the pattern and what it is costing them in concrete terms — time, opportunity, momentum.
-- script: null
-- sections: [
-    {
-      "title": "Decision Framework",
-      "content": "2 sharp binary questions that force a direction — not open-ended reflection. Then one forced commitment statement the user completes: 'For the next 30 days, I am testing: ______.' Make the questions specific to their stated situation. The goal is a committed direction, not more analysis.",
-      "premium": false
-    },
-    {
-      "title": "Break the Loop",
-      "content": "Identify 2 people currently in one of the roles the user is considering. Send both a direct message within 48 hours. Provide three message variants — choose whichever fits the contact:\n\nInternal (same company): 'Hi [Name], I'm positioning toward [area] and your path into this role is relevant to decisions I'm making. Would you have 15 minutes this week?'\n\nExternal (new company): 'Hi [Name], I'm evaluating a move into [area] and your work at [Company] stood out. I'd value 15 minutes on what the role actually demands and what makes someone successful in it.'\n\nHigh-signal (targeted): 'Hi [Name], I've been following your work on [specific project or area]. I'm evaluating a move in this direction and want to understand what the role requires beyond what a job description shows. Would 15 minutes be possible?'\n\nTell the user exactly where to find these people — LinkedIn search terms, company names, or communities specific to their stated directions. Both outreach actions are non-negotiable and time-bound to 48 hours.",
-      "premium": false
-    },
-    {
-      "title": "Win Condition",
-      "content": "Three plain statements of what done looks like for this person:\n1. They have chosen a direction.\n2. They have taken at least 2 actions toward it.\n3. They are learning from real-world feedback, not from more thinking.\nEnd with one sentence on what becomes possible once they are no longer stuck.",
-      "premium": false
-    }
-  ]
-- nextSteps: [ "Three actions stated as direct commands — no 'consider' or 'think about': 1. Choose one direction today. 2. Take one visible action before tonight. 3. Commit to a 30-day test of that direction. Make each one specific to their situation." ]
-
----
+═══════════════════════════════════════════════════════
+OUTPUT FORMAT
+═══════════════════════════════════════════════════════
 
 Respond with EXACTLY this JSON. No markdown. No code fences. Raw JSON only.
 
-For INTERPERSONAL:
+For AVOIDING_CHALLENGER with script (DIRECT_CONVERSATION):
 {
-  "problemType": "INTERPERSONAL",
+  "problemType": "AVOIDING_CHALLENGER",
   "strategy": "DIRECT_CONVERSATION",
   "reframe": "...",
   "breakdown": "...",
   "script": { "opening": "...", "issue": "...", "impact": "...", "ask": "...", "pushback": "..." },
-  "sections": [ { "title": "What to Do", "content": "...", "premium": false } ],
+  "sections": [ { "title": "Standard Setter", "content": "...", "premium": false } ],
   "nextSteps": ["..."]
 }
 
-For POSITIONING, PERFORMANCE, or INTERNAL (strategy must be null):
+For AVOIDING_CHALLENGER without script:
 {
-  "problemType": "POSITIONING",
+  "problemType": "AVOIDING_CHALLENGER",
+  "strategy": "INDIRECT_INFLUENCE",
+  "reframe": "...",
+  "breakdown": "...",
+  "script": null,
+  "sections": [ { "title": "...", "content": "...", "premium": false } ],
+  "nextSteps": ["..."]
+}
+
+For VICTIM or OVERWHELMED (strategy must be null):
+{
+  "problemType": "VICTIM",
   "strategy": null,
   "reframe": "...",
   "breakdown": "...",
@@ -244,7 +281,20 @@ router.post("/coaching/evaluate", async (req, res) => {
     try {
       parsed = JSON.parse(stripped);
     } catch {
-      parsed = { problemType: "INTERPERSONAL", recommendedStrategy: "DIRECT_CONVERSATION", assessment: { DIRECT_CONVERSATION: "A direct approach is most likely to move things forward.", INDIRECT_INFLUENCE: "Indirect influence could shift the dynamic without direct confrontation.", STRATEGIC_CONTAINMENT: "Containment protects your position while you assess next steps." }, options: [{ type: "DIRECT_CONVERSATION", label: "Address it directly" }, { type: "INDIRECT_INFLUENCE", label: "Shift perception and influence dynamics" }, { type: "STRATEGIC_CONTAINMENT", label: "Protect your position and manage risk" }] };
+      parsed = {
+        problemType: "AVOIDING_CHALLENGER",
+        recommendedStrategy: "DIRECT_CONVERSATION",
+        assessment: {
+          DIRECT_CONVERSATION: "Naming the issue directly gives you the clearest signal on how to move forward.",
+          INDIRECT_INFLUENCE: "Shifting perception and building leverage is a higher-return move than direct confrontation here.",
+          STRATEGIC_CONTAINMENT: "Protecting your position and managing risk is the priority before any direct action.",
+        },
+        options: [
+          { type: "DIRECT_CONVERSATION", label: "Challenge it directly" },
+          { type: "INDIRECT_INFLUENCE", label: "Shift the dynamic through influence" },
+          { type: "STRATEGIC_CONTAINMENT", label: "Hold the standard while managing risk" },
+        ],
+      };
     }
 
     res.json(parsed);
@@ -268,10 +318,10 @@ router.post("/coaching/generate", async (req, res) => {
   }
 
   const context = strategy
-    ? `Problem type: ${problemType}\nStrategy chosen by user: ${strategy}`
-    : `Problem type: ${problemType}`;
+    ? `Behavioral role: ${problemType}\nStrategy chosen by user: ${strategy}`
+    : `Behavioral role: ${problemType}`;
 
-  const userPrompt = `${context}\n\n${buildUserPrompt(flowType, answers)}\n\nGenerate coaching for this exact problem type and strategy.`;
+  const userPrompt = `${context}\n\n${buildUserPrompt(flowType, answers)}\n\nGenerate coaching that activates the correct role shift for this behavioral role and strategy.`;
 
   try {
     const completion = await openai.chat.completions.create({
@@ -304,17 +354,17 @@ function buildFallback(problemType: string, strategy: string | null) {
   return {
     problemType,
     strategy,
-    reframe: "The situation is clearer than it feels — you know what needs to happen.",
-    breakdown: "You are in a pattern of waiting for the right moment instead of creating it. The right moment is now.",
+    reframe: "The situation is clearer than it feels — you know what the next move is.",
+    breakdown: "The pattern here is waiting for the right moment instead of creating it. The right moment is now.",
     script: strategy === "DIRECT_CONVERSATION" ? {
-      opening: "I want to talk about something that has been affecting my work.",
-      issue: "There is a pattern I need to address directly with you.",
+      opening: "I want to address something directly.",
+      issue: "There is a pattern I need to name.",
       impact: "This is affecting my ability to deliver and my standing on this team.",
       ask: "I need this to change, and I want to agree on how.",
-      pushback: "I hear you. And this still needs to be resolved. Can we agree on a path forward?",
+      pushback: "I hear you. And this still needs to be resolved.",
     } : null,
-    sections: [{ title: "What to Do", content: "1. Identify the highest-leverage action available to you today.\n2. Take that action before end of day.\n3. Reassess tomorrow morning with fresh context.", premium: false }],
-    nextSteps: ["Take one concrete action today that moves this situation forward in a direction you control."],
+    sections: [{ title: "What to Do", content: "1. Identify the highest-leverage action available to you today.\n2. Take that action before end of day.\n3. Reassess tomorrow morning.", premium: false }],
+    nextSteps: ["Take one concrete action today that moves this forward in a direction you control."],
   };
 }
 

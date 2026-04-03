@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 
 export type FlowType = "conversation" | "stuck" | "visibility" | "negotiate" | "mindset";
-export type ProblemType = "INTERPERSONAL" | "POSITIONING" | "PERFORMANCE" | "INTERNAL";
+export type ProblemType = "VICTIM" | "AVOIDING_CHALLENGER" | "OVERWHELMED";
 export type CoachingStrategy = "DIRECT_CONVERSATION" | "INDIRECT_INFLUENCE" | "STRATEGIC_CONTAINMENT";
 
 export interface StrategyOption {
@@ -62,11 +62,11 @@ function str(v: unknown, fallback: string): string {
 }
 
 const VALID_STRATEGIES: CoachingStrategy[] = ["DIRECT_CONVERSATION", "INDIRECT_INFLUENCE", "STRATEGIC_CONTAINMENT"];
-const VALID_PROBLEM_TYPES: ProblemType[] = ["INTERPERSONAL", "POSITIONING", "PERFORMANCE", "INTERNAL"];
+const VALID_PROBLEM_TYPES: ProblemType[] = ["VICTIM", "AVOIDING_CHALLENGER", "OVERWHELMED"];
 
 function parseProblemType(v: unknown): ProblemType {
   const s = String(v ?? "").trim().toUpperCase() as ProblemType;
-  return VALID_PROBLEM_TYPES.includes(s) ? s : "INTERPERSONAL";
+  return VALID_PROBLEM_TYPES.includes(s) ? s : "AVOIDING_CHALLENGER";
 }
 
 function parseStrategy(v: unknown): CoachingStrategy {
@@ -76,18 +76,18 @@ function parseStrategy(v: unknown): CoachingStrategy {
 
 function safeParseRecommendation(raw: unknown): StrategyRecommendation {
   const defaultAssessment: Record<CoachingStrategy, string> = {
-    DIRECT_CONVERSATION: "A direct approach is most likely to move things forward in your situation.",
-    INDIRECT_INFLUENCE: "Shifting perception and influence is a higher-leverage move here than direct confrontation.",
-    STRATEGIC_CONTAINMENT: "Protecting your position and managing risk is the most important focus right now.",
+    DIRECT_CONVERSATION: "Naming the issue directly gives you the clearest signal on how to move forward.",
+    INDIRECT_INFLUENCE: "Shifting perception and building leverage is a higher-return move than direct confrontation here.",
+    STRATEGIC_CONTAINMENT: "Protecting your position and managing risk is the priority before any direct action.",
   };
   const fallback: StrategyRecommendation = {
-    problemType: "INTERPERSONAL",
+    problemType: "AVOIDING_CHALLENGER",
     recommendedStrategy: "DIRECT_CONVERSATION",
     assessment: defaultAssessment,
     options: [
-      { type: "DIRECT_CONVERSATION", label: "Address it directly" },
-      { type: "INDIRECT_INFLUENCE", label: "Shift perception and influence dynamics" },
-      { type: "STRATEGIC_CONTAINMENT", label: "Protect your position and manage risk" },
+      { type: "DIRECT_CONVERSATION", label: "Challenge it directly" },
+      { type: "INDIRECT_INFLUENCE", label: "Shift the dynamic through influence" },
+      { type: "STRATEGIC_CONTAINMENT", label: "Hold the standard while managing risk" },
     ],
   };
   if (typeof raw !== "object" || raw === null) return fallback;
@@ -243,7 +243,7 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
 
   const submitFlow = async (strategy: CoachingStrategy | null) => {
     if (!activeFlow) return;
-    const problemType = recommendation?.problemType ?? "INTERPERSONAL";
+    const problemType = recommendation?.problemType ?? "AVOIDING_CHALLENGER";
     setIsLoading(true);
     setError(null);
     try {

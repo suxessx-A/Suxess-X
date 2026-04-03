@@ -318,7 +318,7 @@ export default function FlowScreen() {
   }, [activeFlow]);
 
   useEffect(() => {
-    if (recommendation && !result && !isLoading && recommendation.problemType !== "INTERPERSONAL") {
+    if (recommendation && !result && !isLoading && recommendation.problemType !== "AVOIDING_CHALLENGER") {
       submitFlow(null);
     }
   }, [recommendation]);
