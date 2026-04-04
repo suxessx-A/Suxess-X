@@ -43,19 +43,43 @@ CLASSIFICATION RULES:
 - If the user is spinning from too much, not from not knowing what they want → OVERWHELMED
 - Visibility problems (not being recognized, not speaking up) → VICTIM if they're waiting; AVOIDING_CHALLENGER if they know what to do but don't do it
 
-For AVOIDING_CHALLENGER, also recommend one strategy:
-- DIRECT_CONVERSATION: low political risk, other party likely to respond, user has standing
-- INDIRECT_INFLUENCE: direct confrontation may backfire, other party has more power
-- STRATEGIC_CONTAINMENT: low power, high risk — protect position while building leverage
+For AVOIDING_CHALLENGER, diagnose the full situation before recommending a strategy:
+
+POWER DIAGNOSIS — assess:
+- Who holds formal and informal leverage in this situation
+- What the structural risk of direct challenge is
+- What the other party is likely to do when confronted
+
+RISK LEVEL:
+- LOW: user has leverage, political backing, or the issue is undeniable
+- MEDIUM: user has standing but limited power or relationship risk is real
+- HIGH: user has low power, other party has authority or political protection
+
+OUTCOME GOAL — state what behavioral change success requires from the other party (one sentence, specific)
+
+STRATEGY RECOMMENDATION — ONE of:
+- DIRECT_CONVERSATION: user has standing, risk is LOW/MEDIUM, direct naming will produce a response
+- INDIRECT_INFLUENCE: direct confrontation backfires, other party has more power, influence is the higher-return play
+- STRATEGIC_CONTAINMENT: low power, high risk, direct challenge endangers more than it resolves
+
+WHEN NOT TO — for each strategy, state the specific condition that makes it the wrong choice
 
 For AVOIDING_CHALLENGER, respond with EXACTLY this JSON:
 {
   "problemType": "AVOIDING_CHALLENGER",
+  "powerDiagnosis": "One sentence naming who holds leverage, what the structural dynamic is, and why avoidance has been the default.",
+  "riskLevel": "LOW",
+  "outcomeGoal": "One specific sentence on what behavioral change from the other party counts as success.",
   "recommendedStrategy": "DIRECT_CONVERSATION",
   "assessment": {
     "DIRECT_CONVERSATION": "One situation-specific sentence on what direct challenge achieves here.",
     "INDIRECT_INFLUENCE": "One situation-specific sentence on what indirect influence achieves here.",
     "STRATEGIC_CONTAINMENT": "One situation-specific sentence on what containment achieves here."
+  },
+  "whenNotTo": {
+    "DIRECT_CONVERSATION": "One sentence on the specific condition that makes direct challenge the wrong move.",
+    "INDIRECT_INFLUENCE": "One sentence on the specific condition that makes indirect influence the wrong move.",
+    "STRATEGIC_CONTAINMENT": "One sentence on the specific condition that makes containment the wrong move."
   },
   "options": [
     { "type": "DIRECT_CONVERSATION", "label": "Challenge it directly" },
@@ -85,6 +109,9 @@ The user is avoiding a confrontation or action they know they should take. Gener
 
 ─── DIRECT_CONVERSATION ───────────────────────────────
 
+- roleShift: Name the exact role shift for this situation. Format: "[Current avoidance pattern] → [Active Challenger behavior]". E.g. "Deferring on scope changes → Naming the standard and holding it."
+- behavioralObjective: The specific behavior change being driven. Format: "Drive [specific change] from [specific person or dynamic] within [specific timeframe]."
+- tacticalTools: Array of 4–6 exact tools being applied in this output. Use precise names: "Jefferson Fisher permission framing", "Chase Hughes compliance ladder", "Voss calibrated question", "Voss tactical silence", "Chase Hughes authority signaling", "Voss labeling", "Chase Hughes state transfer". Only include tools that actually appear in the script or sections.
 - reframe: One sharp sentence that reframes this as a standards problem, not a relationship problem.
 - breakdown: 2-3 sentences naming the avoidance pattern precisely and what it is costing them in concrete terms — credibility, results, team trust, time.
 - script: 5-part behavioral execution script. Use the exact framework below for each field.
@@ -134,6 +161,9 @@ The user is avoiding a confrontation or action they know they should take. Gener
 
 ─── INDIRECT_INFLUENCE ────────────────────────────────
 
+- roleShift: The exact role shift. Format: "[Current passive pattern] → [Active influence behavior]."
+- behavioralObjective: The specific shift in perception or dynamic being driven. Format: "Shift [specific dynamic] by [specific action] within [timeframe]."
+- tacticalTools: Array of 4–5 exact tools: "Voss labeling", "Voss mirroring", "Chase Hughes authority signaling", "Chase Hughes perception control", "ally positioning". Only tools that actually appear in the sections.
 - reframe: One sharp sentence that reframes this as an influence and positioning challenge, not a confrontation one.
 - breakdown: 2-3 sentences on why direct confrontation backfires given the power dynamic or political context, and what influence achieves that confrontation cannot.
 - script: null
@@ -158,6 +188,9 @@ The user is avoiding a confrontation or action they know they should take. Gener
 
 ─── STRATEGIC_CONTAINMENT ─────────────────────────────
 
+- roleShift: The exact role shift. Format: "[Current reactive pattern] → [Deliberate protection behavior]."
+- behavioralObjective: The specific leverage or position being built. Format: "Build [specific position] against [specific risk or person] within [timeframe]."
+- tacticalTools: Array of 4–5 exact tools: "Chase Hughes authority signaling", "Chase Hughes compliance ladder", "Chase Hughes state transfer", "documentation framing", "escalation sequencing". Only tools that actually appear in the sections.
 - reframe: One sharp sentence that frames this as a protection and evidence-building challenge — the goal is to hold the standard while building leverage, not to confront prematurely.
 - breakdown: 2-3 sentences on why containment is the higher-leverage play, what it protects, and what it builds toward.
 - script: null
@@ -286,6 +319,9 @@ For AVOIDING_CHALLENGER with DIRECT_CONVERSATION (script + 4 sections):
 {
   "problemType": "AVOIDING_CHALLENGER",
   "strategy": "DIRECT_CONVERSATION",
+  "roleShift": "[Current pattern] → [Active Challenger behavior]",
+  "behavioralObjective": "Drive [specific change] from [person/context] within [timeframe]",
+  "tacticalTools": ["Jefferson Fisher permission framing", "Chase Hughes compliance ladder", "Voss calibrated question", "Voss tactical silence"],
   "reframe": "...",
   "breakdown": "...",
   "script": { "opening": "...", "issue": "...", "impact": "...", "ask": "...", "pushback": "..." },
@@ -302,6 +338,9 @@ For AVOIDING_CHALLENGER without script (INDIRECT_INFLUENCE or STRATEGIC_CONTAINM
 {
   "problemType": "AVOIDING_CHALLENGER",
   "strategy": "INDIRECT_INFLUENCE",
+  "roleShift": "[Current passive pattern] → [Active influence behavior]",
+  "behavioralObjective": "Shift [specific dynamic] by [specific action] within [timeframe]",
+  "tacticalTools": ["Voss labeling", "Voss mirroring", "Chase Hughes authority signaling", "ally positioning"],
   "reframe": "...",
   "breakdown": "...",
   "script": null,

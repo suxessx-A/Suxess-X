@@ -162,6 +162,64 @@ function StrategyCard({
   );
 }
 
+const RISK_CONFIG = {
+  LOW:    { color: "#059669", bg: "#f0fdf4", border: "#a7f3d0", label: "LOW RISK" },
+  MEDIUM: { color: "#d97706", bg: "#fffbeb", border: "#fde68a", label: "MEDIUM RISK" },
+  HIGH:   { color: "#dc2626", bg: "#fef2f2", border: "#fecaca", label: "HIGH RISK" },
+};
+
+function SituationDiagnosisCard({ recommendation }: { recommendation: StrategyRecommendation }) {
+  if (!recommendation.powerDiagnosis && !recommendation.outcomeGoal) return null;
+  const risk = recommendation.riskLevel ? RISK_CONFIG[recommendation.riskLevel] : null;
+
+  const s = StyleSheet.create({
+    card: {
+      borderRadius: 14, borderWidth: 1.5, borderColor: "#e5e7eb",
+      backgroundColor: "#f8fafc", marginBottom: 14, overflow: "hidden",
+    },
+    headerRow: {
+      flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+      paddingVertical: 10, paddingHorizontal: 14,
+      backgroundColor: "#1a1a2e",
+    },
+    headerLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#fff", textTransform: "uppercase", letterSpacing: 1.2 },
+    riskBadge: {
+      borderRadius: 6, paddingVertical: 3, paddingHorizontal: 9,
+      backgroundColor: risk?.color ?? "#6b7280",
+    },
+    riskText: { fontSize: 9, fontFamily: "Inter_700Bold", color: "#fff", textTransform: "uppercase", letterSpacing: 1 },
+    body: { paddingVertical: 14, paddingHorizontal: 14 },
+    rowLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#7c3aed", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 },
+    rowText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#1a1a2e", lineHeight: 20, marginBottom: 12 },
+    rowTextLast: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#1a1a2e", lineHeight: 20 },
+    divider: { height: 1, backgroundColor: "#e5e7eb", marginBottom: 12 },
+  });
+
+  return (
+    <View style={s.card}>
+      <View style={s.headerRow}>
+        <Text style={s.headerLabel}>Situation Analysis</Text>
+        {risk && <View style={s.riskBadge}><Text style={s.riskText}>{risk.label}</Text></View>}
+      </View>
+      <View style={s.body}>
+        {recommendation.powerDiagnosis ? (
+          <>
+            <Text style={s.rowLabel}>Power Dynamics</Text>
+            <Text style={recommendation.outcomeGoal ? s.rowText : s.rowTextLast}>{recommendation.powerDiagnosis}</Text>
+          </>
+        ) : null}
+        {recommendation.outcomeGoal ? (
+          <>
+            {recommendation.powerDiagnosis && <View style={s.divider} />}
+            <Text style={s.rowLabel}>Success Looks Like</Text>
+            <Text style={s.rowTextLast}>{recommendation.outcomeGoal}</Text>
+          </>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
 function StrategyPickerScreen({
   recommendation,
   onChoose,
@@ -182,6 +240,7 @@ function StrategyPickerScreen({
   const [selected, setSelected] = useState<CoachingStrategy>(recommendation.recommendedStrategy);
   const selectedMeta = STRATEGY_META[selected];
   const whyText = recommendation.assessment[selected];
+  const whenNotText = recommendation.whenNotTo?.[selected];
 
   const s = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
@@ -210,7 +269,7 @@ function StrategyPickerScreen({
     },
     title: {
       fontSize: 21, fontFamily: "Inter_700Bold",
-      color: colors.foreground, lineHeight: 28, marginBottom: 16,
+      color: colors.foreground, lineHeight: 28, marginBottom: 14,
     },
     reasonCard: {
       backgroundColor: selectedMeta.bg,
@@ -218,13 +277,18 @@ function StrategyPickerScreen({
       borderLeftWidth: 3,
       borderLeftColor: selectedMeta.color,
       padding: 14,
-      marginBottom: 20,
+      marginBottom: 14,
     },
     reasonLabel: {
       fontSize: 10, fontFamily: "Inter_700Bold",
       color: selectedMeta.color, textTransform: "uppercase", letterSpacing: 1, marginBottom: 5,
     },
     reasonText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#1a1a2e", lineHeight: 20 },
+    whenNotRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: selectedMeta.border },
+    whenNotIcon: { fontSize: 13, marginTop: 1 },
+    whenNotWrap: { flex: 1 },
+    whenNotLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#dc2626", textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 },
+    whenNotText: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#374151", lineHeight: 19 },
     optionLabel: {
       fontSize: 11, fontFamily: "Inter_600SemiBold",
       color: colors.mutedForeground, textTransform: "uppercase",
@@ -260,9 +324,20 @@ function StrategyPickerScreen({
         <Text style={s.eyebrow}>Strategy Assessment</Text>
         <Text style={s.title}>Choose your approach</Text>
 
+        <SituationDiagnosisCard recommendation={recommendation} />
+
         <View style={s.reasonCard}>
           <Text style={s.reasonLabel}>Why this approach</Text>
           <Text style={s.reasonText}>{whyText}</Text>
+          {whenNotText ? (
+            <View style={s.whenNotRow}>
+              <Text style={s.whenNotIcon}>⚠</Text>
+              <View style={s.whenNotWrap}>
+                <Text style={s.whenNotLabel}>When NOT to use this</Text>
+                <Text style={s.whenNotText}>{whenNotText}</Text>
+              </View>
+            </View>
+          ) : null}
         </View>
 
         {error && (

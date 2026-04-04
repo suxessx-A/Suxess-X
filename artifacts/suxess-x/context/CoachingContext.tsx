@@ -14,6 +14,10 @@ export interface StrategyRecommendation {
   recommendedStrategy: CoachingStrategy;
   assessment: Record<CoachingStrategy, string>;
   options: StrategyOption[];
+  powerDiagnosis?: string;
+  riskLevel?: "LOW" | "MEDIUM" | "HIGH";
+  outcomeGoal?: string;
+  whenNotTo?: Record<CoachingStrategy, string>;
 }
 
 export interface CoachingScript {
@@ -33,6 +37,9 @@ export interface CoachingSection {
 export interface CoachingResult {
   problemType: ProblemType;
   strategy: CoachingStrategy | null;
+  roleShift?: string;
+  behavioralObjective?: string;
+  tacticalTools?: string[];
   reframe: string;
   breakdown: string;
   script: CoachingScript | null;
@@ -118,7 +125,23 @@ function safeParseRecommendation(raw: unknown): StrategyRecommendation {
     if (parsed.every(Boolean)) options = parsed as StrategyOption[];
   }
 
-  return { problemType, recommendedStrategy, assessment, options };
+  const powerDiagnosis = typeof obj.powerDiagnosis === "string" ? obj.powerDiagnosis.trim() : undefined;
+  const rawRisk = String(obj.riskLevel ?? "").trim().toUpperCase();
+  const riskLevel: "LOW" | "MEDIUM" | "HIGH" | undefined = (["LOW", "MEDIUM", "HIGH"] as const).includes(rawRisk as "LOW" | "MEDIUM" | "HIGH")
+    ? (rawRisk as "LOW" | "MEDIUM" | "HIGH") : undefined;
+  const outcomeGoal = typeof obj.outcomeGoal === "string" ? obj.outcomeGoal.trim() : undefined;
+
+  let whenNotTo: Record<CoachingStrategy, string> | undefined;
+  if (typeof obj.whenNotTo === "object" && obj.whenNotTo !== null) {
+    const w = obj.whenNotTo as Record<string, unknown>;
+    whenNotTo = {
+      DIRECT_CONVERSATION: str(w.DIRECT_CONVERSATION, ""),
+      INDIRECT_INFLUENCE: str(w.INDIRECT_INFLUENCE, ""),
+      STRATEGIC_CONTAINMENT: str(w.STRATEGIC_CONTAINMENT, ""),
+    };
+  }
+
+  return { problemType, recommendedStrategy, assessment, options, powerDiagnosis, riskLevel, outcomeGoal, whenNotTo };
 }
 
 function safeParseResult(raw: unknown, problemType: ProblemType, chosenStrategy: CoachingStrategy | null): CoachingResult {
@@ -179,7 +202,13 @@ function safeParseResult(raw: unknown, problemType: ProblemType, chosenStrategy:
     ? obj.nextSteps.filter((s) => typeof s === "string" && s.trim()).map((s) => String(s).trim())
     : fallback.nextSteps;
 
-  return { problemType: parsedProblemType, strategy: parsedStrategy, reframe, breakdown, script, sections, nextSteps };
+  const roleShift = typeof obj.roleShift === "string" ? obj.roleShift.trim() : undefined;
+  const behavioralObjective = typeof obj.behavioralObjective === "string" ? obj.behavioralObjective.trim() : undefined;
+  const tacticalTools: string[] = Array.isArray(obj.tacticalTools)
+    ? obj.tacticalTools.filter((t) => typeof t === "string" && t.trim()).map((t) => String(t).trim())
+    : [];
+
+  return { problemType: parsedProblemType, strategy: parsedStrategy, roleShift, behavioralObjective, tacticalTools, reframe, breakdown, script, sections, nextSteps };
 }
 
 function getBase(): string {

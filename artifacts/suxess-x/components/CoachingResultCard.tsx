@@ -76,6 +76,92 @@ function HeaderBadge({ result }: { result: CoachingResult }) {
   );
 }
 
+function ExecutionHeader({ roleShift, behavioralObjective, tacticalTools }: {
+  roleShift?: string;
+  behavioralObjective?: string;
+  tacticalTools?: string[];
+}) {
+  if (!roleShift && !behavioralObjective && (!tacticalTools || tacticalTools.length === 0)) return null;
+
+  const [from, to] = roleShift?.includes("→") ? roleShift.split("→").map((s) => s.trim()) : [roleShift, ""];
+
+  const s = StyleSheet.create({
+    card: {
+      borderRadius: 14, borderWidth: 1.5, borderColor: "#1a1a2e",
+      backgroundColor: "#1a1a2e", marginBottom: 10, overflow: "hidden",
+    },
+    shiftRow: {
+      flexDirection: "row", alignItems: "center", flexWrap: "wrap",
+      paddingVertical: 14, paddingHorizontal: 16, gap: 6,
+    },
+    shiftLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, paddingHorizontal: 16, paddingTop: 14 },
+    fromChip: {
+      backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 8,
+      paddingVertical: 5, paddingHorizontal: 10,
+    },
+    fromText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "rgba(255,255,255,0.6)" },
+    arrow: { fontSize: 16, color: "#d4a017", fontFamily: "Inter_700Bold" },
+    toChip: {
+      backgroundColor: "#7c3aed", borderRadius: 8,
+      paddingVertical: 5, paddingHorizontal: 10,
+    },
+    toText: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#fff" },
+    divider: { height: 1, backgroundColor: "rgba(255,255,255,0.1)", marginHorizontal: 16 },
+    objectiveWrap: { paddingVertical: 12, paddingHorizontal: 16 },
+    objectiveLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#d4a017", textTransform: "uppercase", letterSpacing: 1, marginBottom: 5 },
+    objectiveText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.85)", lineHeight: 20 },
+    toolsWrap: { paddingBottom: 14, paddingHorizontal: 16 },
+    toolsLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
+    toolsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+    toolChip: {
+      backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 6, borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
+      paddingVertical: 4, paddingHorizontal: 8,
+    },
+    toolText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "rgba(255,255,255,0.7)" },
+  });
+
+  return (
+    <View style={s.card}>
+      {roleShift ? (
+        <>
+          <Text style={s.shiftLabel}>Role Shift</Text>
+          <View style={s.shiftRow}>
+            {from ? <View style={s.fromChip}><Text style={s.fromText}>{from}</Text></View> : null}
+            {to ? <Text style={s.arrow}>→</Text> : null}
+            {to ? <View style={s.toChip}><Text style={s.toText}>{to}</Text></View> : null}
+          </View>
+        </>
+      ) : null}
+
+      {behavioralObjective ? (
+        <>
+          <View style={s.divider} />
+          <View style={s.objectiveWrap}>
+            <Text style={s.objectiveLabel}>Behavioral Objective</Text>
+            <Text style={s.objectiveText}>{behavioralObjective}</Text>
+          </View>
+        </>
+      ) : null}
+
+      {tacticalTools && tacticalTools.length > 0 ? (
+        <>
+          <View style={s.divider} />
+          <View style={s.toolsWrap}>
+            <Text style={s.toolsLabel}>Tactical Tools</Text>
+            <View style={s.toolsRow}>
+              {tacticalTools.map((tool, i) => (
+                <View key={i} style={s.toolChip}>
+                  <Text style={s.toolText}>{tool}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        </>
+      ) : null}
+    </View>
+  );
+}
+
 function BreakdownBlock({ reframe, breakdown }: { reframe: string; breakdown: string }) {
   const s = StyleSheet.create({
     card: { borderRadius: 14, marginBottom: 10, overflow: "hidden" },
@@ -270,6 +356,12 @@ export function CoachingResultCard({ result, onReset }: CoachingResultCardProps)
   return (
     <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
       <HeaderBadge result={result} />
+
+      <ExecutionHeader
+        roleShift={result.roleShift}
+        behavioralObjective={result.behavioralObjective}
+        tacticalTools={result.tacticalTools}
+      />
 
       <BreakdownBlock reframe={result.reframe} breakdown={result.breakdown} />
 
