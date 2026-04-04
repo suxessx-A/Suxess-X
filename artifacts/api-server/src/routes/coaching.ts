@@ -77,43 +77,108 @@ ${STYLE_RULES}
 
 ═══════════════════════════════════════════════════════
 ROLE: AVOIDING_CHALLENGER → Activate: CHALLENGER
+5-Step Behavioral Execution System
+Frameworks: Jefferson Fisher · Chris Voss · Chase Hughes
 ═══════════════════════════════════════════════════════
 
-The user is avoiding a confrontation or action they know they should take. The goal is to activate Challenger mode: clear boundaries, direct communication, and standards that don't bend.
+The user is avoiding a confrontation or action they know they should take. Generate step-by-step execution guidance — not advice, but interaction control. Every output is a directive for what to do, say, and manage in real time.
 
-Use the chosen strategy (DIRECT_CONVERSATION, INDIRECT_INFLUENCE, or STRATEGIC_CONTAINMENT).
+─── DIRECT_CONVERSATION ───────────────────────────────
 
-DIRECT_CONVERSATION — Challenge it head-on:
-- reframe: One sharp sentence that reframes their situation as a standards problem, not a relationship problem.
-- breakdown: 2-3 sentences naming the exact avoidance pattern and what it is costing them.
-- script: Full 5-part Challenger script. Each field is one declarative sentence. No qualifiers. No apology.
-  - opening: Direct, calm. Names the conversation without cushioning it.
-  - issue: The specific behavior or pattern named plainly.
-  - impact: What this is affecting — results, team, credibility, relationship, standards.
-  - ask: The specific expectation or change stated clearly.
-  - pushback: One firm, non-emotional response that holds the line.
+- reframe: One sharp sentence that reframes this as a standards problem, not a relationship problem.
+- breakdown: 2-3 sentences naming the avoidance pattern precisely and what it is costing them in concrete terms — credibility, results, team trust, time.
+- script: 5-part behavioral execution script. Use the exact framework below for each field.
+
+  OPENING [Step 2 — Frame the Conversation / Jefferson Fisher]:
+  Use permission framing to control the opening. Format: "[Topic] is what I want to address. My goal is [specific outcome]. Is now a good time?" This gives the other party a micro-yes before the main conversation begins — it creates psychological framing control. Calm tone. No apology. No softening.
+
+  ISSUE [Step 3 — Compliance Ladder + Calibrated Observation / Chase Hughes + Chris Voss]:
+  Start with 2 alignment statements — facts the other party cannot deny. Then deliver the neutral, factual observation with no interpretation or emotion. End with a Voss calibrated question.
+  Format: "You'd agree that [undeniable fact 1]. And [undeniable fact 2]. Here's what I've observed: [specific behavior, zero interpretation]. What's your read on that?"
+
+  IMPACT [Step 4 — Controlled Delivery: Impact / Jefferson Fisher]:
+  Observable, professional impact statement. No emotional language. No "I feel." Use measurable outcomes and consequences only.
+  Format: "The effect of this has been [specific, observable outcome]. That puts [project / team / standard / result] at risk."
+
+  ASK [Step 4 — Controlled Delivery: Clear Expectation]:
+  Specific, outcome-based, time-bound expectation. No negotiating preamble. State it plainly.
+  Format: "What I need is [specific change or behavior], by [specific timeframe]."
+  Then add the pause instruction in brackets: "[Pause 3–5 seconds. Say nothing. Let them respond first.]"
+
+  PUSHBACK [Step 5 — Strategic Pause Response]:
+  Instruct: "Wait 3–5 seconds after stating the expectation before responding to anything they say. Then, if they push back or deflect:" Provide one firm, non-conceding response that holds the standard without escalating.
+
 - sections: [
-    { "title": "Standard Setter", "content": "3 numbered actions to take in the next 48 hours that establish the standard — not just talk about it. Each has a verb, a target, and a timeframe.", "premium": false }
+    {
+      "title": "State Set",
+      "content": "Before you walk into this conversation:\n\nTone: Calm, deliberate, low vocal pace. Do not rush. Rushing signals anxiety — slower signals authority.\n\nAnchor phrase (use if you feel triggered): [One specific, situation-based internal anchor statement that returns them to calm control.]\n\nAuthority cue: [Specific body posture instruction — e.g., seated and still, arms uncrossed, no leaning in until after they speak.]\n\nTiming: [Specific instruction on when to initiate — not when either party is rushed, stressed, or in a public setting. Name the best window given their specific context.]\n\nSetting: [Where to have this — private, neutral or their space, seated at the same level.]",
+      "premium": false
+    },
+    {
+      "title": "Script Variations",
+      "content": "Two alternative approaches — use if the primary script needs to be adapted:\n\nVariation A — Softer framing (lower political risk or earlier in the relationship):\n[2-3 sentence alternative that opens with more alignment and less direct naming. Uses Voss mirroring: repeat their last 3 words as a question before continuing.]\n\nVariation B — Higher authority (used if the first approach is deflected or minimised):\n[2-3 sentence escalation that names the standard explicitly and states the consequence of continued non-resolution. No threats — consequences only.]",
+      "premium": false
+    },
+    {
+      "title": "Tactical Delivery",
+      "content": "When: [Specific timing guidance for their situation — e.g., first thing Monday when both are fresh, or after a defined event that makes the issue undeniable.]\n\nWhere: [Specific setting — private office, a booked room, not a walk-and-talk, not over email for the first exchange.]\n\nVoice and pace: Speak 20% slower than feels natural. Lower pitch slightly on key words — authority is communicated through pace and resonance, not volume.\n\nSilence: The pause after stating your expectation is the most important moment. The person who fills silence first loses positioning. Stay with it.",
+      "premium": false
+    },
+    {
+      "title": "Standard Setter",
+      "content": "Three actions to take within 48 hours to establish the standard — not just talk about it:\n1. [Specific, verb-led action that documents or signals the standard publicly or on record]\n2. [Specific follow-through action that demonstrates the standard is being held regardless of the outcome of this conversation]\n3. [Specific action that removes the ambiguity the other party has been exploiting — closes the loop that allowed the behavior to continue]",
+      "premium": false
+    }
   ]
-- nextSteps: [ "Single most important Challenger action — write the exact opening line they say or send" ]
+- nextSteps: [ "Three execution commands:\n1. Schedule the conversation for [specific timing based on their situation] — do not delay past 48 hours.\n2. Read the State Set section before you walk in. Say the anchor phrase out loud once.\n3. Use the exact Frame the Conversation opening — do not improvise the first sentence." ]
 
-INDIRECT_INFLUENCE — Shift the dynamic through positioning:
-- reframe: One sharp sentence that reframes this as an influence and positioning challenge.
-- breakdown: 2-3 sentences on why direct confrontation backfires here and what influence achieves.
+─── INDIRECT_INFLUENCE ────────────────────────────────
+
+- reframe: One sharp sentence that reframes this as an influence and positioning challenge, not a confrontation one.
+- breakdown: 2-3 sentences on why direct confrontation backfires given the power dynamic or political context, and what influence achieves that confrontation cannot.
 - script: null
 - sections: [
-    { "title": "Influence Moves", "content": "4 numbered actions — ally-building, reframing, visibility, and repositioning. Each is specific to their situation, not generic.", "premium": false }
+    {
+      "title": "State Set",
+      "content": "Mindset before any move: You are not trying to win the argument — you are repositioning the board. Every action is designed to shift how you are perceived, not to address the issue head-on.\n\nAuthority cue: [Specific instruction for how to carry yourself in shared spaces with this person — what to project in rooms where both are present.]\n\nTactical patience: [Specific instruction on when NOT to act — the window to avoid, the triggers to ignore, and why waiting is a position of strength here.]",
+      "premium": false
+    },
+    {
+      "title": "Influence Moves",
+      "content": "Four moves — in execution order:\n1. Ally-building: [Specific person or group to bring on side first. What to say to them, and why their support shifts the dynamic.]\n2. Reframing: [How to reposition the narrative around this issue — what language to use in shared contexts, how to make your position the default frame.]\n3. Visibility: [Specific action that makes your value or standards visible to decision-makers above the other party — without naming the conflict.]\n4. Repositioning: [One move that shifts your status relative to the other party — without confrontation. A project, a sponsorship, a public demonstration of standards.]",
+      "premium": false
+    },
+    {
+      "title": "Tactical Delivery",
+      "content": "Timing: [When to make each influence move — sequence matters. Name the order and why.]\n\nLanguage: Use Voss labeling in conversations: 'It seems like...' and 'It sounds like...' — this surfaces the other party's position without triggering defensiveness.\n\nWhat to avoid: [Specific actions that would backfire given this power dynamic — name them directly.]",
+      "premium": false
+    }
   ]
-- nextSteps: [ "Single action that shifts the power dynamic most — with exact language or framing" ]
+- nextSteps: [ "Single action this week that shifts the power dynamic — with the exact language or move to execute." ]
 
-STRATEGIC_CONTAINMENT — Hold the standard, manage risk:
-- reframe: One sharp sentence that frames this as a protection and positioning challenge, not a conflict.
-- breakdown: 2-3 sentences on why containment is the higher-leverage play and what it protects.
+─── STRATEGIC_CONTAINMENT ─────────────────────────────
+
+- reframe: One sharp sentence that frames this as a protection and evidence-building challenge — the goal is to hold the standard while building leverage, not to confront prematurely.
+- breakdown: 2-3 sentences on why containment is the higher-leverage play, what it protects, and what it builds toward.
 - script: null
 - sections: [
-    { "title": "Boundary Hold", "content": "4 numbered containment actions — documentation, escalation paths, reputation management, and standards-setting without direct confrontation.", "premium": false }
+    {
+      "title": "State Set",
+      "content": "Mindset: You are not avoiding this — you are building the position from which to act. Every containment move is a deliberate step toward leverage, not a retreat.\n\nEmotional control: [Specific instruction for managing reactions in the presence of this person — what to suppress, what to project, and how to signal stability.]\n\nTime horizon: [Specific instruction on the window for containment — when this phase ends and what the trigger for escalation looks like.]",
+      "premium": false
+    },
+    {
+      "title": "Boundary Hold",
+      "content": "Four containment moves — in priority order:\n1. Documentation: [What to document, how to record it, where to store it — specific to their situation. Written, timestamped, factual.]\n2. Escalation path: [Who to involve and when — the exact threshold that triggers escalation and who the first contact is.]\n3. Reputation management: [One proactive action that protects or reinforces their standing in the eyes of decision-makers — before this issue surfaces formally.]\n4. Standards signal: [One action that communicates the standard is being held, without naming the conflict — a deliverable, a communication, a public position.]",
+      "premium": false
+    },
+    {
+      "title": "Tactical Delivery",
+      "content": "What to document immediately: [Specific items to capture in writing today — emails, patterns, dates, decisions.]\n\nWhat NOT to do: [Specific actions that would weaken their position — what to hold back, what not to say, and who not to involve yet.]\n\nEscalation trigger: [The specific event or threshold that signals containment is no longer sufficient and direct action is required.]",
+      "premium": false
+    }
   ]
-- nextSteps: [ "Single most important protective action — specific and time-bound" ]
+- nextSteps: [ "Single most important protective action today — specific, time-bound, and non-negotiable." ]
 
 ═══════════════════════════════════════════════════════
 ROLE: VICTIM → Activate: CREATOR
@@ -217,25 +282,34 @@ OUTPUT FORMAT
 
 Respond with EXACTLY this JSON. No markdown. No code fences. Raw JSON only.
 
-For AVOIDING_CHALLENGER with script (DIRECT_CONVERSATION):
+For AVOIDING_CHALLENGER with DIRECT_CONVERSATION (script + 4 sections):
 {
   "problemType": "AVOIDING_CHALLENGER",
   "strategy": "DIRECT_CONVERSATION",
   "reframe": "...",
   "breakdown": "...",
   "script": { "opening": "...", "issue": "...", "impact": "...", "ask": "...", "pushback": "..." },
-  "sections": [ { "title": "Standard Setter", "content": "...", "premium": false } ],
+  "sections": [
+    { "title": "State Set", "content": "...", "premium": false },
+    { "title": "Script Variations", "content": "...", "premium": false },
+    { "title": "Tactical Delivery", "content": "...", "premium": false },
+    { "title": "Standard Setter", "content": "...", "premium": false }
+  ],
   "nextSteps": ["..."]
 }
 
-For AVOIDING_CHALLENGER without script:
+For AVOIDING_CHALLENGER without script (INDIRECT_INFLUENCE or STRATEGIC_CONTAINMENT — 3 sections):
 {
   "problemType": "AVOIDING_CHALLENGER",
   "strategy": "INDIRECT_INFLUENCE",
   "reframe": "...",
   "breakdown": "...",
   "script": null,
-  "sections": [ { "title": "...", "content": "...", "premium": false } ],
+  "sections": [
+    { "title": "State Set", "content": "...", "premium": false },
+    { "title": "Influence Moves", "content": "...", "premium": false },
+    { "title": "Tactical Delivery", "content": "...", "premium": false }
+  ],
   "nextSteps": ["..."]
 }
 
@@ -326,7 +400,7 @@ router.post("/coaching/generate", async (req, res) => {
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      max_completion_tokens: 2000,
+      max_completion_tokens: 3000,
       messages: [
         { role: "system", content: GENERATE_PROMPT },
         { role: "user", content: userPrompt },

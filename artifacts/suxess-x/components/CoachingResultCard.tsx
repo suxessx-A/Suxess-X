@@ -23,18 +23,12 @@ const PROBLEM_TYPE_THEME: Record<ProblemType, ThemeConfig & { label: string; ico
 };
 
 const SECTION_ICONS: Record<string, string> = {
-  "Visibility Gap": "👁",
-  "Value Signals": "📣",
-  "Positioning Moves": "♟",
-  "Root Cause": "🔍",
-  "Execution System": "⚙",
-  "Priority Shift": "⚡",
-  "Decision Framework": "🧭",
-  "Break the Loop": "⚡",
-  "Win Condition": "🎯",
-  "What to Do": "✅",
-  "Authority Move": "♟",
-  "Containment Moves": "🛡",
+  "State Set": "🎯",
+  "Script Variations": "💬",
+  "Tactical Delivery": "📍",
+  "Standard Setter": "✅",
+  "Influence Moves": "♟",
+  "Boundary Hold": "🛡",
   "Clarity Map": "🔍",
   "Direction Options": "🗺",
   "Outreach Scripts": "✉",
@@ -45,9 +39,7 @@ const SECTION_ICONS: Record<string, string> = {
   "State Change": "⚡",
   "Momentum List": "📋",
   "Back Online": "🚀",
-  "Challenger Script": "💬",
-  "Boundary Hold": "🛡",
-  "Standard Setter": "🎯",
+  "What to Do": "✅",
 };
 
 function HeaderBadge({ result }: { result: CoachingResult }) {
@@ -108,33 +100,59 @@ function ScriptSection({ script, strategy }: { script: CoachingScript; strategy:
   const cfg = STRATEGY_THEME[strategy];
   const s = StyleSheet.create({
     card: { borderRadius: 14, marginBottom: 10, overflow: "hidden" },
-    header: { backgroundColor: cfg.color, paddingVertical: 10, paddingHorizontal: 16 },
+    header: { backgroundColor: cfg.color, paddingVertical: 10, paddingHorizontal: 16, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
     headerText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#fff", textTransform: "uppercase", letterSpacing: 1 },
+    headerSub: { fontSize: 9, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: 0.8 },
     body: { backgroundColor: "#f0f9ff", paddingTop: 14, paddingBottom: 14, paddingHorizontal: 16 },
-    row: { marginBottom: 14 },
+    row: { marginBottom: 16 },
     rowLast: { marginBottom: 0 },
-    label: { fontSize: 10, fontFamily: "Inter_700Bold", color: cfg.color, textTransform: "uppercase", letterSpacing: 1, marginBottom: 5 },
-    pushLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#dc2626", textTransform: "uppercase", letterSpacing: 1, marginBottom: 5 },
-    quote: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", lineHeight: 23, borderLeftWidth: 3, borderLeftColor: cfg.color, paddingLeft: 12, paddingVertical: 3 },
-    pushQuote: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", lineHeight: 23, borderLeftWidth: 3, borderLeftColor: "#dc2626", paddingLeft: 12, paddingVertical: 3 },
-    divider: { height: 1, backgroundColor: "#bfdbfe", marginBottom: 14 },
+    stepRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 },
+    stepBadge: { backgroundColor: cfg.color, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
+    stepBadgeText: { fontSize: 8, fontFamily: "Inter_700Bold", color: "#fff", textTransform: "uppercase", letterSpacing: 0.8 },
+    label: { fontSize: 10, fontFamily: "Inter_700Bold", color: cfg.color, textTransform: "uppercase", letterSpacing: 1 },
+    pauseRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10, marginBottom: 16, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: "#fef3c7", borderRadius: 8, borderWidth: 1, borderColor: "#fde68a" },
+    pauseIcon: { fontSize: 14 },
+    pauseText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#92400e", flex: 1 },
+    pushStepBadge: { backgroundColor: "#dc2626", borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
+    pushLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#dc2626", textTransform: "uppercase", letterSpacing: 1 },
+    quote: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", lineHeight: 23, borderLeftWidth: 3, borderLeftColor: cfg.color, paddingLeft: 12, paddingVertical: 4 },
+    pushQuote: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", lineHeight: 23, borderLeftWidth: 3, borderLeftColor: "#dc2626", paddingLeft: 12, paddingVertical: 4 },
+    divider: { height: 1, backgroundColor: "#bfdbfe", marginBottom: 16 },
   });
-  const lines = [
-    { label: "Opening", text: script.opening },
-    { label: "The Issue", text: script.issue },
-    { label: "The Impact", text: script.impact },
-    { label: "What You Need", text: script.ask },
-    { label: "If They Push Back", text: script.pushback, isPushback: true },
+
+  const steps = [
+    { step: "Step 2", label: "Frame the Conversation", text: script.opening, framework: "Jefferson Fisher" },
+    { step: "Step 3", label: "Compliance Ladder", text: script.issue, framework: "Chase Hughes · Voss" },
+    { step: "Step 4", label: "Controlled Delivery", text: script.impact, framework: "Observable Impact" },
+    { step: "Step 4", label: "Clear Expectation", text: script.ask, framework: "Outcome-Based Ask", showPause: true },
+    { step: "Step 5", label: "After the Pause", text: script.pushback, isPushback: true, framework: "Strategic Pause" },
   ];
+
   return (
     <View style={s.card}>
-      <View style={s.header}><Text style={s.headerText}>💬  Challenger Script</Text></View>
+      <View style={s.header}>
+        <Text style={s.headerText}>💬  Challenger Script</Text>
+        <Text style={s.headerSub}>5-step execution</Text>
+      </View>
       <View style={s.body}>
-        {lines.map((line, i) => (
-          <View key={i} style={i === lines.length - 1 ? s.rowLast : s.row}>
+        {steps.map((line, i) => (
+          <View key={i}>
             {line.isPushback && <View style={s.divider} />}
-            <Text style={line.isPushback ? s.pushLabel : s.label}>{line.label}</Text>
-            <Text style={line.isPushback ? s.pushQuote : s.quote}>"{line.text}"</Text>
+            <View style={i === steps.length - 1 ? s.rowLast : s.row}>
+              <View style={s.stepRow}>
+                <View style={line.isPushback ? s.pushStepBadge : s.stepBadge}>
+                  <Text style={s.stepBadgeText}>{line.step}</Text>
+                </View>
+                <Text style={line.isPushback ? s.pushLabel : s.label}>{line.label}</Text>
+              </View>
+              <Text style={line.isPushback ? s.pushQuote : s.quote}>"{line.text}"</Text>
+              {line.showPause && (
+                <View style={s.pauseRow}>
+                  <Text style={s.pauseIcon}>⏸</Text>
+                  <Text style={s.pauseText}>Pause 3–5 seconds. Say nothing. Let them respond first.</Text>
+                </View>
+              )}
+            </View>
           </View>
         ))}
       </View>
@@ -255,22 +273,30 @@ export function CoachingResultCard({ result, onReset }: CoachingResultCardProps)
 
       <BreakdownBlock reframe={result.reframe} breakdown={result.breakdown} />
 
+      {result.sections
+        .filter((s) => s.title === "State Set")
+        .map((section, i) => (
+          <SectionCard key={`pre-${i}`} section={section} problemType={result.problemType} strategy={result.strategy} />
+        ))}
+
       {result.script && result.strategy && (
         <ScriptSection script={result.script} strategy={result.strategy} />
       )}
 
-      {result.sections.map((section, i) =>
-        section.premium ? (
-          <PremiumLockCard key={i} section={section} />
-        ) : (
-          <SectionCard
-            key={i}
-            section={section}
-            problemType={result.problemType}
-            strategy={result.strategy}
-          />
-        )
-      )}
+      {result.sections
+        .filter((s) => s.title !== "State Set")
+        .map((section, i) =>
+          section.premium ? (
+            <PremiumLockCard key={i} section={section} />
+          ) : (
+            <SectionCard
+              key={i}
+              section={section}
+              problemType={result.problemType}
+              strategy={result.strategy}
+            />
+          )
+        )}
 
       <View style={s.divider} />
 
