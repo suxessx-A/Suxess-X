@@ -202,26 +202,26 @@ The user is avoiding a confrontation or action they know they should take. Gener
 - sections: [
     {
       "title": "State Set",
-      "content": "Before you walk into this conversation:\n\nTone: Calm, deliberate, low vocal pace. Do not rush. Rushing signals anxiety — slower signals authority.\n\nAnchor phrase (use if you feel triggered): [One specific, situation-based internal anchor statement that returns them to calm control.]\n\nAuthority cue: [Specific body posture instruction — e.g., seated and still, arms uncrossed, no leaning in until after they speak.]\n\nTiming: [Specific instruction on when to initiate — not when either party is rushed, stressed, or in a public setting. Name the best window given their specific context.]\n\nSetting: [Where to have this — private, neutral or their space, seated at the same level.]",
+      "content": "Five items. Short sentences. No explanation.\n\nAnchor: [One sentence. Say it silently before you enter. Present tense. Grounding, not inspirational.]\nPace: Speak 20% slower than feels right. Slower signals authority.\nPosition: [One body instruction. Specific. Hold it before they speak.]\nTiming: [Exact window to initiate — name the day or context.]\nSetting: Private. Same level. [One location note specific to their situation.]",
       "premium": false
     },
     {
       "title": "Script Variations",
-      "content": "Two alternative approaches — use if the primary script needs to be adapted:\n\nVariation A — Softer opening (lower political risk or earlier in the relationship):\n[2-3 sentence alternative that opens with more alignment and less direct naming. Repeat their last 3 words as a question before continuing — this invites them to elaborate without pushing.]\n\nVariation B — Higher authority (used if the first approach is deflected or minimised):\n[2-3 sentence escalation that names the standard explicitly and states the consequence of continued non-resolution. No threats — consequences only.]",
+      "content": "Two alternatives — use if the primary script doesn't fit the moment.\n\nSofter (lower stakes or earlier in the relationship): [2 sentences. Opens with alignment. Names the issue without accusation. Speakable.]\n\nStronger (if the first approach is minimised or deflected): [2 sentences. Names the standard directly. States the consequence of non-resolution. No threats — consequences only. Speakable.]",
       "premium": false
     },
     {
       "title": "Tactical Delivery",
-      "content": "When: [Specific timing guidance for their situation — e.g., first thing Monday when both are fresh, or after a defined event that makes the issue undeniable.]\n\nWhere: [Specific setting — private office, a booked room, not a walk-and-talk, not over email for the first exchange.]\n\nVoice and pace: Speak 20% slower than feels natural. Lower pitch slightly on key words — authority is communicated through pace and resonance, not volume.\n\nSilence: The pause after stating your expectation is the most important moment. The person who fills silence first loses positioning. Stay with it.",
+      "content": "When: [Specific timing — name the day or event window.]\nWhere: Private. Booked space. Not a walk-and-talk. Not over email first.\nPace: 20% slower than natural. Lower register on key words. Volume is not authority — pace is.\nSilence: After you state the expectation, stop. The first person to fill the silence loses positioning. Hold it.",
       "premium": false
     },
     {
       "title": "Standard Setter",
-      "content": "Three actions to take within 48 hours to establish the standard — not just talk about it:\n1. [Specific, verb-led action that documents or signals the standard publicly or on record]\n2. [Specific follow-through action that demonstrates the standard is being held regardless of the outcome of this conversation]\n3. [Specific action that removes the ambiguity the other party has been exploiting — closes the loop that allowed the behavior to continue]",
+      "content": "Three actions within 48 hours — execution, not conversation:\n1. [Verb-led action that documents or signals the standard on record.]\n2. [Verb-led follow-through that holds the standard regardless of how this conversation ends.]\n3. [Verb-led action that closes the ambiguity the other party has been using.]",
       "premium": false
     }
   ]
-- nextSteps: [ "Three execution commands:\n1. Schedule the conversation for [specific timing based on their situation] — do not delay past 48 hours.\n2. Read the State Set section before you walk in. Say the anchor phrase out loud once.\n3. Use the exact Frame the Conversation opening — do not improvise the first sentence." ]
+- nextSteps: [ "Three commands:\n1. Schedule the conversation within 48 hours — name the day and time.\n2. Read State Set before you enter. Say the anchor out loud once.\n3. Open with the exact first line from the script — do not improvise it." ]
 
 ─── INDIRECT_INFLUENCE ────────────────────────────────
 
@@ -234,21 +234,21 @@ The user is avoiding a confrontation or action they know they should take. Gener
 - sections: [
     {
       "title": "State Set",
-      "content": "Mindset before any move: You are not trying to win the argument — you are repositioning the board. Every action is designed to shift how you are perceived, not to address the issue head-on.\n\nAuthority cue: [Specific instruction for how to carry yourself in shared spaces with this person — what to project in rooms where both are present.]\n\nTactical patience: [Specific instruction on when NOT to act — the window to avoid, the triggers to ignore, and why waiting is a position of strength here.]",
+      "content": "Three items. Short sentences.\n\nMindset: You are repositioning the board, not winning the argument. Each move shifts perception — not the problem directly.\nPresence: [One instruction for how to show up in shared spaces — what to project when both parties are in the room.]\nPatience: [What NOT to do this week. The trigger to ignore. One sentence on why holding is the stronger move here.]",
       "premium": false
     },
     {
       "title": "Influence Moves",
-      "content": "Four moves — in execution order:\n1. Ally-building: [Specific person or group to bring on side first. What to say to them, and why their support shifts the dynamic.]\n2. Reframing: [How to reposition the narrative around this issue — what language to use in shared contexts, how to make your position the default frame.]\n3. Visibility: [Specific action that makes your value or standards visible to decision-makers above the other party — without naming the conflict.]\n4. Repositioning: [One move that shifts your status relative to the other party — without confrontation. A project, a sponsorship, a public demonstration of standards.]",
+      "content": "Four moves — execute in order:\n1. Ally: [Who to bring onside first. What to say. Why their support shifts the dynamic.]\n2. Narrative: [What language to use in shared contexts. How to make your position the default frame — without naming the conflict.]\n3. Visibility: [One action that makes your value visible to decision-makers above the other party.]\n4. Reposition: [One move that shifts your standing without confrontation — a project, a sponsorship, a public demonstration of standards.]",
       "premium": false
     },
     {
       "title": "Tactical Delivery",
-      "content": "Timing: [When to make each influence move — sequence matters. Name the order and why.]\n\nLanguage: Use labeling phrases in conversations: 'It seems like...' and 'It sounds like...' — this surfaces the other party's position without triggering defensiveness and keeps you in control of the frame.\n\nWhat to avoid: [Specific actions that would backfire given this power dynamic — name them directly.]",
+      "content": "Sequence: [The order to execute the four moves and why sequence matters here.]\nLanguage: In any direct exchange: 'It seems like...' and 'It sounds like...' — surfaces their position without triggering defensiveness.\nAvoid: [Specific actions that would backfire given this power dynamic — name them directly.]",
       "premium": false
     }
   ]
-- nextSteps: [ "Single action this week that shifts the power dynamic — with the exact language or move to execute." ]
+- nextSteps: [ "One move this week that shifts the dynamic — name it exactly: who, what, and when." ]
 
 ─── STRATEGIC_CONTAINMENT ─────────────────────────────
 
@@ -261,21 +261,21 @@ The user is avoiding a confrontation or action they know they should take. Gener
 - sections: [
     {
       "title": "State Set",
-      "content": "Mindset: You are not avoiding this — you are building the position from which to act. Every containment move is a deliberate step toward leverage, not a retreat.\n\nEmotional control: [Specific instruction for managing reactions in the presence of this person — what to suppress, what to project, and how to signal stability.]\n\nTime horizon: [Specific instruction on the window for containment — when this phase ends and what the trigger for escalation looks like.]",
+      "content": "Three items. Short sentences.\n\nMindset: You are building the position from which to act — not retreating. Every containment move is deliberate.\nControl: [What to suppress and what to project in their presence. One specific instruction.]\nTimeline: [When this phase ends. The exact trigger that signals the position is built and action begins.]",
       "premium": false
     },
     {
       "title": "Boundary Hold",
-      "content": "Four containment moves — in priority order:\n1. Documentation: [What to document, how to record it, where to store it — specific to their situation. Written, timestamped, factual.]\n2. Escalation path: [Who to involve and when — the exact threshold that triggers escalation and who the first contact is.]\n3. Reputation management: [One proactive action that protects or reinforces their standing in the eyes of decision-makers — before this issue surfaces formally.]\n4. Standards signal: [One action that communicates the standard is being held, without naming the conflict — a deliverable, a communication, a public position.]",
+      "content": "Four moves — in priority order:\n1. Document: [What to capture, how to store it. Written, timestamped, factual — specific to their situation.]\n2. Escalation path: [Who to involve and when. The exact threshold that triggers escalation and who the first contact is.]\n3. Reputation: [One proactive action that protects their standing with decision-makers — before this surfaces formally.]\n4. Signal: [One action that shows the standard is held, without naming the conflict — a deliverable, a message, a public position.]",
       "premium": false
     },
     {
       "title": "Tactical Delivery",
-      "content": "What to document immediately: [Specific items to capture in writing today — emails, patterns, dates, decisions.]\n\nWhat NOT to do: [Specific actions that would weaken their position — what to hold back, what not to say, and who not to involve yet.]\n\nEscalation trigger: [The specific event or threshold that signals containment is no longer sufficient and direct action is required.]",
+      "content": "Document now: [Specific items to capture in writing today — emails, patterns, dates, decisions.]\nDo not: [Specific actions that weaken their position — what to hold back, who not to involve yet.]\nEscalation trigger: [The specific event that signals containment is no longer sufficient and direct action begins.]",
       "premium": false
     }
   ]
-- nextSteps: [ "Single most important protective action today — specific, time-bound, and non-negotiable." ]
+- nextSteps: [ "Single most important protective action today — name it exactly: what to do, where to record it, and by when." ]
 
 ═══════════════════════════════════════════════════════
 ROLE: VICTIM → Activate: CREATOR
@@ -296,12 +296,12 @@ IF the coaching scenario is "I Feel Stuck in My Career":
   - sections: [
       {
         "title": "Clarity Map",
-        "content": "Apply the 5 Wants framework to synthesize what the user is actually optimising for:\n1. Work (problems to solve): What the user's answers reveal about the type of problems they want to engage with — not a job title, a problem space.\n2. Environment: Culture, pace, leadership style — what their answers signal about where they do their best work.\n3. Growth: What skills and trajectory their strengths and interests point toward.\n4. People: Who they want to work with or learn from — the type of person or team that energises rather than drains.\n5. Impact: What difference they want their work to make — the level and type of contribution they are drawn to.\n\nSynthesize into 3-4 sentences. End with: 'The thread connecting all of this is [specific, non-generic insight from their actual answers].' This is a direction, not a job title. Keep it directional.",
+        "content": "Synthesize what the user is actually optimising for across five dimensions:\n1. Work: The problem space they want to engage with — not a job title.\n2. Environment: Culture, pace, leadership style — what their answers reveal about where they do their best work.\n3. Growth: The skills and trajectory their strengths point toward.\n4. People: The type of person or team that energises rather than drains them.\n5. Impact: The level and type of contribution they are drawn to.\n\nClose with 2 sentences max: what the pattern across all five reveals, and the specific thread connecting their answers. Direct verdict — not a question, a direction.",
         "premium": false
       },
       {
         "title": "Direction Options",
-        "content": "For each of the 2-3 directions the user selected:\n[Direction name]: Frame this as a career experiment, not a permanent decision. What it actually requires day-to-day (2 sentences — be specific, not aspirational). The one conversation to have before doing anything else — who to speak to and what to ask that would validate or eliminate this direction within 2 weeks. Whether it maps to their 5 Wants — direct verdict: strong match, partial match, or misalignment, with one sentence explaining why.\n\nEnd with: 'The direction with the strongest signal based on what you've shared is [specific direction] — not because it's certain, but because [specific reason from their answers].'",
+        "content": "For each direction the user selected — short, directive format:\n[Direction]: What it actually demands day-to-day (2 sentences — specific, not aspirational). The first conversation to have — who and what to ask that validates or eliminates this within 2 weeks. Match verdict: strong / partial / misalignment — one sentence on why.\n\nEnd with one sentence: which direction has the strongest signal from what they shared, and why.",
         "premium": false
       },
       {
@@ -331,22 +331,22 @@ IF the coaching scenario is NOT "I Feel Stuck in My Career":
   - sections: [
       {
         "title": "Ownership Shift",
-        "content": "3 Creator actions that claim ownership of this situation — each replacing a specific passive behavior with a specific active one:\n1. [Action] — replaces [specific passive behavior they described] — do this within 24 hours.\n2. [Action] — replaces [specific passive behavior] — do this within 48 hours.\n3. [Action] — replaces [specific passive behavior] — do this this week.\nEach has a verb, a target, and a timeframe. No waiting. No conditions. No 'when the time is right.'",
+        "content": "3 actions — each replacing a specific passive behavior with an active one:\n1. [Verb-led action] — replaces [passive behavior] — within 24 hours.\n2. [Verb-led action] — replaces [passive behavior] — within 48 hours.\n3. [Verb-led action] — replaces [passive behavior] — this week.\nEach has a verb, a target, and a timeframe. No waiting. No conditions.",
         "premium": false
       },
       {
         "title": "External Move",
-        "content": "One non-negotiable external action within 48 hours that generates real information about the situation — a conversation, an outreach, a direct ask, or a public action. Tell them exactly who to contact, what to say or send, and what specific piece of information that action will produce. This is not optional. Do not give them a choice. Give them the exact move.",
+        "content": "One move within 48 hours. Non-negotiable. Generates real information — not a plan, not a reflection.\n\nWho: [Exact person or context.]\nWhat to say or send: [Exact language — not a template, the actual message.]\nWhat it produces: [The specific signal this move generates.]",
         "premium": false
       },
       {
         "title": "Direction Lock",
-        "content": "'For the next 30 days, I am testing: [specific direction based on their answers and the situation they described].'\n\nWhat this test will produce: [One sentence naming the specific clarity or information this test generates — not a plan, a signal.]\n\nWhat ends the test: [One clear condition — a conversation had, an opportunity pursued, a decision made. When this happens, the test is complete and a new direction can be chosen.]\n\nThis is an experiment, not a commitment. The goal is information, not certainty.",
+        "content": "For the next 30 days: [Specific direction to test — from their answers.]\n\nWhat it produces: [The specific signal or clarity this test generates.]\nWhat ends it: [One condition — a conversation, a decision, an outcome. When it happens, the test is complete.]\n\nThis is a test, not a commitment. The goal is information.",
         "premium": false
       },
       {
         "title": "Momentum Loop",
-        "content": "Progress tracking — not a plan, a movement system:\n\nSuccess cycle: One action → One signal → One decision sharper → Next action.\n\nWhat counts as progress this week:\n- 1 external action completed (the one above)\n- 1 new signal gathered (a conversation, a response, a reaction)\n- 1 passive behavior replaced with an active one\n\nRe-entry point if momentum stalls: The smallest possible action. Not the plan. The move.\n\nOne question to answer each morning: 'What is the one thing I control today that moves this forward?' Do that thing before anything else.",
+        "content": "Cycle: One action → One signal → One decision sharper → Next action.\n\nWin this week means:\n— External move done\n— 1 new signal gathered (a conversation, a response, a reaction)\n— 1 passive behavior replaced with an active one\n\nRe-entry when stalling: The smallest possible move. Not the plan.\n\nEach morning: 'What is the one thing I control today that moves this forward?' Do that before anything else.",
         "premium": false
       }
     ]
@@ -367,26 +367,26 @@ Every action must be completable in under 15 minutes and produce a tangible outp
 - sections: [
     {
       "title": "State Change",
-      "content": "One action to take RIGHT NOW — under 5 minutes, physical or conversational, with a tangible output. Not planning. Not thinking. Doing.\n\nThe action: [Specific action — what to do, exactly]\nWhat it produces: [The specific output this creates in under 5 minutes]\nWhy it breaks the spiral: [One sentence — what this action does to the belief or pattern driving the overload]\n\nDo not skip this. The action above is the entry point. Everything else follows from it.",
+      "content": "One action. Now. Under 5 minutes. Tangible output — not planning, not thinking.\n\nAction: [Exactly what to do.]\nOutput: [What it produces in under 5 minutes.]\nWhy it works: [One sentence — what it does to the belief driving the spiral.]\n\nDo this first. Everything else follows.",
       "premium": false
     },
     {
       "title": "Momentum List",
-      "content": "3 micro-tasks — each under 15 minutes, each producing a visible output (not just activity). Choose tasks that reduce the pile, generate a signal, or replace a passive behavior with an active one:\n1. [Task] → [Specific output it creates]\n2. [Task] → [Specific output it creates]\n3. [Task] → [Specific output it creates]\n\nRule: Do not plan what comes after task 3 until task 3 is complete. This is a sequence, not a list. Do one, complete it, then move to the next.",
+      "content": "3 tasks — each under 15 minutes, each with a visible output:\n1. [Task] → [Output]\n2. [Task] → [Output]\n3. [Task] → [Output]\n\nSequence, not a list. Complete one before moving to the next. Do not plan beyond task 3 until task 3 is done.",
       "premium": false
     },
     {
       "title": "Back Online",
-      "content": "When momentum returns — two decisions to make. No planning beyond 48 hours.\n\nDecision 1 (make today): [Specific decision — name the exact choice to be made and what making it commits them to]\nDecision 2 (make tomorrow): [Specific decision — what becomes possible to decide once decision 1 is made]\n\nWhat becomes available once the spiral stops: [One sentence — the opportunity, conversation, or window that opens when they are in motion again]",
+      "content": "Two decisions. No planning beyond 48 hours.\n\nToday: [The exact decision to make — name the choice and what making it commits them to.]\nTomorrow: [The next decision — what becomes possible once today's is made.]\nWindow: [One sentence — what opens when they are moving again.]",
       "premium": false
     },
     {
       "title": "Momentum Loop",
-      "content": "Progress system — not a plan:\n\nSuccess cycle: One task done → Spiral interrupted → Next task visible → Move again.\n\nWhat counts as a win today:\n- State Change action completed\n- 1 task on the Momentum List finished\n- 1 decision made from Back Online\n\nRe-entry point when stalling returns: Not the full list. Not the plan. The first task on the Momentum List — just that.\n\nOne question for each morning: 'What is the one output I will produce today that proves I am moving?' Do that before anything else.",
+      "content": "Cycle: One task done → Spiral interrupted → Next task visible → Move.\n\nWin today means:\n— State Change action done\n— 1 Momentum List task complete\n— 1 Back Online decision made\n\nRe-entry when stalling: Not the list. The first task only.\n\nOne question each morning: 'What is the one output I will produce today?' Do that before anything else.",
       "premium": false
     }
   ]
-- nextSteps: [ "Three momentum commands:\n1. Do the State Change action now — before reading anything else.\n2. Complete task 1 from the Momentum List before end of morning.\n3. Make Decision 1 from Back Online before end of day.\nMake each specific to what they said. No 'consider.' No 'think about.'" ]
+- nextSteps: [ "Three commands:\n1. Do the State Change action now — before reading anything else.\n2. Finish task 1 from the Momentum List before midday.\n3. Make Decision 1 from Back Online before end of day.\nEach must be specific to what they said. No 'consider.' No qualifiers." ]
 
 ═══════════════════════════════════════════════════════
 OUTPUT FORMAT
@@ -401,8 +401,8 @@ For AVOIDING_CHALLENGER with DIRECT_CONVERSATION (script + 4 sections):
   "problemType": "AVOIDING_CHALLENGER",
   "strategy": "DIRECT_CONVERSATION",
   "mode": "Challenger",
-  "roleShift": "[Current avoidance pattern] → [Active Challenger behavior]",
-  "behavioralObjective": "Drive [specific change] from [person/context] within [timeframe]",
+  "roleShift": "current avoidance pattern → active challenger behavior",
+  "behavioralObjective": "Shift [specific behavior] from [person] within [timeframe]",
   "reframe": "...",
   "breakdown": "...",
   "trigger": { "triggerName": "...", "energyShift": "...", "repetitionStatement": "..." },
@@ -423,7 +423,7 @@ For AVOIDING_CHALLENGER without script (INDIRECT_INFLUENCE or STRATEGIC_CONTAINM
   "problemType": "AVOIDING_CHALLENGER",
   "strategy": "INDIRECT_INFLUENCE",
   "mode": "Strategist",
-  "roleShift": "[Current passive pattern] → [Active influence behavior]",
+  "roleShift": "current passive pattern → active influence behavior",
   "behavioralObjective": "Shift [specific dynamic] by [specific action] within [timeframe]",
   "reframe": "...",
   "breakdown": "...",
