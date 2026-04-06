@@ -13,9 +13,10 @@ interface FlowButtonProps {
   onPress: () => void;
   icon?: string;
   variant?: "primary" | "secondary" | "outline";
+  locked?: boolean;
 }
 
-export function FlowButton({ label, subtitle, onPress, icon, variant = "primary" }: FlowButtonProps) {
+export function FlowButton({ label, subtitle, onPress, icon, variant = "primary", locked = false }: FlowButtonProps) {
   const colors = useColors();
 
   const styles = StyleSheet.create({
@@ -88,7 +89,11 @@ export function FlowButton({ label, subtitle, onPress, icon, variant = "primary"
         <Text style={styles.label}>{label}</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       </View>
-      <Text style={styles.arrow}>›</Text>
+      {locked ? (
+        <Text style={[styles.arrow, { fontSize: 14, opacity: 0.4 }]}>🔒</Text>
+      ) : (
+        <Text style={styles.arrow}>›</Text>
+      )}
     </TouchableOpacity>
   );
 }

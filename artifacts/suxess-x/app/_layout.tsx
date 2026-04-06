@@ -16,6 +16,7 @@ import { setBaseUrl } from "@workspace/api-client-react";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CoachingProvider } from "@/context/CoachingContext";
+import { AccessProvider } from "@/context/AccessContext";
 
 if (process.env.EXPO_PUBLIC_DOMAIN) {
   setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
@@ -30,6 +31,8 @@ function RootLayoutNav() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="flow" />
+      <Stack.Screen name="example" />
+      <Stack.Screen name="paywall" />
     </Stack>
   );
 }
@@ -56,9 +59,11 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView>
             <KeyboardProvider>
-              <CoachingProvider>
-                <RootLayoutNav />
-              </CoachingProvider>
+              <AccessProvider>
+                <CoachingProvider>
+                  <RootLayoutNav />
+                </CoachingProvider>
+              </AccessProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>

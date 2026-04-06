@@ -1,0 +1,101 @@
+Add a complete payment and upgrade flow to the app from scratch.
+
+1. CORE FLOW
+
+* Keep “Try Free” fully accessible (no login, no payment)
+
+* “Try Free” shows a full example coaching output
+
+* Add a button at the end of the example:
+  “Get Your Own Coaching”
+
+* ONLY when this button is clicked → show paywall
+
+---
+
+2. PAYWALL SCREEN (CREATE NEW)
+
+Design a clean, focused paywall screen with the following:
+
+HEADLINE:
+“Stop overthinking. Take control of what you do next.”
+
+SUBTEXT:
+“In the moments that define your career — when you're stuck, triggered, or unsure — get clear on what to do and move forward with confidence.”
+
+TENSION LINE:
+“Most people hesitate, avoid it, or make the wrong move. You don’t have to.”
+
+VALUE POINTS:
+
+* Turn uncertainty into clear action
+* Handle critical moments without hesitation
+* Take control of your career direction
+
+PRICING OPTIONS:
+
+* $6 per week
+* $20 per month (label this as “Most Popular”)
+
+BUTTONS:
+Primary: “Unlock Access”
+Secondary: “Back to Example”
+
+---
+
+3. PAYMENT INTEGRATION
+
+* Connect the “Unlock Access” button to a Stripe payment link
+
+* After successful payment:
+  → Redirect user to the main input screen
+  → Allow them to enter their own situation
+
+* Do NOT require account creation for now (keep it simple)
+
+---
+
+4. ACCESS CONTROL
+
+* Block access to:
+
+  * Input field
+  * Custom coaching generation
+
+UNLESS payment is completed
+
+* Allow:
+
+  * Try Free example
+  * Viewing output
+
+---
+
+5. USER EXPERIENCE RULES
+
+* Do NOT show paywall before value is experienced
+* Do NOT interrupt the example flow
+* Keep everything fast and frictionless
+* Make the transition:
+  Example → Desire → Paywall → Action
+
+---
+
+6. POSITIONING CONSISTENCY
+
+Ensure all messaging reinforces:
+
+* clarity
+* control
+* action
+* decision-making
+
+Avoid:
+
+* generic self-development language
+* vague or abstract wording
+
+---
+
+Goal:
+Users experience real value first, then hit a clear, compelling paywall exactly when they want to apply it to their own situation.

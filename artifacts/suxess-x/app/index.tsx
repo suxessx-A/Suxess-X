@@ -1,16 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
   Platform,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { FlowButton } from "@/components/FlowButton";
 import { useCoaching, FlowType } from "@/context/CoachingContext";
+import { useAccess } from "@/context/AccessContext";
 
 const flows: { id: FlowType; label: string; subtitle: string; icon: string }[] = [
   {
@@ -49,12 +51,24 @@ export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const params = useLocalSearchParams<{ payment_success?: string }>();
   const { setActiveFlow } = useCoaching();
+  const { isPaid, isCheckingAccess, markPaid } = useAccess();
 
   const topInset = Platform.OS === "web" ? 67 : insets.top;
   const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
 
+  useEffect(() => {
+    if (params.payment_success === "true" && !isPaid) {
+      markPaid();
+    }
+  }, [params.payment_success]);
+
   const handleFlowPress = (id: FlowType) => {
+    if (!isPaid) {
+      router.push("/paywall");
+      return;
+    }
     setActiveFlow(id);
     router.push("/flow");
   };
@@ -92,8 +106,49 @@ export default function HomeScreen() {
     },
     content: {
       paddingHorizontal: 20,
-      paddingTop: 28,
+      paddingTop: 24,
       paddingBottom: bottomInset + 20,
+    },
+    tryFreeCard: {
+      borderRadius: 16,
+      backgroundColor: "#1a1a2e",
+      padding: 20,
+      marginBottom: 24,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 14,
+    },
+    tryFreeIconWrap: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: "rgba(212,160,23,0.15)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    tryFreeIcon: { fontSize: 20 },
+    tryFreeTextWrap: { flex: 1 },
+    tryFreeLabel: {
+      fontSize: 15,
+      fontFamily: "Inter_700Bold",
+      color: "#ffffff",
+      marginBottom: 3,
+    },
+    tryFreeSub: {
+      fontSize: 12,
+      fontFamily: "Inter_400Regular",
+      color: "rgba(255,255,255,0.5)",
+      lineHeight: 17,
+    },
+    tryFreeArrow: {
+      fontSize: 18,
+      color: "#d4a017",
+      fontFamily: "Inter_700Bold",
+    },
+    divider: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginBottom: 20,
     },
     sectionLabel: {
       fontSize: 12,
@@ -102,6 +157,24 @@ export default function HomeScreen() {
       textTransform: "uppercase",
       letterSpacing: 1.2,
       marginBottom: 16,
+    },
+    lockNotice: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      marginBottom: 12,
+      paddingHorizontal: 4,
+    },
+    lockIcon: { fontSize: 12, color: colors.mutedForeground },
+    lockText: {
+      fontSize: 12,
+      fontFamily: "Inter_400Regular",
+      color: colors.mutedForeground,
+    },
+    lockLink: {
+      fontSize: 12,
+      fontFamily: "Inter_600SemiBold",
+      color: colors.primary,
     },
   });
 
@@ -120,7 +193,38 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.sectionLabel}>Choose your situation</Text>
+          <TouchableOpacity
+            style={styles.tryFreeCard}
+            onPress={() => router.push("/example")}
+            activeOpacity={0.85}
+          >
+            <View style={styles.tryFreeIconWrap}>
+              <Text style={styles.tryFreeIcon}>👀</Text>
+            </View>
+            <View style={styles.tryFreeTextWrap}>
+              <Text style={styles.tryFreeLabel}>Try Free</Text>
+              <Text style={styles.tryFreeSub}>See a full coaching example — no account needed</Text>
+            </View>
+            <Text style={styles.tryFreeArrow}>›</Text>
+          </TouchableOpacity>
+
+          <View style={styles.divider} />
+
+          <Text style={styles.sectionLabel}>
+            {isPaid ? "Choose your situation" : "Your coaching flows"}
+          </Text>
+
+          {!isPaid && !isCheckingAccess && (
+            <View style={styles.lockNotice}>
+              <Text style={styles.lockIcon}>🔒</Text>
+              <Text style={styles.lockText}>
+                Unlock full access.{" "}
+              </Text>
+              <TouchableOpacity onPress={() => router.push("/paywall")}>
+                <Text style={styles.lockLink}>See plans →</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           {flows.map((flow) => (
             <FlowButton
@@ -130,6 +234,7 @@ export default function HomeScreen() {
               icon={flow.icon}
               onPress={() => handleFlowPress(flow.id)}
               variant="secondary"
+              locked={!isPaid}
             />
           ))}
         </View>

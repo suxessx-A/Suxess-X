@@ -1,11 +1,13 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { CoachingResult, CoachingScript, CoachingSection, CoachingStrategy, CoachingTrigger, ProblemType } from "@/context/CoachingContext";
 
 interface CoachingResultCardProps {
   result: CoachingResult;
   onReset: () => void;
+  ctaButton?: { label: string; onPress: () => void };
 }
 
 type ThemeConfig = { color: string; bg: string; border: string };
@@ -357,6 +359,7 @@ function SectionCard({ section, problemType, strategy }: {
 }
 
 function PremiumLockCard({ section }: { section: CoachingSection }) {
+  const router = useRouter();
   const icon = SECTION_ICONS[section.title] ?? "🔒";
 
   const s = StyleSheet.create({
@@ -404,7 +407,7 @@ function PremiumLockCard({ section }: { section: CoachingSection }) {
         <Text style={s.lockDesc}>
           {descriptions[section.title] ?? "Unlock this section to access personalised guidance."}
         </Text>
-        <TouchableOpacity style={s.unlockBtn} activeOpacity={0.85}>
+        <TouchableOpacity style={s.unlockBtn} activeOpacity={0.85} onPress={() => router.push("/paywall")}>
           <Text style={s.unlockBtnText}>Unlock Full Coaching</Text>
         </TouchableOpacity>
       </View>
@@ -412,7 +415,7 @@ function PremiumLockCard({ section }: { section: CoachingSection }) {
   );
 }
 
-export function CoachingResultCard({ result, onReset }: CoachingResultCardProps) {
+export function CoachingResultCard({ result, onReset, ctaButton }: CoachingResultCardProps) {
   const colors = useColors();
 
   const s = StyleSheet.create({
@@ -433,6 +436,10 @@ export function CoachingResultCard({ result, onReset }: CoachingResultCardProps)
     nextText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#78350f", lineHeight: 22 },
     resetBtn: { borderWidth: 2, borderColor: colors.primary, borderRadius: 16, paddingVertical: 16, alignItems: "center", marginBottom: 36 },
     resetBtnText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: colors.primary },
+    ctaBtn: { backgroundColor: colors.primary, borderRadius: 16, paddingVertical: 18, alignItems: "center", marginBottom: 12 },
+    ctaBtnText: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#ffffff", letterSpacing: 0.3 },
+    ctaSecondary: { alignItems: "center", paddingVertical: 12, marginBottom: 24 },
+    ctaSecondaryText: { fontSize: 14, fontFamily: "Inter_500Medium", color: colors.mutedForeground },
   });
 
   return (
@@ -488,9 +495,20 @@ export function CoachingResultCard({ result, onReset }: CoachingResultCardProps)
 
       {result.closingQuestion ? <ClosingQuestionCard question={result.closingQuestion} /> : null}
 
-      <TouchableOpacity style={s.resetBtn} onPress={onReset} activeOpacity={0.8}>
-        <Text style={s.resetBtnText}>Start a New Flow</Text>
-      </TouchableOpacity>
+      {ctaButton ? (
+        <>
+          <TouchableOpacity style={s.ctaBtn} onPress={ctaButton.onPress} activeOpacity={0.85}>
+            <Text style={s.ctaBtnText}>{ctaButton.label}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={s.ctaSecondary} onPress={onReset} activeOpacity={0.7}>
+            <Text style={s.ctaSecondaryText}>Back to Home</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <TouchableOpacity style={s.resetBtn} onPress={onReset} activeOpacity={0.8}>
+          <Text style={s.resetBtnText}>Start a New Flow</Text>
+        </TouchableOpacity>
+      )}
     </ScrollView>
   );
 }
