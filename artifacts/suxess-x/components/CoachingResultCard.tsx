@@ -186,7 +186,7 @@ function ExecutionHeader({ roleShift, behavioralObjective, tacticalTools }: {
   behavioralObjective?: string;
   tacticalTools?: string[];
 }) {
-  if (!roleShift && !behavioralObjective && (!tacticalTools || tacticalTools.length === 0)) return null;
+  if (!roleShift && !behavioralObjective) return null;
 
   const [from, to] = roleShift?.includes("→") ? roleShift.split("→").map((s) => s.trim()) : [roleShift, ""];
 
@@ -215,14 +215,6 @@ function ExecutionHeader({ roleShift, behavioralObjective, tacticalTools }: {
     objectiveWrap: { paddingVertical: 12, paddingHorizontal: 16 },
     objectiveLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#d4a017", textTransform: "uppercase", letterSpacing: 1, marginBottom: 5 },
     objectiveText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.85)", lineHeight: 20 },
-    toolsWrap: { paddingBottom: 14, paddingHorizontal: 16 },
-    toolsLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
-    toolsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-    toolChip: {
-      backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 6, borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
-      paddingVertical: 4, paddingHorizontal: 8,
-    },
-    toolText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "rgba(255,255,255,0.7)" },
   });
 
   return (
@@ -248,21 +240,6 @@ function ExecutionHeader({ roleShift, behavioralObjective, tacticalTools }: {
         </>
       ) : null}
 
-      {tacticalTools && tacticalTools.length > 0 ? (
-        <>
-          <View style={s.divider} />
-          <View style={s.toolsWrap}>
-            <Text style={s.toolsLabel}>Tactical Tools</Text>
-            <View style={s.toolsRow}>
-              {tacticalTools.map((tool, i) => (
-                <View key={i} style={s.toolChip}>
-                  <Text style={s.toolText}>{tool}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        </>
-      ) : null}
     </View>
   );
 }
@@ -312,11 +289,11 @@ function ScriptSection({ script, strategy }: { script: CoachingScript; strategy:
   });
 
   const steps = [
-    { step: "Step 2", label: "Frame the Conversation", text: script.opening, framework: "Jefferson Fisher" },
-    { step: "Step 3", label: "Compliance Ladder", text: script.issue, framework: "Chase Hughes · Voss" },
-    { step: "Step 4", label: "Controlled Delivery", text: script.impact, framework: "Observable Impact" },
-    { step: "Step 4", label: "Clear Expectation", text: script.ask, framework: "Outcome-Based Ask", showPause: true },
-    { step: "Step 5", label: "After the Pause", text: script.pushback, isPushback: true, framework: "Strategic Pause" },
+    { step: "Step 2", label: "Open the Conversation", text: script.opening },
+    { step: "Step 3", label: "Build Agreement", text: script.issue },
+    { step: "Step 4", label: "State the Impact", text: script.impact },
+    { step: "Step 4", label: "Make the Ask", text: script.ask, showPause: true },
+    { step: "Step 5", label: "Handle the Response", text: script.pushback, isPushback: true },
   ];
 
   return (
