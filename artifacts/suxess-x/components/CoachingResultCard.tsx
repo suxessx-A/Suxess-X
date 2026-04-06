@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useColors } from "@/hooks/useColors";
-import { CoachingResult, CoachingScript, CoachingSection, CoachingStrategy, ProblemType } from "@/context/CoachingContext";
+import { CoachingResult, CoachingScript, CoachingSection, CoachingStrategy, CoachingTrigger, ProblemType } from "@/context/CoachingContext";
 
 interface CoachingResultCardProps {
   result: CoachingResult;
@@ -43,17 +43,24 @@ const SECTION_ICONS: Record<string, string> = {
   "Momentum Loop": "🔄",
 };
 
+const MODE_CONFIG = {
+  Challenger: { color: "#7c3aed", bg: "#f5f3ff", label: "Challenger Mode" },
+  Coach:      { color: "#0369a1", bg: "#e0f2fe", label: "Coach Mode" },
+  Strategist: { color: "#b45309", bg: "#fef3c7", label: "Strategist Mode" },
+};
+
 function HeaderBadge({ result }: { result: CoachingResult }) {
   const theme = result.strategy
     ? STRATEGY_THEME[result.strategy]
     : PROBLEM_TYPE_THEME[result.problemType];
+  const modeConfig = result.mode ? MODE_CONFIG[result.mode] : null;
 
   const s = StyleSheet.create({
     wrap: {
       borderRadius: 14, borderWidth: 1.5, borderColor: theme.border,
       backgroundColor: theme.bg, padding: 16, marginBottom: 14,
-      flexDirection: "row", alignItems: "center", gap: 12,
     },
+    row: { flexDirection: "row", alignItems: "center", gap: 12 },
     iconWrap: {
       width: 40, height: 40, borderRadius: 20,
       backgroundColor: theme.color, alignItems: "center", justifyContent: "center",
@@ -62,17 +69,114 @@ function HeaderBadge({ result }: { result: CoachingResult }) {
     textWrap: { flex: 1 },
     eyebrow: { fontSize: 10, fontFamily: "Inter_600SemiBold", color: theme.color, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 2 },
     label: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#1a1a2e" },
-    sub: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6b7280", marginTop: 2 },
+    modePill: {
+      marginTop: 10, alignSelf: "flex-start", borderRadius: 8,
+      paddingVertical: 4, paddingHorizontal: 10, borderWidth: 1,
+    },
+    modeText: { fontSize: 11, fontFamily: "Inter_700Bold", textTransform: "uppercase", letterSpacing: 1 },
   });
 
   return (
     <View style={s.wrap}>
-      <View style={s.iconWrap}><Text style={s.icon}>{theme.icon}</Text></View>
-      <View style={s.textWrap}>
-        <Text style={s.eyebrow}>{theme.eyebrow}</Text>
-        <Text style={s.label}>{theme.label}</Text>
-        <Text style={s.sub}>Tailored for your situation</Text>
+      <View style={s.row}>
+        <View style={s.iconWrap}><Text style={s.icon}>{theme.icon}</Text></View>
+        <View style={s.textWrap}>
+          <Text style={s.eyebrow}>{theme.eyebrow}</Text>
+          <Text style={s.label}>{theme.label}</Text>
+        </View>
       </View>
+      {modeConfig ? (
+        <View style={[s.modePill, { backgroundColor: modeConfig.bg, borderColor: modeConfig.color }]}>
+          <Text style={[s.modeText, { color: modeConfig.color }]}>🔥 {modeConfig.label}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function TriggerCard({ trigger }: { trigger: CoachingTrigger }) {
+  const s = StyleSheet.create({
+    card: { borderRadius: 14, marginBottom: 10, overflow: "hidden" },
+    header: { backgroundColor: "#92400e", paddingVertical: 10, paddingHorizontal: 16 },
+    headerText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#fff", textTransform: "uppercase", letterSpacing: 1 },
+    body: { backgroundColor: "#fffbeb", paddingTop: 14, paddingBottom: 16, paddingHorizontal: 16 },
+    triggerRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
+    triggerLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#78350f", textTransform: "uppercase", letterSpacing: 1 },
+    triggerValue: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", flex: 1 },
+    energyLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#78350f", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 },
+    energyText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#1a1a2e", lineHeight: 22, marginBottom: 14 },
+    affirmationBox: {
+      backgroundColor: "#1a1a2e", borderRadius: 12,
+      paddingVertical: 16, paddingHorizontal: 16,
+    },
+    affirmationLabel: { fontSize: 9, fontFamily: "Inter_700Bold", color: "#d4a017", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 },
+    affirmationText: { fontSize: 18, fontFamily: "Inter_700Bold", color: "#fff", lineHeight: 27, textAlign: "center" },
+    affirmationSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.5)", textAlign: "center", marginTop: 8 },
+  });
+
+  return (
+    <View style={s.card}>
+      <View style={s.header}><Text style={s.headerText}>⚡  Energy Reset</Text></View>
+      <View style={s.body}>
+        <View style={s.triggerRow}>
+          <Text style={s.triggerLabel}>Trigger:</Text>
+          <Text style={s.triggerValue}>{trigger.triggerName}</Text>
+        </View>
+        <Text style={s.energyLabel}>Before you act</Text>
+        <Text style={s.energyText}>{trigger.energyShift}</Text>
+        <View style={s.affirmationBox}>
+          <Text style={s.affirmationLabel}>Say this 22 times out loud</Text>
+          <Text style={s.affirmationText}>"{trigger.repetitionStatement}"</Text>
+          <Text style={s.affirmationSub}>Present tense · Out loud · Before you move</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function IdentityAnchorCard({ anchor }: { anchor: string }) {
+  const s = StyleSheet.create({
+    card: {
+      borderRadius: 14, marginBottom: 10,
+      backgroundColor: "#1a1a2e", padding: 16,
+      flexDirection: "row", alignItems: "flex-start", gap: 12,
+    },
+    iconWrap: {
+      width: 36, height: 36, borderRadius: 18,
+      backgroundColor: "#d4a017", alignItems: "center", justifyContent: "center",
+    },
+    iconText: { fontSize: 16 },
+    textWrap: { flex: 1 },
+    label: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#d4a017", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 },
+    text: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#fff", lineHeight: 23 },
+  });
+
+  return (
+    <View style={s.card}>
+      <View style={s.iconWrap}><Text style={s.iconText}>🧠</Text></View>
+      <View style={s.textWrap}>
+        <Text style={s.label}>Identity Anchor</Text>
+        <Text style={s.text}>{anchor}</Text>
+      </View>
+    </View>
+  );
+}
+
+function ClosingQuestionCard({ question }: { question: string }) {
+  const s = StyleSheet.create({
+    card: {
+      borderRadius: 14, marginTop: 4, marginBottom: 24,
+      borderWidth: 2, borderColor: "#7c3aed",
+      backgroundColor: "#faf5ff", padding: 18,
+    },
+    label: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#7c3aed", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10 },
+    text: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", lineHeight: 25 },
+  });
+
+  return (
+    <View style={s.card}>
+      <Text style={s.label}>❓  Your Coaching Question</Text>
+      <Text style={s.text}>{question}</Text>
     </View>
   );
 }
@@ -366,6 +470,8 @@ export function CoachingResultCard({ result, onReset }: CoachingResultCardProps)
 
       <BreakdownBlock reframe={result.reframe} breakdown={result.breakdown} />
 
+      {result.trigger ? <TriggerCard trigger={result.trigger} /> : null}
+
       {result.sections
         .filter((s) => s.title === "State Set")
         .map((section, i) => (
@@ -391,6 +497,8 @@ export function CoachingResultCard({ result, onReset }: CoachingResultCardProps)
           )
         )}
 
+      {result.identityAnchor ? <IdentityAnchorCard anchor={result.identityAnchor} /> : null}
+
       <View style={s.divider} />
 
       <View style={s.nextBox}>
@@ -400,6 +508,8 @@ export function CoachingResultCard({ result, onReset }: CoachingResultCardProps)
           <Text style={s.nextText}>{result.nextSteps.join("\n")}</Text>
         </View>
       </View>
+
+      {result.closingQuestion ? <ClosingQuestionCard question={result.closingQuestion} /> : null}
 
       <TouchableOpacity style={s.resetBtn} onPress={onReset} activeOpacity={0.8}>
         <Text style={s.resetBtnText}>Start a New Flow</Text>

@@ -34,17 +34,27 @@ export interface CoachingSection {
   premium?: boolean;
 }
 
+export interface CoachingTrigger {
+  triggerName: string;
+  energyShift: string;
+  repetitionStatement: string;
+}
+
 export interface CoachingResult {
   problemType: ProblemType;
   strategy: CoachingStrategy | null;
+  mode?: "Challenger" | "Coach" | "Strategist";
   roleShift?: string;
   behavioralObjective?: string;
   tacticalTools?: string[];
   reframe: string;
   breakdown: string;
+  trigger?: CoachingTrigger;
+  identityAnchor?: string;
   script: CoachingScript | null;
   sections: CoachingSection[];
   nextSteps: string[];
+  closingQuestion?: string;
 }
 
 interface CoachingContextValue {
@@ -208,7 +218,26 @@ function safeParseResult(raw: unknown, problemType: ProblemType, chosenStrategy:
     ? obj.tacticalTools.filter((t) => typeof t === "string" && t.trim()).map((t) => String(t).trim())
     : [];
 
-  return { problemType: parsedProblemType, strategy: parsedStrategy, roleShift, behavioralObjective, tacticalTools, reframe, breakdown, script, sections, nextSteps };
+  const VALID_MODES = ["Challenger", "Coach", "Strategist"] as const;
+  type Mode = typeof VALID_MODES[number];
+  const rawMode = String(obj.mode ?? "").trim() as Mode;
+  const mode: Mode | undefined = VALID_MODES.includes(rawMode) ? rawMode : undefined;
+
+  let trigger: CoachingTrigger | undefined;
+  if (typeof obj.trigger === "object" && obj.trigger !== null) {
+    const t = obj.trigger as Record<string, unknown>;
+    trigger = {
+      triggerName: str(t.triggerName, ""),
+      energyShift: str(t.energyShift, ""),
+      repetitionStatement: str(t.repetitionStatement, ""),
+    };
+    if (!trigger.triggerName && !trigger.energyShift && !trigger.repetitionStatement) trigger = undefined;
+  }
+
+  const identityAnchor = typeof obj.identityAnchor === "string" ? obj.identityAnchor.trim() : undefined;
+  const closingQuestion = typeof obj.closingQuestion === "string" ? obj.closingQuestion.trim() : undefined;
+
+  return { problemType: parsedProblemType, strategy: parsedStrategy, mode, roleShift, behavioralObjective, tacticalTools, reframe, breakdown, trigger, identityAnchor, script, sections, nextSteps, closingQuestion };
 }
 
 function getBase(): string {
