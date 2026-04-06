@@ -87,7 +87,7 @@ function HeaderBadge({ result }: { result: CoachingResult }) {
       </View>
       {modeConfig ? (
         <View style={[s.modePill, { backgroundColor: modeConfig.bg, borderColor: modeConfig.color }]}>
-          <Text style={[s.modeText, { color: modeConfig.color }]}>🔥 {modeConfig.label}</Text>
+          <Text style={[s.modeText, { color: modeConfig.color }]}>{modeConfig.label}</Text>
         </View>
       ) : null}
     </View>
@@ -104,14 +104,14 @@ function TriggerCard({ trigger }: { trigger: CoachingTrigger }) {
     triggerLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#78350f", textTransform: "uppercase", letterSpacing: 1 },
     triggerValue: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", flex: 1 },
     energyLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#78350f", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 },
-    energyText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#1a1a2e", lineHeight: 22, marginBottom: 14 },
+    energyText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", lineHeight: 22, marginBottom: 14 },
     affirmationBox: {
       backgroundColor: "#1a1a2e", borderRadius: 12,
       paddingVertical: 16, paddingHorizontal: 16,
     },
     affirmationLabel: { fontSize: 9, fontFamily: "Inter_700Bold", color: "#d4a017", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 },
     affirmationText: { fontSize: 18, fontFamily: "Inter_700Bold", color: "#fff", lineHeight: 27, textAlign: "center" },
-    affirmationSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.5)", textAlign: "center", marginTop: 8 },
+    affirmationSub: { fontSize: 10, fontFamily: "Inter_600SemiBold", color: "rgba(255,255,255,0.4)", textAlign: "center", marginTop: 8 },
   });
 
   return (
@@ -119,15 +119,15 @@ function TriggerCard({ trigger }: { trigger: CoachingTrigger }) {
       <View style={s.header}><Text style={s.headerText}>⚡  Energy Reset</Text></View>
       <View style={s.body}>
         <View style={s.triggerRow}>
-          <Text style={s.triggerLabel}>Trigger:</Text>
+          <Text style={s.triggerLabel}>Trigger</Text>
           <Text style={s.triggerValue}>{trigger.triggerName}</Text>
         </View>
-        <Text style={s.energyLabel}>Before you act</Text>
+        <Text style={s.energyLabel}>Reset first</Text>
         <Text style={s.energyText}>{trigger.energyShift}</Text>
         <View style={s.affirmationBox}>
-          <Text style={s.affirmationLabel}>Say this 22 times out loud</Text>
+          <Text style={s.affirmationLabel}>Say 22× aloud</Text>
           <Text style={s.affirmationText}>"{trigger.repetitionStatement}"</Text>
-          <Text style={s.affirmationSub}>Present tense · Out loud · Before you move</Text>
+          <Text style={s.affirmationSub}>Aloud. Before you move.</Text>
         </View>
       </View>
     </View>
@@ -175,7 +175,7 @@ function ClosingQuestionCard({ question }: { question: string }) {
 
   return (
     <View style={s.card}>
-      <Text style={s.label}>❓  Your Coaching Question</Text>
+      <Text style={s.label}>Before You Move</Text>
       <Text style={s.text}>{question}</Text>
     </View>
   );
@@ -213,7 +213,7 @@ function ExecutionHeader({ roleShift, behavioralObjective, tacticalTools }: {
     toText: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#fff" },
     divider: { height: 1, backgroundColor: "rgba(255,255,255,0.1)", marginHorizontal: 16 },
     objectiveWrap: { paddingVertical: 12, paddingHorizontal: 16 },
-    objectiveLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#d4a017", textTransform: "uppercase", letterSpacing: 1, marginBottom: 5 },
+    objectiveLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#d4a017", textTransform: "uppercase", letterSpacing: 1, marginBottom: 5, },
     objectiveText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.85)", lineHeight: 20 },
   });
 
@@ -234,7 +234,7 @@ function ExecutionHeader({ roleShift, behavioralObjective, tacticalTools }: {
         <>
           <View style={s.divider} />
           <View style={s.objectiveWrap}>
-            <Text style={s.objectiveLabel}>Behavioral Objective</Text>
+            <Text style={s.objectiveLabel}>Objective</Text>
             <Text style={s.objectiveText}>{behavioralObjective}</Text>
           </View>
         </>
@@ -250,12 +250,12 @@ function BreakdownBlock({ reframe, breakdown }: { reframe: string; breakdown: st
     header: { backgroundColor: "#374151", paddingVertical: 10, paddingHorizontal: 16 },
     headerText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#fff", textTransform: "uppercase", letterSpacing: 1 },
     body: { backgroundColor: "#f9fafb", paddingVertical: 14, paddingHorizontal: 16 },
-    reframe: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1a1a2e", lineHeight: 23 },
+    reframe: { fontSize: 17, fontFamily: "Inter_700Bold", color: "#1a1a2e", lineHeight: 25 },
     breakdown: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#4b5563", lineHeight: 22, marginTop: 10 },
   });
   return (
     <View style={s.card}>
-      <View style={s.header}><Text style={s.headerText}>Situation Analysis</Text></View>
+      <View style={s.header}><Text style={s.headerText}>Diagnosis</Text></View>
       <View style={s.body}>
         <Text style={s.reframe}>{reframe}</Text>
         {breakdown ? <Text style={s.breakdown}>{breakdown}</Text> : null}
@@ -481,7 +481,7 @@ export function CoachingResultCard({ result, onReset }: CoachingResultCardProps)
       <View style={s.nextBox}>
         <View style={s.nextIconWrap}><Text style={s.nextIcon}>⚡</Text></View>
         <View style={s.nextContent}>
-          <Text style={s.nextLabel}>Your Next Steps</Text>
+          <Text style={s.nextLabel}>Act Now</Text>
           <Text style={s.nextText}>{result.nextSteps.join("\n")}</Text>
         </View>
       </View>
