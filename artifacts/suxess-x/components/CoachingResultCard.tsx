@@ -40,6 +40,7 @@ const SECTION_ICONS: Record<string, string> = {
   "Momentum List": "📋",
   "Back Online": "🚀",
   "What to Do": "✅",
+  "Momentum Loop": "🔄",
 };
 
 function HeaderBadge({ result }: { result: CoachingResult }) {
