@@ -1,3 +1,4 @@
+import "./global.css";
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -57,7 +58,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <GestureHandlerRootView>
+          <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
               <AccessProvider>
                 <CoachingProvider>
