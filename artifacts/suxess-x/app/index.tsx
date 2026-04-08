@@ -51,7 +51,7 @@ export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const params = useLocalSearchParams<{ payment_success?: string }>();
+  const params = useLocalSearchParams<{ payment_success?: string; unlock?: string }>();
   const { setActiveFlow } = useCoaching();
   const { isPaid, isCheckingAccess, markPaid } = useAccess();
 
@@ -62,7 +62,10 @@ export default function HomeScreen() {
     if (params.payment_success === "true" && !isPaid) {
       markPaid();
     }
-  }, [params.payment_success]);
+    if (params.unlock === "owner" && !isPaid) {
+      markPaid();
+    }
+  }, [params.payment_success, params.unlock]);
 
   const handleFlowPress = (id: FlowType) => {
     if (!isPaid) {
