@@ -218,6 +218,15 @@ export const flows: Record<string, FlowStep[]> = {
 
   negotiate: [
     {
+      key: "situation_type",
+      question: "What's your situation?",
+      options: [
+        "Starting a new role",
+        "My role has grown",
+        "I believe I'm underpaid",
+      ],
+    },
+    {
       key: "what",
       question: "What are you negotiating?",
       options: [

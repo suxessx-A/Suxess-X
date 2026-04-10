@@ -47,6 +47,17 @@ const SECTION_ICONS: Record<string, string> = {
   "Lead the Conversation": "💬",
   "Handle Pushback": "🛡",
   "Alternative Path": "🔀",
+  "Your Value Case": "📊",
+  "Lead with Contribution": "🎯",
+  "Bridge to Compensation": "🔗",
+  "If They Resist": "🛡",
+  "Before You Respond": "📋",
+  "Counter the Offer": "💬",
+  "Handle 'We're at the Top'": "⚡",
+  "What Else Is On the Table": "🔑",
+  "Positioning": "🎯",
+  "Opening + Market Reference": "📢",
+  "Lock a Timeline": "📅",
 };
 
 const MODE_CONFIG = {

@@ -672,8 +672,12 @@ router.post("/coaching/generate", async (req, res) => {
     ? `Behavioral role: ${problemType}\nStrategy chosen by user: ${strategy}`
     : `Behavioral role: ${problemType}`;
 
+  const situationType = isNegotiate
+    ? ((answers["situation_type"] as string | undefined) ?? "Starting a new role")
+    : null;
+
   const userPrompt = isNegotiate
-    ? buildUserPrompt(flowType, answers)
+    ? `Situation type: ${situationType}\n\n${buildUserPrompt(flowType, answers)}\n\nPersonalise roleShift, reframe, breakdown, trigger, script.opening, script.issue, script.ask, and closingQuestion specifically for someone in the "${situationType}" situation. Keep all other fields exactly as defined in the schema.`
     : `${context}\n\n${buildUserPrompt(flowType, answers)}\n\nGenerate coaching that activates the correct role shift for this behavioral role and strategy.`;
 
   try {
@@ -697,7 +701,7 @@ router.post("/coaching/generate", async (req, res) => {
     }
 
     if (isNegotiate) {
-      parsed = enforceNegotiateSections(parsed);
+      parsed = enforceNegotiateSections(parsed, answers);
     }
 
     res.json(parsed);
@@ -707,42 +711,123 @@ router.post("/coaching/generate", async (req, res) => {
   }
 });
 
-function enforceNegotiateSections(parsed: Record<string, unknown>) {
-  return {
-    ...parsed,
-    problemType: "AVOIDING_CHALLENGER",
-    strategy: "DIRECT_CONVERSATION",
-    mode: "Challenger",
-    identityAnchor: "You know your value, you communicate it clearly, and you don't leave conversations without a next step.",
-    nextSteps: [
-      "Five actions before the conversation:\n1. Write your target range — a specific number, today.\n2. List 3–5 measurable proof points. One sentence each. Results, scope, outcomes.\n3. Set your walk-away point — the minimum and what you do if it isn't met.\n4. Prepare your opening line and say it out loud — not in your head, out loud.\n5. Schedule the conversation within 48 hours — name the day, not 'soon.'",
-    ],
-    sections: [
+function enforceNegotiateSections(
+  parsed: Record<string, unknown>,
+  answers: Record<string, string | string[]>,
+) {
+  const situationType = (answers["situation_type"] as string | undefined) ?? "";
+
+  let identityAnchor: string;
+  let nextSteps: string[];
+  let sections: { title: string; premium: boolean; content: string }[];
+
+  if (situationType === "My role has grown") {
+    identityAnchor =
+      "You lead with results, not requests — and you don't leave the room without a commitment.";
+    nextSteps = [
+      "Five actions before the conversation:\n1. Write down 3–5 specific scope changes since your last compensation review — one sentence each, measurable.\n2. Attach a concrete outcome to each change: revenue, efficiency, team impact, risk reduced.\n3. Decide your target number and your floor. Write both down before the conversation.\n4. Prepare your opening line and say it aloud — not in your head.\n5. Schedule the conversation within 48 hours — name the day, not 'soon.'",
+    ];
+    sections = [
       {
-        title: "Internal Alignment",
+        title: "Your Value Case",
         premium: false,
         content:
-          "Three things to lock in before the conversation:\n\nTarget: Write your number or range now — not 'higher' or 'more.' A specific figure grounded in your role, your results, and the market. Vague asks produce vague responses.\nValue: List 3–5 measurable proof points — revenue, efficiency, scope, team impact, outcomes. One sentence each. If you can't prove it in a sentence, it doesn't go in the conversation.\nWalk-away: Define it before you enter. Your minimum acceptable outcome. What you will do if it isn't met — push the timeline, explore options, or make a decision. Power in this conversation comes from knowing this before it starts, not during it.",
+          "Before you name a number, build the case.\n\nScope changes: List every responsibility you have taken on since your compensation was last set. One sentence each. Be specific — not 'I took on more' but 'I now own X, Y, and Z which were previously split across two roles.'\nOutcomes: Attach a result to each change. Revenue driven, costs reduced, team performance, risk managed. If you can't measure it, describe the business impact in plain language.\nBaseline: Know when your compensation was last set and what your role looked like then. That gap is the argument.\n\nDo not enter this conversation without these three things written down.",
       },
       {
-        title: "Lead the Conversation",
+        title: "Lead with Contribution",
         premium: false,
         content:
-          "Five steps. Execute in order. Do not improvise the structure.\n\n1. Frame: 'My role and what I'm delivering has evolved. I'd like to talk about how my compensation reflects that.'\n2. Anchor: State your measurable results and scope. Specific to your situation. No softening.\n3. Align: 'I want to make sure my compensation reflects that.'\n4. Ask: Name the specific number or range. Directly. No preamble.\n5. Pause: Stop talking immediately after the ask. The first person to fill the silence loses positioning. Hold it — let them respond first.",
+          "Start with results — not with what you want.\n\n1. Frame: 'My role has expanded significantly. I'd like to walk you through what it looks like now — and then have a conversation about compensation.'\n2. Scope: Name the specific changes. No hedging. 'I now own X, Y, and Z. That wasn't the case 18 months ago.'\n3. Outcomes: State what those changes have produced. One sentence per result.\n4. Align: 'I want to make sure my compensation reflects the scope I'm actually operating at.'\n5. Ask: Name your number directly. 'I'd like to land at [figure]. Can we work through that?'\n6. Pause: Stop talking. Let them respond. Do not fill the silence.",
+      },
+      {
+        title: "Bridge to Compensation",
+        premium: false,
+        content:
+          "Once you've walked through scope and outcomes, make the direct connection.\n\nThe bridge: 'What I've described is materially different from the role I was in when my compensation was last reviewed. I want to make sure what I'm paid reflects what I'm delivering.'\n\nThen name the number. No preamble. No apology. No 'I was thinking maybe around…'\n\nIf they say they need to think: 'Of course. When can we pick this up — I'd like to keep it moving.' Name a specific date. Do not leave it as 'let's circle back.'",
+      },
+      {
+        title: "If They Resist",
+        premium: true,
+        content:
+          "If they say budget is tight or timing isn't right:\n\n1. Acknowledge without backing down: 'I hear you on timing.' Pause.\n2. Re-anchor: 'The scope and results are real — that's not changing.' Pause.\n3. Ask: 'What would need to be true for us to revisit this?'\n4. Lock criteria: Turn their answer into written criteria. 'So if I deliver X by Y date, we can revisit compensation at that point — can we put that in writing?'\n\nIf they can't commit to a number yet, commit to a date and written criteria. A named date with documented milestones is a commitment. 'Let's revisit soon' is not.",
+      },
+    ];
+  } else if (situationType === "I believe I'm underpaid") {
+    identityAnchor =
+      "You are not asking for a favor. You are correcting an imbalance — and you are doing it calmly, clearly, and with evidence.";
+    nextSteps = [
+      "Five actions before the conversation:\n1. Pull 3 market data points for your role, level, and location — specific figures, not ranges.\n2. Write your target number grounded in that data.\n3. Set your walk-away: the minimum acceptable outcome and what you do if it isn't met.\n4. Prepare your opening line word for word. Say it out loud twice.\n5. Schedule the conversation within 48 hours — name the day, not 'soon.'",
+    ];
+    sections = [
+      {
+        title: "Positioning",
+        premium: false,
+        content:
+          "Frame this correctly before the conversation — and inside it.\n\nThis is a market alignment conversation, not a performance discussion.\n\nYou are not asking your manager to recognise how hard you work. You are flagging that your compensation is out of step with the market rate for your role and level. Those are different conversations, and they require different framing.\n\nStay on market data. Do not bring in emotion, loyalty, or how long you've been there. Those signals weaken your position. Facts hold it.",
+      },
+      {
+        title: "Opening + Market Reference",
+        premium: false,
+        content:
+          "Say this — or a version of it that sounds like you:\n\n'I'd like to talk about how my compensation aligns with the market for my role.'\n\nThen: 'Based on market data I've reviewed, I believe my current compensation may be below the range for someone at my level in this function.'\n\nThen name your number: 'I'd like to get to [figure]. Can we have that conversation?'\n\nThen: Stop. Let them respond. Do not explain. Do not justify. Do not soften. You've made the ask — now listen.",
       },
       {
         title: "Handle Pushback",
         premium: false,
         content:
-          "When they say 'no budget':\n\n1. Acknowledge (no resistance): 'It sounds like budget is tight right now.' Pause 3 seconds.\n2. Re-anchor value: 'Given the scope and results I'm delivering…'\n3. Calibrated question: 'What would need to happen for this to be possible?'\n4. Lock next step: 'Can we set a time to revisit this with a clear timeline?'\n\nIf they say 'no flexibility': Mirror it back — 'No flexibility?' Then stop. Let them fill the space.\nIf they say 'let's revisit later': 'What specific outcomes would you need to see to support that?' Turn delay into measurable criteria. Do not leave without criteria and a date.",
+          "When they say budget is a factor:\n\n'I understand budget can be a consideration. What would need to happen to revisit this — and when?'\n\nWhen they stall:\n\n'Can we define a timeline to review this? I'd like to have a clear date to work toward.'\n\nWhen they say you're already paid fairly:\n\n'The market data I've seen suggests otherwise. I'm happy to share what I'm looking at — can we review it together?'\n\nDo not leave the conversation without either a number, a date, or written criteria for what would move this forward.",
       },
       {
-        title: "Alternative Path",
+        title: "Lock a Timeline",
         premium: true,
         content:
-          "If compensation isn't flexible right now, ask directly:\n'If compensation isn't flexible right now, are there other ways we can reflect this — or set a clear review point?'\n\nOptions to surface:\n— Title change that reflects actual scope\n— Expanded responsibilities formally on record\n— Defined review timeline with written criteria\n\nDo not leave without a specific next step and a date. Vague commitments compound underpay. A named date with written criteria is a commitment. 'We'll revisit soon' is not.",
+          "If compensation can't move now, get a commitment on when and what.\n\nAsk directly: 'If the number isn't available right now, can we agree on a specific date to revisit — and what I'd need to deliver for that to happen?'\n\nThen document it. Send a follow-up email the same day: 'As agreed, we'll revisit my compensation on [date]. The criteria we discussed: [list them].'\n\nA verbal agreement without documentation is not an agreement. A named date and written criteria is a commitment. Anything else is delay.",
       },
-    ],
+    ];
+  } else {
+    // "Starting a new role" (default / offer-stage)
+    identityAnchor =
+      "You know your value, you communicate it clearly, and you don't leave conversations without a next step.";
+    nextSteps = [
+      "Five actions before the conversation:\n1. Research the market range for this role — pull 3 specific data points, not a range.\n2. Set your target and your floor. Write both down. Do not enter the conversation without them.\n3. Decide what else is on the table — equity, title, start date, review date, sign-on. Know your priorities.\n4. Prepare your opening line and say it out loud — not in your head.\n5. Reply or schedule the conversation within 24 hours — momentum favours the prepared.",
+    ];
+    sections = [
+      {
+        title: "Before You Respond",
+        premium: false,
+        content:
+          "Do not accept or counter an offer without doing this first.\n\nResearch: Pull 3 market data points for this role, level, and location. Specific numbers — not ranges. This is your anchor.\nTarget: Decide your number. Not 'higher' — a specific figure. Write it down.\nFloor: Decide the minimum you'd accept. If the offer doesn't reach it, you decline or walk. Know this before you speak.\nWider package: Identify what else is negotiable — equity, title, sign-on, PTO, remote flexibility, performance review timing. Rank them. Base is first; others are backup.\n\nStructure buys you calm. Enter without it and you'll improvise.",
+      },
+      {
+        title: "Counter the Offer",
+        premium: false,
+        content:
+          "Say this — or a version of it:\n\n'Thank you for the offer. I'm genuinely excited about the role. I'd like to discuss the compensation — based on the market and what I'm bringing, I was targeting [your number]. Is there room to move on base?'\n\nThen stop. Don't explain. Don't justify. Don't list your reasons unprompted. You've made the ask — now hold the silence.\n\nIf they say yes: confirm it in writing before you accept.\nIf they say they need to check: 'Of course — when can we pick this up?' Name a day.",
+      },
+      {
+        title: "Handle 'We're at the Top'",
+        premium: false,
+        content:
+          "When they say they're at the top of the range:\n\n1. Acknowledge: 'I appreciate you being direct about that.' Pause.\n2. Re-anchor: 'Based on the market data I've seen, I think there's still room — I'd like to land at [figure].'\n3. Alternative: If base truly can't move — 'Is there flexibility on sign-on, equity, or a 6-month review?'\n\nIf they say no to everything: 'I want to make this work. Let me think about it — can we speak again tomorrow?' Buy time. Don't accept or walk in the same breath.\n\nYou are allowed to take 24 hours. You are not obligated to decide on the spot.",
+      },
+      {
+        title: "What Else Is On the Table",
+        premium: true,
+        content:
+          "If base compensation is fixed, negotiate everything else.\n\nSign-on bonus: Often more flexible than base. Ask for a one-time payment to bridge the gap. 'Is there flexibility on a sign-on to account for what I'm leaving behind?'\nEquity: Ask about vesting schedule, cliff, and acceleration. More equity with a shorter cliff can be worth more than a higher base.\nTitle: If the role is scoped above the title, negotiate the title now. It costs them nothing and affects your next negotiation.\nPerformance review: Ask for a 6-month review instead of 12. 'Can we agree to review compensation at 6 months based on [specific criteria]?' Get the criteria in writing before you start.",
+      },
+    ];
+  }
+
+  return {
+    ...parsed,
+    problemType: "AVOIDING_CHALLENGER",
+    strategy: "DIRECT_CONVERSATION",
+    mode: "Challenger",
+    identityAnchor,
+    nextSteps,
+    sections,
   };
 }
 
