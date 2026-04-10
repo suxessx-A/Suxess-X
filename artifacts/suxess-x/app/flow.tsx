@@ -21,7 +21,8 @@ import { flows } from "@/data/flows";
 const flowTitles: Record<string, string> = {
   conversation: "Tough Conversation",
   stuck: "Career Clarity",
-  visibility: "Step Up & Be Seen",
+  speak_up: "Speak Up",
+  executive_visibility: "Executive Visibility",
   negotiate: "Negotiate",
   mindset: "Mindset Reset",
 };

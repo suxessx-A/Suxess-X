@@ -28,9 +28,15 @@ const flows: { id: FlowType; label: string; subtitle: string; icon: string }[] =
     icon: "🧭",
   },
   {
-    id: "visibility",
-    label: "I need to step up / be seen",
-    subtitle: "Own your presence and get recognized",
+    id: "speak_up",
+    label: "Speak up in meetings",
+    subtitle: "Own the room and be heard",
+    icon: "🎤",
+  },
+  {
+    id: "executive_visibility",
+    label: "Make my work visible to leadership",
+    subtitle: "Turn results into executive-level presence",
     icon: "✨",
   },
   {

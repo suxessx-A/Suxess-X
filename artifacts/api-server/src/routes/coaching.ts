@@ -87,6 +87,8 @@ CLASSIFICATION RULES:
 - If the user is spinning from too much, not from not knowing what they want → OVERWHELMED
 - Visibility problems (not being recognized, not speaking up) → VICTIM if they're waiting; AVOIDING_CHALLENGER if they know what to do but don't do it
 - If the coaching scenario is "Negotiate Something Important" → ALWAYS classify as AVOIDING_CHALLENGER with DIRECT_CONVERSATION strategy, regardless of other signals. Negotiation is a direct conversation by definition.
+- If the coaching scenario is "Speak Up in Meetings" → ALWAYS classify as AVOIDING_CHALLENGER with DIRECT_CONVERSATION strategy. This is a behavioral avoidance problem — they know they should speak up but they don't.
+- If the coaching scenario is "Make Your Work Visible to Leadership" → ALWAYS classify as VICTIM. This is a positioning and ownership problem — they are not actively managing how their work is perceived by decision-makers.
 
 For AVOIDING_CHALLENGER, diagnose the full situation before recommending a strategy:
 
@@ -596,6 +598,74 @@ router.post("/coaching/evaluate", async (req, res) => {
   }
 });
 
+const SPEAK_UP_PROMPT = `You are an elite executive coach for professional women. Generate meeting-visibility coaching. Output raw JSON only — no markdown, no code fences.
+
+${STYLE_RULES}
+
+Generate EXACTLY this JSON structure:
+
+{
+  "problemType": "AVOIDING_CHALLENGER",
+  "strategy": "DIRECT_CONVERSATION",
+  "mode": "Challenger",
+  "roleShift": "<specific in-meeting silence pattern → active contributor behavior (max 6 words each side, actual text — no brackets)>",
+  "behavioralObjective": "<speak up at least once in their specific meeting type within 24 hours — name the exact meeting context>",
+  "reframe": "<one sentence — the belief keeping them quiet vs the sharper truth. Under 20 words. Should land like a punch.>",
+  "breakdown": "<sentence 1: root cause of their silence pattern. Sentence 2: the specific story making staying quiet feel safer. Sentence 3: concrete cost — what staying quiet has cost them in that room.>",
+  "trigger": {
+    "triggerName": "<the specific in-the-moment fear right before they would speak — 6-10 words>",
+    "energyShift": "<physical reset instruction before they speak — starts with a verb, concrete, 1-2 sentences>",
+    "repetitionStatement": "<identity-level, present tense, under 10 words — who they are in the room>"
+  },
+  "identityAnchor": "<one sentence: You are someone who [specific behavioral shift in the meeting context].>",
+  "script": null,
+  "sections": [
+    {
+      "title": "Your Lines",
+      "premium": true,
+      "content": "<Three entry lines personalised to their specific meeting type and audience — no 'I just wanted to add...' or 'sorry to interrupt' — direct, no permission asking:\n\nLine 1: [Direct observation or position — 1-2 sentences, specific to their meeting context]\nLine 2: [Add to an existing point without asking permission — 'Building on that—' or 'The other angle here is—']\nLine 3: [Question that signals engagement — specific and sharp, not open-ended]\n\nWhen the moment has passed:\n[One re-entry line for after a pause — direct, no apology]>"
+    }
+  ],
+  "nextSteps": ["<Three commands specific to their meeting context:\n1. Before: [specific preparation step — name the meeting and what to write down]\n2. During: [the exact move to make in the first 10 minutes]\n3. After: [what to notice and track — one sentence]>"],
+  "closingQuestion": "<one sentence — specific to their pattern, creates productive discomfort>"
+}
+
+Personalise roleShift, reframe, breakdown, trigger, behavioralObjective, identityAnchor, sections[0].content, nextSteps, and closingQuestion to the user's specific meeting context, audience, and blocker.`;
+
+const EXECUTIVE_VISIBILITY_PROMPT = `You are an elite executive coach for professional women. Generate executive positioning coaching. Output raw JSON only — no markdown, no code fences.
+
+${STYLE_RULES}
+
+Generate EXACTLY this JSON structure:
+
+{
+  "problemType": "VICTIM",
+  "strategy": null,
+  "mode": "Coach",
+  "roleShift": "<passive positioning pattern → active executive presence behavior (max 6 words each side, actual text — no brackets)>",
+  "behavioralObjective": "<one specific positioning action to take within 48 hours — name who, what, and the format>",
+  "reframe": "<one sentence — the belief keeping them invisible vs the sharper truth. Under 20 words. Should land like a punch.>",
+  "breakdown": "<sentence 1: root cause of the positioning gap — clarity gap, strategy gap, or structural obstacle? Sentence 2: the specific story making invisibility feel rational. Sentence 3: concrete cost — what the gap has produced in missed credibility, recognition, or opportunity.>",
+  "trigger": {
+    "triggerName": "<specific fear or block around executive exposure — 6-10 words>",
+    "energyShift": "<physical or mental reset instruction — starts with a verb, concrete, 1-2 sentences>",
+    "repetitionStatement": "<identity-level, present tense, under 10 words>"
+  },
+  "identityAnchor": "<one sentence: You are someone who [specific positioning behavior shift].>",
+  "script": null,
+  "sections": [
+    {
+      "title": "Before",
+      "premium": false,
+      "content": "<Personalised task-to-outcome conversion specific to their work and gap:\n\nReplace this:\n— '[Task-level description from their situation]'\n— '[Another task-level pattern from their answers]'\n\nWith this:\n— '[Business-impact version of the same work]'\n— '[Business-impact version of the second example]'\n\nThen prepare your positioning sentence. Format: [What you delivered] + [business outcome] + [what it makes possible]. Write it now — one sentence, say it out loud, own it.>"
+    }
+  ],
+  "nextSteps": ["<Three commands this week:\n1. [Convert one piece of recent work into a business impact statement — specific to their situation]\n2. [Use one executive frame this week in their specific medium — name the exact context]\n3. [Share one piece of work proactively — who, how, and what to say]>"],
+  "closingQuestion": "<one sentence — specific to their visibility challenge, creates productive discomfort>"
+}
+
+Personalise roleShift, reframe, breakdown, trigger, behavioralObjective, identityAnchor, sections[0].content, nextSteps, and closingQuestion to the user's specific situation, audience, and positioning gap.`;
+
 const CONVERSATION_PROMPT = `You are an elite executive coach for professional women. Generate tough conversation coaching. Output raw JSON only — no markdown, no code fences.
 
 ${STYLE_RULES}
@@ -700,11 +770,17 @@ router.post("/coaching/generate", async (req, res) => {
 
   const isNegotiate = flowType === "negotiate";
   const isConversation = flowType === "conversation" && strategy === "DIRECT_CONVERSATION";
+  const isSpeakUp = flowType === "speak_up";
+  const isExecutiveVisibility = flowType === "executive_visibility";
 
   const systemPrompt = isNegotiate
     ? NEGOTIATE_PROMPT
     : isConversation
     ? CONVERSATION_PROMPT
+    : isSpeakUp
+    ? SPEAK_UP_PROMPT
+    : isExecutiveVisibility
+    ? EXECUTIVE_VISIBILITY_PROMPT
     : GENERATE_PROMPT;
 
   const context = strategy
@@ -717,7 +793,7 @@ router.post("/coaching/generate", async (req, res) => {
 
   const userPrompt = isNegotiate
     ? `Situation type: ${situationType}\n\n${buildUserPrompt(flowType, answers)}\n\nPersonalise roleShift, reframe, breakdown, trigger, script.opening, script.issue, script.ask, and closingQuestion specifically for someone in the "${situationType}" situation. Keep all other fields exactly as defined in the schema.`
-    : isConversation
+    : isConversation || isSpeakUp || isExecutiveVisibility
     ? buildUserPrompt(flowType, answers)
     : `${context}\n\n${buildUserPrompt(flowType, answers)}\n\nGenerate coaching that activates the correct role shift for this behavioral role and strategy.`;
 
@@ -745,6 +821,10 @@ router.post("/coaching/generate", async (req, res) => {
       parsed = enforceNegotiateSections(parsed, answers);
     } else if (isConversation) {
       parsed = enforceConversationSections(parsed);
+    } else if (isSpeakUp) {
+      parsed = enforceSpeakUpSections(parsed);
+    } else if (isExecutiveVisibility) {
+      parsed = enforceExecutiveVisibilitySections(parsed);
     }
 
     res.json(parsed);
@@ -753,6 +833,72 @@ router.post("/coaching/generate", async (req, res) => {
     res.status(500).json({ error: "Failed to generate coaching" });
   }
 });
+
+function enforceSpeakUpSections(parsed: Record<string, unknown>) {
+  const aiSections = (parsed.sections as { title: string; premium: boolean; content: string }[] | undefined) ?? [];
+  const yourLines = aiSections.find((s) => s.title === "Your Lines") ?? {
+    title: "Your Lines",
+    premium: true,
+    content:
+      "Three entry lines — use the one that fits the moment:\n\nLine 1: Direct position\n'The angle I'd add here is [observation]. That changes how we should approach [specific decision].'\n\nLine 2: Build on what's said\n'Building on that — the implication for [topic] is [specific point].'\n\nLine 3: Focused question\n'What's driving [specific assumption]? I want to make sure we're solving the right problem.'\n\nWhen the moment has passed:\n'Going back to [topic] — I want to add something.' Then say it. No apology.",
+  };
+
+  return {
+    ...parsed,
+    script: null,
+    sections: [
+      {
+        title: "Prepare One Contribution",
+        premium: false,
+        content:
+          "Before the meeting, define one thing you will say.\n\nNot three points. Not a summary. One contribution — a question, an observation, or a position.\n\nWrite it in one sentence. Say it out loud before the meeting starts.\n\nThis removes the moment-of-decision friction. When the right moment comes, you are not composing — you are delivering. Your only job is to get it out and stop.",
+      },
+      {
+        title: "Speak First",
+        premium: false,
+        content:
+          "Speak within the first 10 minutes. This is a tactical move, not a courage exercise.\n\nOnce you've spoken once, the social cost of speaking again drops significantly. Once you've stayed quiet for 20 minutes, the cost of breaking the silence rises.\n\nYou do not need a perfect point. You need to get in early. The pattern matters more than the content.\n\nGet in. Stay in.",
+      },
+      {
+        title: "How to Contribute",
+        premium: false,
+        content:
+          "Say one thing. Make it short. Stop.\n\nThe formula: observation or position (one sentence). What it means or what you recommend (one sentence). Then stop talking.\n\nTwo sentences maximum.\n\nLonger contributions invite interruption, signal uncertainty, and dilute the point. Brevity signals confidence. The person who says one clear thing and stops is always remembered more than the person who explains.",
+      },
+      yourLines,
+    ],
+  };
+}
+
+function enforceExecutiveVisibilitySections(parsed: Record<string, unknown>) {
+  const aiSections = (parsed.sections as { title: string; premium: boolean; content: string }[] | undefined) ?? [];
+  const beforeSection = aiSections.find((s) => s.title === "Before") ?? {
+    title: "Before",
+    premium: false,
+    content:
+      "Convert your work into business impact before you walk in the room.\n\nReplace task language with outcome language. Not what you did — what it produced.\n\nThen prepare one positioning sentence:\n[What you delivered] + [business outcome] + [what it makes possible].\n\nWrite it. Say it out loud. That sentence is how you enter the conversation.",
+  };
+
+  return {
+    ...parsed,
+    script: null,
+    sections: [
+      beforeSection,
+      {
+        title: "During",
+        premium: false,
+        content:
+          "Use executive framing. Three templates — use the one that fits:\n\n'The key takeaway is—'\nOne clear signal from your work. What it means for the business. What the implication is.\n\n'What this unlocks is—'\nThe opportunity your work creates. What becomes possible now. Why it matters.\n\n'The risk to watch is—'\nThe threat or constraint your work revealed. What to do about it. Why now.\n\nDo not walk executives through how you did the work. Tell them what it means and what comes next.",
+      },
+      {
+        title: "The Principle",
+        premium: true,
+        content:
+          "Executives are not evaluating your effort. They are evaluating your judgment.\n\nClarity signals confidence. Detail signals execution. Direction signals leadership.\n\nWhen you present to executives: lead with the conclusion, not the context. State what you recommend, not just what you found. Name what you need from them — a decision, a resource, a signal.\n\nThe person who says 'the key takeaway is X, and I recommend Y' is read as a leader. The person who walks through all the work to get to the conclusion is read as an executor.\n\nYou decide which one you are before you open your mouth.",
+      },
+    ],
+  };
+}
 
 function enforceConversationSections(parsed: Record<string, unknown>) {
   if (parsed.script && typeof parsed.script === "object") {
@@ -927,7 +1073,8 @@ function buildUserPrompt(flowType: string, answers: Record<string, string | stri
   const flowNames: Record<string, string> = {
     conversation: "Handle a Tough Conversation",
     stuck: "I Feel Stuck in My Career",
-    visibility: "I Need to Step Up and Be Seen",
+    speak_up: "Speak Up in Meetings",
+    executive_visibility: "Make Your Work Visible to Leadership",
     negotiate: "Negotiate Something Important",
     mindset: "Reset My Mindset Quickly",
   };

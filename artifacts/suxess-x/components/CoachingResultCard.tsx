@@ -60,6 +60,13 @@ const SECTION_ICONS: Record<string, string> = {
   "Lock a Timeline": "📅",
   "Internal Clarity": "🧭",
   "Discipline": "⚡",
+  "Prepare One Contribution": "✏️",
+  "Speak First": "🎯",
+  "How to Contribute": "💡",
+  "Your Lines": "🎤",
+  "Before": "📋",
+  "During": "📢",
+  "The Principle": "⚡",
 };
 
 const MODE_CONFIG = {
@@ -413,6 +420,8 @@ function PremiumLockCard({ section }: { section: CoachingSection }) {
     "If They Resist": "Turn budget objections and stalling into written criteria and a named review date.",
     "What Else Is On the Table": "Negotiate everything beyond base — sign-on, equity, title, and a 6-month review.",
     "Lock a Timeline": "Get a commitment on when and what — and document it the same day.",
+    "Your Lines": "Get three personalised entry lines written for your specific meeting and audience — ready to say out loud.",
+    "The Principle": "Understand the one distinction that separates executives who get read as leaders from those who get read as executors.",
   };
 
   return (

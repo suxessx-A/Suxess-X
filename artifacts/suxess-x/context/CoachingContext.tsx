@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 
-export type FlowType = "conversation" | "stuck" | "visibility" | "negotiate" | "mindset";
+export type FlowType = "conversation" | "stuck" | "speak_up" | "executive_visibility" | "negotiate" | "mindset";
 export type ProblemType = "VICTIM" | "AVOIDING_CHALLENGER" | "OVERWHELMED";
 export type CoachingStrategy = "DIRECT_CONVERSATION" | "INDIRECT_INFLUENCE" | "STRATEGIC_CONTAINMENT";
 
