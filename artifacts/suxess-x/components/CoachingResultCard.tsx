@@ -43,6 +43,10 @@ const SECTION_ICONS: Record<string, string> = {
   "Back Online": "🚀",
   "What to Do": "✅",
   "Momentum Loop": "🔄",
+  "Internal Alignment": "🧭",
+  "Lead the Conversation": "💬",
+  "Handle Pushback": "🛡",
+  "Alternative Path": "🔀",
 };
 
 const MODE_CONFIG = {

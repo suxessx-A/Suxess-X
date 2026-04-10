@@ -86,6 +86,7 @@ CLASSIFICATION RULES:
 - If the user avoids a specific conversation or action they know they should take → AVOIDING_CHALLENGER (not VICTIM)
 - If the user is spinning from too much, not from not knowing what they want → OVERWHELMED
 - Visibility problems (not being recognized, not speaking up) → VICTIM if they're waiting; AVOIDING_CHALLENGER if they know what to do but don't do it
+- If the coaching scenario is "Negotiate Something Important" → ALWAYS classify as AVOIDING_CHALLENGER with DIRECT_CONVERSATION strategy, regardless of other signals. Negotiation is a direct conversation by definition.
 
 For AVOIDING_CHALLENGER, diagnose the full situation before recommending a strategy:
 
@@ -142,6 +143,45 @@ No markdown. No code fences. Raw JSON only.`;
 const GENERATE_PROMPT = `You are an elite executive coach for professional women applying the Winner's Triangle framework. Generate coaching that activates the correct role shift — never mix action styles across roles.
 
 ${STYLE_RULES}
+
+═══════════════════════════════════════════════════════
+FLOW-SPECIFIC OVERRIDE: CHECK FIRST BEFORE ANY ROLE LOGIC
+═══════════════════════════════════════════════════════
+
+IF the coaching scenario is "Negotiate Something Important" — STOP. Do not use DIRECT_CONVERSATION standard structure. Use the negotiation structure below instead.
+
+FOR "Negotiate Something Important" ONLY:
+Output problemType: "AVOIDING_CHALLENGER", strategy: "DIRECT_CONVERSATION", mode: "Challenger".
+Use these fields and sections EXACTLY:
+
+- roleShift: Write the actual text — no brackets. Specific to their situation. E.g. "Waiting to be offered more → Naming the number" or "Softening the ask → Holding the standard."
+- behavioralObjective: Format: "Have the compensation conversation with [specific person] within 48 hours."
+- reframe: One sentence. Name the belief keeping them from asking directly — the story about risk, timing, or not being ready — and the sharper truth replacing it. Under 20 words. No cushioning. Should land like a punch.
+- breakdown: 3 sentences: (1) Root cause — clarity gap (haven't defined exact number), strategy gap (don't know how to lead without collapsing), or external obstacle (budget, timing, power)? (2) The specific story making delay feel rational. Name it directly. (3) What the delay has cost in concrete terms — compensation left on the table, missed review windows, compounding underpay.
+- trigger: triggerName = specific fear driving their avoidance of this conversation. energyShift = physical reset before the conversation. repetitionStatement = identity-level, present tense, under 10 words.
+- script: {
+    "opening": "Frame the conversation. 'My role and what I'm delivering has evolved. I'd like to talk about how my compensation reflects that. Is now a good time?' Calm. No apology. Ask permission — gives them a small yes before the main conversation.",
+    "issue": "Anchor value. Use specifics from their answers: scope, results, responsibilities, market data. 'I've taken on [X] and delivered [Y]. The scope and impact are materially different from when my compensation was last set.' Facts only.",
+    "impact": "Align impact to compensation. 'I want to make sure my compensation reflects what I'm delivering — and that we're clear on what that looks like going forward.' One sentence. No emotion.",
+    "ask": "Name the number. Directly. 'I'd like to land on [specific range or figure]. Can we work through that together?' [Pause. Stop talking immediately. Do not explain or justify. Let them respond first.]",
+    "pushback": "When they say 'no budget': 'It sounds like budget is tight right now.' (3-second pause.) 'Given the scope and results I'm delivering — what would need to happen for this to be possible?' (Hold silence. Do not fill the space.) If they stall with 'let's revisit later': 'What specific outcomes would you need to see to support that?' Turn delay into measurable criteria."
+  }
+- sections (EXACTLY THESE FOUR, in this order):
+  1. title: "Internal Alignment", premium: false
+     content: Three things to lock in before the conversation:\n\nTarget: Write your number or range now — not 'higher' or 'more.' A specific figure grounded in your role, your results, and the market. Vague asks produce vague responses.\nValue: List 3–5 measurable proof points — revenue, efficiency, scope, team impact, outcomes. One sentence each. If you can't prove it in a sentence, it doesn't go in the conversation.\nWalk-away: Define it before you enter. Your minimum acceptable outcome. What you will do if it isn't met — push the timeline, explore options, or make a decision. Power in this conversation comes from knowing this before it starts, not during it.
+
+  2. title: "Lead the Conversation", premium: false
+     content: Five steps. Execute in order. Do not improvise the structure.\n\n1. Frame: 'My role and what I'm delivering has evolved. I'd like to talk about how my compensation reflects that.'\n2. Anchor: State measurable results and scope — specific to their situation, using what they shared. No softening.\n3. Align: 'I want to make sure my compensation reflects that.'\n4. Ask: Name the specific number or range. Directly. No preamble.\n5. Pause: Stop talking immediately after the ask. The first person to fill the silence loses positioning. Hold it until they respond.
+
+  3. title: "Handle Pushback", premium: false
+     content: When they say 'no budget':\n\n1. Acknowledge (no resistance): 'It sounds like budget is tight right now.' Pause 3 seconds.\n2. Re-anchor value: 'Given the scope and results I'm delivering…'\n3. Calibrated question: 'What would need to happen for this to be possible?'\n4. Lock next step: 'Can we set a time to revisit this with a clear timeline?'\n\nIf they say 'no flexibility': Mirror it back — 'No flexibility?' Then stop. Let them fill the space.\nIf they say 'let's revisit later': 'What specific outcomes would you need to see to support that?' Turn delay into measurable criteria. Do not leave without criteria and a date.
+
+  4. title: "Alternative Path", premium: true
+     content: If compensation isn't flexible right now, ask directly:\n'If compensation isn't flexible right now, are there other ways we can reflect this — or set a clear review point?'\n\nOptions to surface:\n— Title change that reflects actual scope\n— Expanded responsibilities formally on record\n— Defined review timeline with written criteria\n\nDo not leave without a specific next step and a date. Vague commitments compound underpay. A named date with written criteria is a commitment. 'We'll revisit soon' is not.
+
+- nextSteps: ["Five actions before the conversation:\n1. Write your target range — a specific number, today.\n2. List 3–5 measurable proof points. One sentence each. Results, scope, outcomes.\n3. Set your walk-away point — the minimum and what you do if it isn't met.\n4. Prepare your opening line and say it out loud — not in your head, out loud.\n5. Schedule the conversation within 48 hours — name the day, not 'soon.'"]
+- identityAnchor: "You know your value, you communicate it clearly, and you don't leave conversations without a next step."
+- closingQuestion: Specific to their negotiation situation. One sentence. Creates productive discomfort. Not generic.
 
 ═══════════════════════════════════════════════════════
 UNIVERSAL FIELDS (required in EVERY output, all roles)
@@ -556,6 +596,61 @@ router.post("/coaching/evaluate", async (req, res) => {
   }
 });
 
+const NEGOTIATE_PROMPT = `You are an elite executive coach for professional women. Generate negotiation coaching. Output raw JSON only — no markdown, no code fences.
+
+${STYLE_RULES}
+
+Generate EXACTLY this JSON structure:
+
+{
+  "problemType": "AVOIDING_CHALLENGER",
+  "strategy": "DIRECT_CONVERSATION",
+  "mode": "Challenger",
+  "roleShift": "<current avoidance pattern> → <active challenger behavior> (max 6 words each side, no brackets, specific to their situation)",
+  "behavioralObjective": "Have the compensation conversation with [specific person from their answers] within 48 hours.",
+  "reframe": "<one sentence — the belief keeping them from asking, then the sharper truth replacing it — under 20 words, no padding>",
+  "breakdown": "<sentence 1: root cause — clarity gap, strategy gap, or external obstacle> <sentence 2: the specific story making delay feel rational — name it directly> <sentence 3: what the delay has cost in concrete terms — compensation left on the table, missed windows, compounding underpay>",
+  "trigger": {
+    "triggerName": "<specific fear driving avoidance of this conversation — 6-10 words>",
+    "energyShift": "<physical reset instruction before the conversation — starts with a verb, concrete, 1-2 sentences>",
+    "repetitionStatement": "<identity-level, present tense, under 10 words — who they are, not what they will do>"
+  },
+  "identityAnchor": "You know your value, you communicate it clearly, and you don't leave conversations without a next step.",
+  "script": {
+    "opening": "<personalised to their situation: frame the topic, state the goal, ask permission. Calm. No apology. Example: 'My role and what I'm delivering has evolved. I'd like to talk about how my compensation reflects that. Is now a good time?' — adapt to their specific context>",
+    "issue": "<anchor value using specifics from their situation: scope, results, responsibilities. 'I've taken on [X] and delivered [Y]. The scope and impact are materially different from when my compensation was last set.' Facts only, no interpretation>",
+    "impact": "<align impact to compensation in one sentence. 'I want to make sure my compensation reflects what I'm delivering — and that we're clear on what that looks like going forward.' No emotion.>",
+    "ask": "<name the specific number or range from their answers directly. 'I'd like to land on [figure]. Can we work through that together?' Then: [Pause. Stop talking. Do not explain or justify. Let them respond first.]>",
+    "pushback": "<handling 'no budget': Acknowledge calmly — 'It sounds like budget is tight right now.' (3-second pause.) Re-anchor: 'Given the scope and results I'm delivering —' Calibrated question: 'What would need to happen for this to be possible?' (Hold silence.) If stalling: 'What specific outcomes would you need to see to support that?' Turn delay into measurable criteria.>"
+  },
+  "sections": [
+    {
+      "title": "Internal Alignment",
+      "premium": false,
+      "content": "Three things to lock in before the conversation:\\n\\nTarget: Write your number or range now — not 'higher' or 'more.' A specific figure grounded in your role, your results, and the market. Vague asks produce vague responses.\\nValue: List 3–5 measurable proof points — revenue, efficiency, scope, team impact, outcomes. One sentence each. If you can't prove it in a sentence, it doesn't go in the conversation.\\nWalk-away: Define it before you enter. Your minimum acceptable outcome. What you will do if it isn't met — push the timeline, explore options, or make a decision. Power in this conversation comes from knowing this before it starts, not during it."
+    },
+    {
+      "title": "Lead the Conversation",
+      "premium": false,
+      "content": "Five steps. Execute in order. Do not improvise the structure.\\n\\n1. Frame: 'My role and what I'm delivering has evolved. I'd like to talk about how my compensation reflects that.'\\n2. Anchor: State your measurable results and scope — specific to their situation. No softening.\\n3. Align: 'I want to make sure my compensation reflects that.'\\n4. Ask: Name the specific number or range. Directly. No preamble.\\n5. Pause: Stop talking immediately after the ask. The first person to fill the silence loses positioning. Hold it — let them respond first."
+    },
+    {
+      "title": "Handle Pushback",
+      "premium": false,
+      "content": "When they say 'no budget':\\n\\n1. Acknowledge (no resistance): 'It sounds like budget is tight right now.' Pause 3 seconds.\\n2. Re-anchor value: 'Given the scope and results I'm delivering…'\\n3. Calibrated question: 'What would need to happen for this to be possible?'\\n4. Lock next step: 'Can we set a time to revisit this with a clear timeline?'\\n\\nIf they say 'no flexibility': Mirror it back — 'No flexibility?' Then stop. Let them fill the space.\\nIf they say 'let's revisit later': 'What specific outcomes would you need to see to support that?' Turn delay into measurable criteria. Do not leave without criteria and a date."
+    },
+    {
+      "title": "Alternative Path",
+      "premium": true,
+      "content": "If compensation isn't flexible right now, ask directly:\\n'If compensation isn't flexible right now, are there other ways we can reflect this — or set a clear review point?'\\n\\nOptions to surface:\\n— Title change that reflects actual scope\\n— Expanded responsibilities formally on record\\n— Defined review timeline with written criteria\\n\\nDo not leave without a specific next step and a date. Vague commitments compound underpay. A named date with written criteria is a commitment. 'We'll revisit soon' is not."
+    }
+  ],
+  "nextSteps": ["Five actions before the conversation:\\n1. Write your target range — a specific number, today.\\n2. List 3–5 measurable proof points. One sentence each. Results, scope, outcomes.\\n3. Set your walk-away point — the minimum and what you do if it isn't met.\\n4. Prepare your opening line and say it out loud — not in your head, out loud.\\n5. Schedule the conversation within 48 hours — name the day, not 'soon.'"],
+  "closingQuestion": "<one sentence — specific to their negotiation situation, present tense, creates productive discomfort, not generic>"
+}
+
+Personalise roleShift, reframe, breakdown, trigger, script.opening, script.issue, script.ask, and closingQuestion to the user's specific situation. All other fields output exactly as specified above.`;
+
 router.post("/coaching/generate", async (req, res) => {
   const { flowType, answers, problemType, strategy } = req.body as {
     flowType: string;
@@ -569,18 +664,24 @@ router.post("/coaching/generate", async (req, res) => {
     return;
   }
 
+  const isNegotiate = flowType === "negotiate";
+
+  const systemPrompt = isNegotiate ? NEGOTIATE_PROMPT : GENERATE_PROMPT;
+
   const context = strategy
     ? `Behavioral role: ${problemType}\nStrategy chosen by user: ${strategy}`
     : `Behavioral role: ${problemType}`;
 
-  const userPrompt = `${context}\n\n${buildUserPrompt(flowType, answers)}\n\nGenerate coaching that activates the correct role shift for this behavioral role and strategy.`;
+  const userPrompt = isNegotiate
+    ? buildUserPrompt(flowType, answers)
+    : `${context}\n\n${buildUserPrompt(flowType, answers)}\n\nGenerate coaching that activates the correct role shift for this behavioral role and strategy.`;
 
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       max_completion_tokens: 3000,
       messages: [
-        { role: "system", content: GENERATE_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
     });
@@ -595,12 +696,55 @@ router.post("/coaching/generate", async (req, res) => {
       parsed = buildFallback(problemType, strategy);
     }
 
+    if (isNegotiate) {
+      parsed = enforceNegotiateSections(parsed);
+    }
+
     res.json(parsed);
   } catch (err) {
     req.log.error({ err }, "OpenAI generate error");
     res.status(500).json({ error: "Failed to generate coaching" });
   }
 });
+
+function enforceNegotiateSections(parsed: Record<string, unknown>) {
+  return {
+    ...parsed,
+    problemType: "AVOIDING_CHALLENGER",
+    strategy: "DIRECT_CONVERSATION",
+    mode: "Challenger",
+    identityAnchor: "You know your value, you communicate it clearly, and you don't leave conversations without a next step.",
+    nextSteps: [
+      "Five actions before the conversation:\n1. Write your target range — a specific number, today.\n2. List 3–5 measurable proof points. One sentence each. Results, scope, outcomes.\n3. Set your walk-away point — the minimum and what you do if it isn't met.\n4. Prepare your opening line and say it out loud — not in your head, out loud.\n5. Schedule the conversation within 48 hours — name the day, not 'soon.'",
+    ],
+    sections: [
+      {
+        title: "Internal Alignment",
+        premium: false,
+        content:
+          "Three things to lock in before the conversation:\n\nTarget: Write your number or range now — not 'higher' or 'more.' A specific figure grounded in your role, your results, and the market. Vague asks produce vague responses.\nValue: List 3–5 measurable proof points — revenue, efficiency, scope, team impact, outcomes. One sentence each. If you can't prove it in a sentence, it doesn't go in the conversation.\nWalk-away: Define it before you enter. Your minimum acceptable outcome. What you will do if it isn't met — push the timeline, explore options, or make a decision. Power in this conversation comes from knowing this before it starts, not during it.",
+      },
+      {
+        title: "Lead the Conversation",
+        premium: false,
+        content:
+          "Five steps. Execute in order. Do not improvise the structure.\n\n1. Frame: 'My role and what I'm delivering has evolved. I'd like to talk about how my compensation reflects that.'\n2. Anchor: State your measurable results and scope. Specific to your situation. No softening.\n3. Align: 'I want to make sure my compensation reflects that.'\n4. Ask: Name the specific number or range. Directly. No preamble.\n5. Pause: Stop talking immediately after the ask. The first person to fill the silence loses positioning. Hold it — let them respond first.",
+      },
+      {
+        title: "Handle Pushback",
+        premium: false,
+        content:
+          "When they say 'no budget':\n\n1. Acknowledge (no resistance): 'It sounds like budget is tight right now.' Pause 3 seconds.\n2. Re-anchor value: 'Given the scope and results I'm delivering…'\n3. Calibrated question: 'What would need to happen for this to be possible?'\n4. Lock next step: 'Can we set a time to revisit this with a clear timeline?'\n\nIf they say 'no flexibility': Mirror it back — 'No flexibility?' Then stop. Let them fill the space.\nIf they say 'let's revisit later': 'What specific outcomes would you need to see to support that?' Turn delay into measurable criteria. Do not leave without criteria and a date.",
+      },
+      {
+        title: "Alternative Path",
+        premium: true,
+        content:
+          "If compensation isn't flexible right now, ask directly:\n'If compensation isn't flexible right now, are there other ways we can reflect this — or set a clear review point?'\n\nOptions to surface:\n— Title change that reflects actual scope\n— Expanded responsibilities formally on record\n— Defined review timeline with written criteria\n\nDo not leave without a specific next step and a date. Vague commitments compound underpay. A named date with written criteria is a commitment. 'We'll revisit soon' is not.",
+      },
+    ],
+  };
+}
 
 function buildFallback(problemType: string, strategy: string | null) {
   return {

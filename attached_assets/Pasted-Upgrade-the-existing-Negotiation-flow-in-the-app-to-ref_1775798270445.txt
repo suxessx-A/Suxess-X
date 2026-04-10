@@ -1,0 +1,176 @@
+Upgrade the existing "Negotiation" flow in the app to reflect executive-level coaching, not generic advice.
+
+Do NOT reference any frameworks or authors explicitly. Embed the thinking and structure directly.
+
+The flow must guide the user through:
+1. Clarifying their position (what they want, their value, walk-away)
+2. Structuring the conversation
+3. Handling pushback (especially "no budget")
+4. Taking action with confidence
+
+---
+
+SECTION 1: INTERNAL ALIGNMENT (before the conversation)
+
+Title: "Clarify your position before you speak"
+
+Add guided steps:
+
+1. What you want (target outcome)
+- Prompt user to define a specific number or range
+- Not vague (e.g. not “more” or “higher”)
+- Example:
+  “Define your target range based on your role, impact, and market”
+
+2. Your value (evidence, not opinion)
+- Prompt user to list:
+  - Measurable results (impact, revenue, efficiency, outcomes)
+  - Scope of responsibility
+  - Any market benchmarks
+- Instruction:
+  “If you can’t prove it, you can’t negotiate it”
+
+3. Your walk-away point
+- Prompt user to define:
+  - Minimum acceptable outcome
+  - What they will do if not met (stay, push later, explore options)
+- Instruction:
+  “Power comes from knowing what you will and won’t accept before the conversation”
+
+---
+
+SECTION 2: HOW TO LEAD THE CONVERSATION
+
+Title: "Lead with impact, not emotion"
+
+Replace any existing generic scripts with:
+
+Structure:
+
+1. Frame:
+“My role and responsibilities have evolved, and I’d like to talk about how my compensation reflects the impact I’m having.”
+
+2. Anchor value:
+“I’ve taken on [specific results / responsibilities].”
+
+3. Align:
+“I’d like to make sure my compensation reflects that.”
+
+4. Ask:
+“Can we review this together?”
+
+5. Pause:
+- Explicit instruction: “Stop talking. Let them respond.”
+
+---
+
+SECTION 3: USING MARKET DATA (OPTIONAL)
+
+Title: "Use data without losing control"
+
+Add guidance:
+
+- Use market data to support your position, not complain
+- Avoid comparing yourself to specific individuals
+
+Example phrasing:
+“Based on market benchmarks and my current scope, I’d like to review how my compensation aligns.”
+
+---
+
+SECTION 4: HANDLING PUSHBACK (CRITICAL)
+
+Title: "Stay in control when they push back"
+
+Scenario: Manager says “We don’t have budget”
+
+Teach this response structure:
+
+1. Acknowledge (calm, no resistance):
+“It sounds like budget is tight right now.”
+
+2. Re-anchor value:
+“Given the scope and impact I’m delivering…”
+
+3. Ask a calibrated question:
+“What would need to happen for this to be possible?”
+
+4. Lock next step:
+“Can we set a time to revisit this?”
+
+---
+
+Add additional tools:
+
+- Use short reflective statements to prompt them to expand:
+  Example:
+  Manager: “There’s no flexibility”
+  User: “No flexibility?”
+  (Then pause)
+
+- Encourage silence after key questions:
+  “Let them fill the space. Do not rush to speak.”
+
+---
+
+SECTION 5: IF THEY DELAY OR STALL
+
+Add:
+
+If manager says:
+“Let’s revisit later”
+
+User should respond:
+
+“What specific outcomes or milestones would you want to see to support that?”
+
+Goal:
+Turn vague delay into clear criteria.
+
+---
+
+SECTION 6: ALTERNATIVE PATH (IF COMPENSATION BLOCKED)
+
+Add:
+
+“If compensation isn’t flexible right now, explore alternatives:
+- Title change
+- Expanded scope
+- Defined timeline for review”
+
+Example:
+“If compensation isn’t flexible right now, are there other ways we can reflect this or set a clear review point?”
+
+---
+
+SECTION 7: ACT NOW
+
+Update action steps:
+
+1. Define your target compensation range (specific numbers)
+2. Write 3–5 measurable proof points of your value
+3. Set your walk-away point (non-negotiable)
+4. Prepare your opening line and practice it out loud
+5. Schedule the conversation within 48 hours
+
+---
+
+SECTION 8: IDENTITY ANCHOR
+
+Replace existing identity line with:
+
+“You know your value, you communicate it clearly, and you don’t leave conversations without a next step.”
+
+---
+
+TONE REQUIREMENTS:
+- Direct, calm, authoritative
+- No corporate jargon
+- No motivational fluff
+- Feels like real executive coaching
+- Practical and immediately usable
+
+IMPORTANT:
+- Keep structure consistent with existing app UI
+- Improve depth, not complexity
+- Every section must lead to action
