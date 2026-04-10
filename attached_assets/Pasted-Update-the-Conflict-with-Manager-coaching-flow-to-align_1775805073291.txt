@@ -1,0 +1,115 @@
+Update the "Conflict with Manager" coaching flow to align with the upgraded negotiation framework.
+
+DO NOT remove the current structure.
+Enhance it with stronger clarity, positioning, and response handling.
+
+Make the following changes:
+
+---
+
+1. ADD NEW SECTION ABOVE "CHALLENGER SCRIPT"
+
+Title: "INTERNAL CLARITY (BEFORE YOU SPEAK)"
+
+Content:
+
+Before entering the conversation, define:
+
+- What do I actually want to change? (be specific)
+- What impact is this having on my work, results, or energy?
+- What is my boundary if this continues?
+
+Guidance:
+Do not enter the conversation just to express frustration.
+Enter to create a shift.
+
+---
+
+2. UPDATE STEP 2 "OPEN THE CONVERSATION"
+
+Replace with:
+
+"I want to talk about something that’s affecting how I’m able to do my best work. Is now a good time?"
+
+Keep it calm, neutral, and grounded.
+Remove overly soft or vague phrasing.
+
+---
+
+3. UPDATE STEP 3 "BUILD AGREEMENT"
+
+Replace with:
+
+"I’ve noticed [specific behavior]. I want to make sure we’re aligned because it’s starting to impact [specific outcome]. How do you see it?"
+
+Goal:
+- Stay factual
+- Invite their perspective
+- Do NOT accuse
+
+---
+
+4. UPDATE STEP 4 "STATE THE IMPACT"
+
+Tighten to:
+
+"The impact of this is [clear business or performance impact]. I want to make sure we’re set up to succeed here."
+
+Remove emotional over-explanation.
+
+---
+
+5. UPDATE STEP 5 "MAKE THE ASK"
+
+Replace with:
+
+"What I need going forward is [clear change]. Can we agree on that?"
+
+Add instruction:
+Pause. Let them respond first.
+
+---
+
+6. ADD NEW SECTION AFTER STEP 5
+
+Title: "HANDLE PUSHBACK"
+
+Add 3 common responses:
+
+If they get defensive:
+"I hear that. That’s not my intention — I want us to work better together. How do we move forward from here?"
+
+If they minimize:
+"I understand it may not seem significant, but it is impacting my ability to deliver at my best."
+
+If they deflect:
+"That may be true as well. For now, I’d like to stay focused on this specific point."
+
+---
+
+7. ADD MICRO-COACHING NOTE
+
+Title: "DISCIPLINE"
+
+Content:
+
+- Do not over-explain
+- Do not fill silence
+- Do not rescue the conversation
+
+Silence creates pressure. Let it work for you.
+
+---
+
+8. KEEP TONE CONSISTENT WITH NEGOTIATION FLOW
+
+- Direct
+- Calm
+- Outcome-focused
+- No corporate fluff
+- No therapy-style language
+
+---
+
+Goal:
+Make the conflict flow feel like a confident, controlled conversation — not an emotional discussion.

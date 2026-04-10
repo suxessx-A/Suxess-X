@@ -58,6 +58,8 @@ const SECTION_ICONS: Record<string, string> = {
   "Positioning": "🎯",
   "Opening + Market Reference": "📢",
   "Lock a Timeline": "📅",
+  "Internal Clarity": "🧭",
+  "Discipline": "⚡",
 };
 
 const MODE_CONFIG = {
@@ -310,7 +312,9 @@ function ScriptSection({ script, strategy }: { script: CoachingScript; strategy:
     { step: "Step 3", label: "Build Agreement", text: script.issue },
     { step: "Step 4", label: "State the Impact", text: script.impact },
     { step: "Step 4", label: "Make the Ask", text: script.ask, showPause: true },
-    { step: "Step 5", label: "Handle the Response", text: script.pushback, isPushback: true },
+    ...(script.pushback
+      ? [{ step: "Step 5", label: "Handle the Response", text: script.pushback, isPushback: true }]
+      : []),
   ];
 
   return (
@@ -404,6 +408,11 @@ function PremiumLockCard({ section }: { section: CoachingSection }) {
   const descriptions: Record<string, string> = {
     "Outreach Scripts": "Get the exact messages to send — adapted to the person, the path, and the variant that fits.",
     "Follow-Up Strategy": "Know exactly what to do after each conversation to keep momentum and sharpen your direction.",
+    "Discipline": "The three in-room rules that separate confident conversations from ones that collapse under pressure.",
+    "Alternative Path": "If the number isn't available, know exactly what to ask for instead — and how to lock it in.",
+    "If They Resist": "Turn budget objections and stalling into written criteria and a named review date.",
+    "What Else Is On the Table": "Negotiate everything beyond base — sign-on, equity, title, and a 6-month review.",
+    "Lock a Timeline": "Get a commitment on when and what — and document it the same day.",
   };
 
   return (
@@ -472,7 +481,7 @@ export function CoachingResultCard({ result, onReset, ctaButton }: CoachingResul
       {result.trigger ? <TriggerCard trigger={result.trigger} /> : null}
 
       {result.sections
-        .filter((s) => s.title === "State Set")
+        .filter((s) => s.title === "State Set" || s.title === "Internal Clarity")
         .map((section, i) => (
           <SectionCard key={`pre-${i}`} section={section} problemType={result.problemType} strategy={result.strategy} />
         ))}
@@ -482,7 +491,7 @@ export function CoachingResultCard({ result, onReset, ctaButton }: CoachingResul
       )}
 
       {result.sections
-        .filter((s) => s.title !== "State Set")
+        .filter((s) => s.title !== "State Set" && s.title !== "Internal Clarity")
         .map((section, i) =>
           section.premium ? (
             <PremiumLockCard key={i} section={section} />

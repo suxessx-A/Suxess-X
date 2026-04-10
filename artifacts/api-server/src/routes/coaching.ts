@@ -596,6 +596,40 @@ router.post("/coaching/evaluate", async (req, res) => {
   }
 });
 
+const CONVERSATION_PROMPT = `You are an elite executive coach for professional women. Generate tough conversation coaching. Output raw JSON only — no markdown, no code fences.
+
+${STYLE_RULES}
+
+Generate EXACTLY this JSON structure:
+
+{
+  "problemType": "AVOIDING_CHALLENGER",
+  "strategy": "DIRECT_CONVERSATION",
+  "mode": "Challenger",
+  "roleShift": "<current avoidance pattern> → <active challenger behavior> (max 6 words each side, write the actual text — no brackets, specific to their exact situation)",
+  "behavioralObjective": "<have this exact conversation with [who] within [specific timeframe — 24 or 48 hours]>",
+  "reframe": "<one sentence — name the belief making avoidance feel rational, then the sharper truth that replaces it. Under 20 words. No cushioning. Should land like a punch.>",
+  "breakdown": "<sentence 1: root cause — clarity gap (what they actually want to change), strategy gap (how to lead it without escalating), or external obstacle? Sentence 2: the specific story making delay feel rational — name it directly. Sentence 3: what the delay is costing in concrete terms — credibility, results, team trust, their own energy.>",
+  "trigger": {
+    "triggerName": "<specific fear driving their avoidance of this conversation — 6-10 words, name what they are actually avoiding>",
+    "energyShift": "<physical reset instruction before the conversation — starts with a verb, concrete, 1-2 sentences>",
+    "repetitionStatement": "<identity-level, present tense, under 10 words — who they are, not what they will do>"
+  },
+  "identityAnchor": "<one sentence: 'You are someone who [specific behavioral shift relevant to their situation].' No inspirational filler. Specific.>",
+  "script": {
+    "opening": "<personalised version of: 'I want to talk about something that's affecting how I'm able to do my best work. Is now a good time?' — adapt the first sentence to their specific topic and relationship. Keep the permission ask. Calm. No apology.>",
+    "issue": "<personalised: 'I've noticed [specific behavior from their answers]. I want to make sure we're aligned because it's starting to impact [specific outcome]. How do you see it?' — factual only, no interpretation, ends with their perspective invited.>",
+    "impact": "<personalised: 'The impact of this is [clear business or performance impact specific to their situation]. I want to make sure we're set up to succeed here.' — observable outcomes only, no emotional language.>",
+    "ask": "<personalised: 'What I need going forward is [clear specific change]. Can we agree on that?' — direct, outcome-specific, no preamble. End with: [Pause. Say nothing. Let them respond first.]>",
+    "pushback": null
+  },
+  "sections": [],
+  "nextSteps": ["<Three commands. Numbered. Verb-led. Time-bound. Max 2 lines each. Command 1: specific action to prepare before the conversation. Command 2: specific timing instruction — name the day. Command 3: what to do immediately after the conversation ends.>"],
+  "closingQuestion": "<one sentence — present tense, creates productive discomfort specific to their conflict situation, not generic>"
+}
+
+Personalise roleShift, reframe, breakdown, trigger, behavioralObjective, identityAnchor, script fields, nextSteps, and closingQuestion to the user's specific situation. Keep pushback as null. Keep sections as an empty array — they will be added separately.`;
+
 const NEGOTIATE_PROMPT = `You are an elite executive coach for professional women. Generate negotiation coaching. Output raw JSON only — no markdown, no code fences.
 
 ${STYLE_RULES}
@@ -665,8 +699,13 @@ router.post("/coaching/generate", async (req, res) => {
   }
 
   const isNegotiate = flowType === "negotiate";
+  const isConversation = flowType === "conversation" && strategy === "DIRECT_CONVERSATION";
 
-  const systemPrompt = isNegotiate ? NEGOTIATE_PROMPT : GENERATE_PROMPT;
+  const systemPrompt = isNegotiate
+    ? NEGOTIATE_PROMPT
+    : isConversation
+    ? CONVERSATION_PROMPT
+    : GENERATE_PROMPT;
 
   const context = strategy
     ? `Behavioral role: ${problemType}\nStrategy chosen by user: ${strategy}`
@@ -678,6 +717,8 @@ router.post("/coaching/generate", async (req, res) => {
 
   const userPrompt = isNegotiate
     ? `Situation type: ${situationType}\n\n${buildUserPrompt(flowType, answers)}\n\nPersonalise roleShift, reframe, breakdown, trigger, script.opening, script.issue, script.ask, and closingQuestion specifically for someone in the "${situationType}" situation. Keep all other fields exactly as defined in the schema.`
+    : isConversation
+    ? buildUserPrompt(flowType, answers)
     : `${context}\n\n${buildUserPrompt(flowType, answers)}\n\nGenerate coaching that activates the correct role shift for this behavioral role and strategy.`;
 
   try {
@@ -702,6 +743,8 @@ router.post("/coaching/generate", async (req, res) => {
 
     if (isNegotiate) {
       parsed = enforceNegotiateSections(parsed, answers);
+    } else if (isConversation) {
+      parsed = enforceConversationSections(parsed);
     }
 
     res.json(parsed);
@@ -710,6 +753,37 @@ router.post("/coaching/generate", async (req, res) => {
     res.status(500).json({ error: "Failed to generate coaching" });
   }
 });
+
+function enforceConversationSections(parsed: Record<string, unknown>) {
+  if (parsed.script && typeof parsed.script === "object") {
+    (parsed.script as Record<string, unknown>).pushback = null;
+  }
+
+  return {
+    ...parsed,
+    strategy: "DIRECT_CONVERSATION",
+    sections: [
+      {
+        title: "Internal Clarity",
+        premium: false,
+        content:
+          "Before entering the conversation, define three things in writing:\n\n1. What do I actually want to change? Be specific — not 'better communication' but the exact behavior that needs to stop or start.\n2. What impact is this having on my work, results, or energy? One sentence. Measurable where possible.\n3. What is my boundary if this continues? Name the specific action you will take — not 'I'll escalate' but who you will speak to and when.\n\nDo not enter the conversation just to express frustration. Enter to create a shift.",
+      },
+      {
+        title: "Handle Pushback",
+        premium: false,
+        content:
+          "Three responses — use the one that fits:\n\nIf they get defensive:\n'I hear that. That's not my intention — I want us to work better together. How do we move forward from here?'\n\nIf they minimize:\n'I understand it may not seem significant, but it is impacting my ability to deliver at my best.'\n\nIf they deflect:\n'That may be true as well. For now, I'd like to stay focused on this specific point.'",
+      },
+      {
+        title: "Discipline",
+        premium: true,
+        content:
+          "Three rules for the room:\n\n— Do not over-explain\n— Do not fill silence\n— Do not rescue the conversation\n\nSilence creates pressure. Let it work for you.",
+      },
+    ],
+  };
+}
 
 function enforceNegotiateSections(
   parsed: Record<string, unknown>,
