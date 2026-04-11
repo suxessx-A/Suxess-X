@@ -67,6 +67,10 @@ const SECTION_ICONS: Record<string, string> = {
   "Task → Impact": "🔄",
   "Executive Frames": "📐",
   "The Principle": "⚡",
+  "Pattern Interruption": "🧠",
+  "Truth vs Distortion": "⚖️",
+  "Power Questions": "🔍",
+  "Ownership + Action": "⚡",
 };
 
 const MODE_CONFIG = {
@@ -421,6 +425,7 @@ function PremiumLockCard({ section }: { section: CoachingSection }) {
     "What Else Is On the Table": "Negotiate everything beyond base — sign-on, equity, title, and a 6-month review.",
     "Lock a Timeline": "Get a commitment on when and what — and document it the same day.",
     "Your Lines": "Get three personalised entry lines written for your specific meeting and audience — ready to say out loud.",
+    "Ownership + Action": "Move from the spiral to a decision — two ownership prompts and two precision actions executable in minutes.",
     "The Principle": "Understand how executives actually read your communication — and the one rule that shifts you from executor to strategist.",
   };
 

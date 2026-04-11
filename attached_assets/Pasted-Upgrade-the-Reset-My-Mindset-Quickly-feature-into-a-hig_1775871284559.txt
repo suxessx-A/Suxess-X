@@ -1,0 +1,105 @@
+Upgrade the "Reset My Mindset Quickly" feature into a high-performance cognitive coaching flow.
+
+Current issue:
+The experience is too shallow and action-driven. It lacks depth in identifying internal narratives, challenging thinking patterns, and creating real cognitive shifts.
+
+Refactor ALL mindset reset flows using the following 8-step structure:
+
+1. TRIGGER AWARENESS
+
+* Clearly name the emotional state and situation
+* Example: "You received critical feedback and now feel doubt and pressure"
+
+2. PATTERN INTERRUPTION (NEW)
+
+* Call out what is happening psychologically
+* Examples:
+
+  * "You are treating feedback as a verdict, not data"
+  * "Your mind is turning one moment into a full identity judgment"
+* Goal: create awareness and distance from the reaction
+
+3. STORY IDENTIFICATION
+
+* Surface the internal narrative driving the emotion
+* Examples:
+
+  * "This means I'm not good enough"
+  * "I'm failing"
+* Make the story explicit and concise
+
+4. TRUTH VS DISTORTION
+
+* Separate facts from interpretation
+* Format:
+
+  * Fact: what actually happened
+  * Interpretation: the meaning the user assigned
+* Keep sharp and minimal
+
+5. REFRAME
+
+* Replace the limiting belief with a grounded, empowering alternative
+* Examples:
+
+  * "This is feedback, not a verdict"
+  * "This is direction for improvement"
+* Avoid motivational or vague language
+
+6. POWER QUESTIONS (CRITICAL)
+
+* Add 2–3 short, high-impact questions to force cognitive shift
+* Examples:
+
+  * "What specifically is useful in this feedback?"
+  * "What is actually in my control right now?"
+  * "What would a top performer do next?"
+* Questions must drive clarity and ownership
+
+7. OWNERSHIP SHIFT
+
+* Move user from passive → active (Passenger → Captain mindset)
+* Include prompts like:
+
+  * "What am I choosing to do next?"
+  * "What outcome do I want to create from this?"
+* Reinforce responsibility and control
+
+8. PRECISION ACTION
+
+* Provide 1–2 immediate, concrete actions
+* Must be specific, relevant, and executable within minutes
+* Examples:
+
+  * Write down 2 key takeaways from feedback
+  * Ask a clarifying question to your manager
+  * Adjust one behavior in your next interaction
+
+9. IDENTITY REINFORCEMENT
+
+* Add a short, powerful belief statement
+* Designed for repetition (22x mechanic)
+* Examples:
+
+  * "I use feedback to improve quickly"
+  * "I take action despite uncertainty"
+* Keep concise and credible
+
+Apply this structure across all mindset scenarios:
+
+* Fear of failure after feedback
+* Feeling exposed or judged
+* Mental spirals and overthinking
+* Feeling undervalued or unseen
+
+Tone:
+
+* Direct, grounded, and authoritative
+* Coaching-focused, not therapeutic
+* Designed to create clarity, control, and forward movement
+
+Goal:
+The user should experience:
+emotional reaction → awareness → cognitive shift → ownership → action → identity reinforcement
+
+This must feel like interrupting unhelpful thinking and replacing it with intentional leadership thinking.
