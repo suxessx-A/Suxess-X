@@ -598,9 +598,16 @@ router.post("/coaching/evaluate", async (req, res) => {
   }
 });
 
-const SPEAK_UP_PROMPT = `You are an elite executive coach for professional women. Generate meeting-visibility coaching. Output raw JSON only — no markdown, no code fences.
+const SPEAK_UP_PROMPT = `You are an elite executive coach for professional women. Generate real-time meeting execution coaching. Output raw JSON only — no markdown, no code fences.
 
 ${STYLE_RULES}
+
+HARD CONSTRAINTS — violations will be rejected:
+- This is real-time behavioral coaching. NEVER suggest talking to a manager, scheduling a debrief, explaining yourself to anyone, or having a conversation outside the meeting.
+- All coaching lives in the room. All nextSteps must be executable alone, before or during the meeting — not after.
+- NO permission-asking language: no "I just wanted to", "sorry to interrupt", "I hope it's okay if I", "if that makes sense".
+- NO self-justification language: no "I've been thinking about", "I wanted to clarify", "I should explain".
+- nextSteps are commands, not suggestions. Start each with a verb. One sentence each.
 
 Generate EXACTLY this JSON structure:
 
@@ -608,29 +615,29 @@ Generate EXACTLY this JSON structure:
   "problemType": "AVOIDING_CHALLENGER",
   "strategy": "DIRECT_CONVERSATION",
   "mode": "Challenger",
-  "roleShift": "<specific in-meeting silence pattern → active contributor behavior (max 6 words each side, actual text — no brackets)>",
-  "behavioralObjective": "<speak up at least once in their specific meeting type within 24 hours — name the exact meeting context>",
-  "reframe": "<one sentence — the belief keeping them quiet vs the sharper truth. Under 20 words. Should land like a punch.>",
-  "breakdown": "<sentence 1: root cause of their silence pattern. Sentence 2: the specific story making staying quiet feel safer. Sentence 3: concrete cost — what staying quiet has cost them in that room.>",
+  "roleShift": "<their specific in-meeting silence pattern → active contributor behavior. Max 6 words each side. Actual words — no angle brackets in output.>",
+  "behavioralObjective": "<one sentence: speak up once in their specific meeting type. Name the exact context and a 24-hour window.>",
+  "reframe": "<one sentence. The belief keeping them quiet vs the sharper truth. Under 20 words. Should land like a punch.>",
+  "breakdown": "<three sentences. 1: the root of this specific silence pattern — what drives it. 2: the internal story that makes staying quiet feel rational or safe. 3: the concrete cost — what it has already cost them in that room.>",
   "trigger": {
-    "triggerName": "<the specific in-the-moment fear right before they would speak — 6-10 words>",
-    "energyShift": "<physical reset instruction before they speak — starts with a verb, concrete, 1-2 sentences>",
-    "repetitionStatement": "<identity-level, present tense, under 10 words — who they are in the room>"
+    "triggerName": "<the specific fear or hesitation right before they would speak — 6-10 words>",
+    "energyShift": "<physical reset to do before speaking — starts with a verb, concrete, 1-2 sentences>",
+    "repetitionStatement": "<who they are in the room — identity-level, present tense, under 10 words>"
   },
-  "identityAnchor": "<one sentence: You are someone who [specific behavioral shift in the meeting context].>",
+  "identityAnchor": "<one sentence: You are someone who [specific behavioral change in the meeting].>",
   "script": null,
   "sections": [
     {
       "title": "Your Lines",
       "premium": true,
-      "content": "<Three entry lines personalised to their specific meeting type and audience — no 'I just wanted to add...' or 'sorry to interrupt' — direct, no permission asking:\n\nLine 1: [Direct observation or position — 1-2 sentences, specific to their meeting context]\nLine 2: [Add to an existing point without asking permission — 'Building on that—' or 'The other angle here is—']\nLine 3: [Question that signals engagement — specific and sharp, not open-ended]\n\nWhen the moment has passed:\n[One re-entry line for after a pause — direct, no apology]>"
+      "content": "<Personalised to their meeting type and in-the-moment pattern. No permission-asking language.\n\nLine 1 — Direct entry:\n'[Observation or position, 1 sentence, specific to their meeting context. Direct. No setup.]'\n\nLine 2 — Build on what's said:\n'[Adds to the conversation without asking to speak. Starts with 'Building on that—' or 'The other angle here is—' or similar. 1 sentence.]'\n\nLine 3 — Focused question:\n'[Sharp, specific question — signals engagement and strategic thinking. Not open-ended. Not 'what do you think?']'\n\nWhen the moment has already passed:\n'[Re-entry line — goes back to a specific point, direct, no apology, 1 sentence.]'>"
     }
   ],
-  "nextSteps": ["<Three commands specific to their meeting context:\n1. Before: [specific preparation step — name the meeting and what to write down]\n2. During: [the exact move to make in the first 10 minutes]\n3. After: [what to notice and track — one sentence]>"],
-  "closingQuestion": "<one sentence — specific to their pattern, creates productive discomfort>"
+  "nextSteps": ["<Three execution commands:\n1. [Before — write this down now: what to prepare before the meeting, in one sentence, specific to their context]\n2. [First 10 minutes — the exact move: when to speak and what to lead with, one sentence]\n3. [After you've spoken — what to do in the next 30 seconds: anchor the moment, do not explain or soften, one sentence]>"],
+  "closingQuestion": "<one sentence — specific to their in-the-moment pattern, creates productive discomfort>"
 }
 
-Personalise roleShift, reframe, breakdown, trigger, behavioralObjective, identityAnchor, sections[0].content, nextSteps, and closingQuestion to the user's specific meeting context, audience, and blocker.`;
+Personalise roleShift, reframe, breakdown, trigger, behavioralObjective, identityAnchor, sections[0].content, nextSteps, and closingQuestion to the user's specific blocker, pattern, meeting type, and cost.`;
 
 const EXECUTIVE_VISIBILITY_PROMPT = `You are an elite executive coach for professional women. Generate executive positioning coaching. Output raw JSON only — no markdown, no code fences.
 
@@ -848,22 +855,22 @@ function enforceSpeakUpSections(parsed: Record<string, unknown>) {
     script: null,
     sections: [
       {
-        title: "Prepare One Contribution",
+        title: "Before You Walk In",
         premium: false,
         content:
-          "Before the meeting, define one thing you will say.\n\nNot three points. Not a summary. One contribution — a question, an observation, or a position.\n\nWrite it in one sentence. Say it out loud before the meeting starts.\n\nThis removes the moment-of-decision friction. When the right moment comes, you are not composing — you are delivering. Your only job is to get it out and stop.",
+          "Write one sentence before the meeting starts.\n\nNot an outline. Not a summary. One contribution — an observation, a question, or a position you are ready to say out loud.\n\nWrite it. Say it out loud. You are not going to compose it in the room — you are going to deliver it.\n\nThis is the only pre-meeting preparation that matters. Everything else is optional.",
       },
       {
-        title: "Speak First",
+        title: "Get In Early",
         premium: false,
         content:
-          "Speak within the first 10 minutes. This is a tactical move, not a courage exercise.\n\nOnce you've spoken once, the social cost of speaking again drops significantly. Once you've stayed quiet for 20 minutes, the cost of breaking the silence rises.\n\nYou do not need a perfect point. You need to get in early. The pattern matters more than the content.\n\nGet in. Stay in.",
+          "Speak in the first 10 minutes.\n\nThis is not a motivation exercise. It's a timing strategy.\n\nOnce you've spoken once, the cost of speaking again drops significantly. Once you've stayed quiet for 20 minutes, the cost of breaking the silence is much higher.\n\nYou don't need a perfect point. You need to be in the conversation before it locks. Get in early. The content matters less than the fact that you were in it.",
       },
       {
-        title: "How to Contribute",
+        title: "The Two-Sentence Rule",
         premium: false,
         content:
-          "Say one thing. Make it short. Stop.\n\nThe formula: observation or position (one sentence). What it means or what you recommend (one sentence). Then stop talking.\n\nTwo sentences maximum.\n\nLonger contributions invite interruption, signal uncertainty, and dilute the point. Brevity signals confidence. The person who says one clear thing and stops is always remembered more than the person who explains.",
+          "Say one thing. Two sentences maximum. Then stop.\n\nFormula: your observation or position (one sentence) + what it means or what you recommend (one sentence). That's it.\n\nDo not add context. Do not soften. Do not explain.\n\nLonger contributions dilute the point and invite interruption. The person who says one clear thing and stops is always read as more confident than the person who builds to it.",
       },
       yourLines,
     ],
