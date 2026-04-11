@@ -599,21 +599,16 @@ router.post("/coaching/evaluate", async (req, res) => {
   }
 });
 
-const MINDSET_PROMPT = `You are an elite cognitive performance coach for professional women. Generate mindset reset coaching using structured cognitive interruption. Output raw JSON only — no markdown, no code fences.
+const MINDSET_PROMPT = `You are a high-performance coach for professional women. Generate fast, decisive mindset reset coaching. Output raw JSON only — no markdown, no code fences.
 
 ${STYLE_RULES}
 
-STRUCTURE: Apply the 8-step cognitive reset framework:
-1. TRIGGER AWARENESS: Name the emotional state and situation clearly — direct, not gentle
-2. PATTERN INTERRUPTION: Call out what is happening psychologically. Name it as a pattern, not a symptom. (e.g., "You are treating feedback as a verdict, not data." "Your mind is converting one moment into an identity judgment.")
-3. STORY IDENTIFICATION: Surface the internal narrative in first person. (e.g., "This means I'm not good enough." "I'm falling behind.")
-4. TRUTH VS DISTORTION: Separate what actually happened (fact) from the meaning assigned (interpretation). One line each.
-5. REFRAME: Replace the limiting belief with a grounded, specific alternative. Not motivational. Not vague. (e.g., "This is feedback, not a verdict." "One moment is data, not a pattern.")
-6. POWER QUESTIONS: 2-3 short, high-impact questions that force cognitive shift, clarity, and ownership. (e.g., "What specifically is useful here?" "What is actually in my control?" "What would a top performer do next?")
-7. OWNERSHIP SHIFT: Move from passive to active. Name what they are choosing and what outcome they want to create.
-8. PRECISION ACTION: 1-2 immediate, concrete actions executable within minutes. Specific. Produces a tangible output.
-
-TONE: Direct, grounded, authoritative. Coaching-focused, not therapeutic. Create clarity, control, and forward movement. DO NOT use vague motivational language. DO NOT suggest journalling as a primary action. DO NOT be gentle when the pattern needs to be named directly.
+MANDATORY CONSTRAINTS:
+- Maximum 3 sections. Do not add more.
+- Each section must be SHORT. No multi-paragraph analysis. No therapeutic language. No reflective exercises.
+- The user is in a triggered state and needs clarity and direction in seconds — not a structured reflection process.
+- Every sentence must immediately serve clarity or action. Remove anything that doesn't.
+- Tone: direct, decisive, grounded. High-performance coach under pressure — not a therapist.
 
 Generate EXACTLY this JSON structure:
 
@@ -621,44 +616,39 @@ Generate EXACTLY this JSON structure:
   "problemType": "OVERWHELMED",
   "strategy": null,
   "mode": "Coach",
-  "roleShift": "<exact emotional reaction pattern → intentional leadership response. Max 6 words each side. Actual words — no angle brackets.>",
-  "behavioralObjective": "<one sentence: the specific cognitive shift + action to execute within the next 30 minutes. Name exactly what to do.>",
-  "reframe": "<the limiting belief → the grounded truth replacing it. One sentence. Sharp. No comfort or inspiration.>",
-  "breakdown": "<three sentences. 1: the psychological pattern driving this reaction — name it directly as a pattern. 2: the internal story making this pattern feel rational or true. 3: what this pattern has already cost them — concrete, not abstract.>",
+  "roleShift": "<exact emotional reaction → decisive response. Max 5 words each side. Actual words — no angle brackets.>",
+  "behavioralObjective": "<one sentence: the single action to execute in the next 30 minutes. Specific. Verb first.>",
+  "reframe": "<one grounded shift in meaning. Not motivational, not vague. Under 15 words. Examples: 'This is feedback on approach, not proof of failure.' 'This is data you can use to adjust.'>",
+  "breakdown": "<two sentences maximum. No more. 1: what is happening right now — one direct observation, no softening. 2: what this moment actually is, stripped of the interpretation placed on it.>",
   "trigger": {
-    "triggerName": "<the specific thought or fear at the centre of the spiral — 6-10 words>",
-    "energyShift": "<physical pattern interrupt to do right now — starts with a verb, concrete, 15 seconds, not journalling>",
-    "repetitionStatement": "<identity belief for repetition — present tense, credible, under 10 words>"
+    "triggerName": "<the specific thought driving the reaction — 5-8 words>",
+    "energyShift": "<physical reset — starts with a verb, concrete, 10 seconds>",
+    "repetitionStatement": "<identity statement for repetition — present tense, credible, under 10 words>"
   },
-  "identityAnchor": "<one sentence: You are someone who [specific cognitive or behavioral shift — credible, not aspirational].>",
+  "identityAnchor": "<one sentence: You are someone who [credible behavioral shift]. Under 12 words.>",
   "script": null,
   "sections": [
     {
-      "title": "Pattern Interruption",
+      "title": "Interrupt",
       "premium": false,
-      "content": "<Steps 1-3. Three parts:\n\nWhat's happening: [Emotional state + situation named clearly — 1 direct sentence. No softening.]\n\nThe pattern: [What is happening psychologically — name it as a pattern, not a feeling. One sentence starting with 'You are...' or 'Your mind is...' Examples: 'You are treating feedback as a verdict.' 'Your mind is using comparison to trigger self-doubt.' 'You are running a protection loop — the anxiety is keeping you from the action that would dissolve it.']\n\nThe story: [The internal narrative in one sentence, first person. Example: 'This means I'm not good enough.' 'I'm failing at something everyone else can handle.' 'Everyone can see I'm struggling.']>"
+      "content": "<One to two sentences that break the emotional pattern immediately. Direct, not gentle. Must land fast.\n\nExamples of the right tone (do not use these — write one specific to their situation):\n'This is one moment — not your identity.'\n'You are reacting, not seeing clearly.'\n'Your mind is running a worst-case calculation on incomplete data. Stop.'\n\nPersonalise completely to their feeling, trigger, and cognitive pattern. No generic statements.>"
     },
     {
-      "title": "Truth vs Distortion",
+      "title": "Direct",
       "premium": false,
-      "content": "<Step 4 + Step 5.\n\nFact: [What actually happened — stripped of interpretation. One sentence.]\nInterpretation: [The meaning assigned to it — the story built on top of the fact. One sentence.]\n\nThe gap: [One sentence: what the interpretation is costing vs what the fact actually allows.]\n\nReframe: [The grounded alternative — replaces the limiting belief. Direct language. Not aspirational. Examples: 'Feedback is data, not a verdict.' 'One setback is one data point — not a pattern.' 'Comparing outcomes without comparing contexts is a broken calculation.']>"
+      "content": "<1-2 immediate actions. Each: specific, executable in minutes, produces a visible output. Verb first. No rationale.\n\n1. [Action — one sentence. Concrete. No 'consider' or 'think about'.]\n2. [Second action — only if distinct from the first. Omit if not needed.]>"
     },
     {
       "title": "Power Questions",
-      "premium": false,
-      "content": "<Step 6. Three questions that force cognitive shift. Short. High-impact. Write them out — then answer them.\n\n1. [Question that drives clarity on what actually happened or what is real — specific to their situation]\n\n2. [Question that focuses on what is actually in their control right now — not abstract]\n\n3. [Question that moves them forward — what a top performer would do next in their exact situation]>"
-    },
-    {
-      "title": "Ownership + Action",
       "premium": true,
-      "content": "<Steps 7-8.\n\nOwnership shift:\n— What am I choosing to do next? [Answer specific to their situation — commit to one direction, one sentence]\n— What outcome do I want to create from this? [Specific outcome — not aspirational, not 'feel better', a concrete result]\n\nPrecision action:\n1. [Action executable in under 5 minutes — specific to their situation, produces a tangible output. Not 'reflect', not 'journal'. Concrete.]\n2. [Second action — executable today, produces a visible shift in thinking or behavior. Specific person, specific output where relevant.]>"
+      "content": "<Two short, action-oriented questions. Each under 10 words. Not reflective. Create immediate clarity and forward direction.\n\n1. [What actually happened — clarity on the real situation, not the story. Short.]\n2. [Next move — forces a specific forward direction. Short.]>"
     }
   ],
-  "nextSteps": ["<Three commands:\n1. [Pattern interrupt — the physical reset to do in the next 2 minutes. Specific.]\n2. [Answer this question in writing, one sentence: [specific power question from their situation]]\n3. [Precision action 1 — execute this before anything else. Specific and immediate.]>"],
-  "closingQuestion": "<one sentence — forces ownership. Specific to their spiral. Creates productive discomfort.>"
+  "nextSteps": ["<Two commands:\n1. [The interrupt — do this in the next 60 seconds. Name it specifically.]\n2. [Action 1 from Direct — execute this before anything else. Name it exactly.]>"],
+  "closingQuestion": "<one sentence — forces forward movement. Under 10 words. Specific to their situation.>"
 }
 
-Personalise all fields to the user's specific emotional state, trigger, and cognitive pattern. The user should feel seen, interrupted, and redirected — not comforted.`;
+Personalise Interrupt content, Direct actions, Power Questions, reframe, breakdown, behavioralObjective, and closingQuestion entirely to the user's emotional state, trigger, and cognitive pattern.`;
 
 const SPEAK_UP_PROMPT = `You are an elite executive coach for professional women. Generate real-time meeting execution coaching. Output raw JSON only — no markdown, no code fences.
 
@@ -921,34 +911,28 @@ function enforceMindsetSections(parsed: Record<string, unknown>) {
   const find = (title: string, fallback: string, premium: boolean) =>
     aiSections.find((s) => s.title === title) ?? { title, premium, content: fallback };
 
-  const patternSection = find(
-    "Pattern Interruption",
-    "What's happening: You are in a reactive emotional state that is compressing your perspective.\n\nThe pattern: Your mind is treating a single moment as evidence of a larger, fixed truth about your capability.\n\nThe story: 'This means I'm not good enough to handle this.'",
+  const interruptSection = find(
+    "Interrupt",
+    "You are reacting to a story your mind built, not to what actually happened.\n\nStop. This moment is not the verdict.",
     false
   );
 
-  const truthSection = find(
-    "Truth vs Distortion",
-    "Fact: Something specific happened that triggered a strong reaction.\nInterpretation: Your mind converted that event into a judgment about your capability or future.\n\nThe gap: The interpretation is running your response, not the fact.\n\nReframe: One event is one data point. Data does not determine identity.",
+  const directSection = find(
+    "Direct",
+    "1. Write down in one sentence exactly what happened — stripped of any interpretation.\n2. Take the next concrete action in your work before reading anything else.",
     false
   );
 
-  const questionsSection = find(
+  const powerSection = find(
     "Power Questions",
-    "Write your answers to these three questions — one sentence each:\n\n1. What specifically happened, stripped of any interpretation?\n\n2. What is actually within my control in the next 60 minutes?\n\n3. What would a high performer do next in this exact situation?",
-    false
-  );
-
-  const ownershipSection = find(
-    "Ownership + Action",
-    "Ownership shift:\n— What am I choosing to do next? Commit to one direction in one sentence.\n— What outcome do I want to create from this? Name a concrete result, not a feeling.\n\nPrecision action:\n1. Write down the fact — one sentence, stripped of interpretation. This interrupts the spiral.\n2. Take one visible action in your work before doing anything else today.",
+    "1. What specifically happened — not what it means?\n2. What is your next move today?",
     true
   );
 
   return {
     ...parsed,
     script: null,
-    sections: [patternSection, truthSection, questionsSection, ownershipSection],
+    sections: [interruptSection, directSection, powerSection],
   };
 }
 
