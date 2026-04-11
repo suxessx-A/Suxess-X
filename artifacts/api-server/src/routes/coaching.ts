@@ -639,9 +639,16 @@ Generate EXACTLY this JSON structure:
 
 Personalise roleShift, reframe, breakdown, trigger, behavioralObjective, identityAnchor, sections[0].content, nextSteps, and closingQuestion to the user's specific blocker, pattern, meeting type, and cost.`;
 
-const EXECUTIVE_VISIBILITY_PROMPT = `You are an elite executive coach for professional women. Generate executive positioning coaching. Output raw JSON only — no markdown, no code fences.
+const EXECUTIVE_VISIBILITY_PROMPT = `You are an elite strategic communication coach for professional women. Generate executive positioning coaching. Output raw JSON only — no markdown, no code fences.
 
 ${STYLE_RULES}
+
+HARD CONSTRAINTS — violations will be rejected:
+- This is strategic communication coaching, not behavioral coaching.
+- NEVER give meeting tactics, timing advice ("speak early"), or behavioral micro-tips.
+- NEVER tell them when to speak or how to enter a room. This is about how to frame and communicate work — in any format: written, verbal, async.
+- All coaching is about positioning, language, and perception — not in-room behavior.
+- nextSteps are about communication and framing actions, not meetings or interpersonal dynamics.
 
 Generate EXACTLY this JSON structure:
 
@@ -649,29 +656,29 @@ Generate EXACTLY this JSON structure:
   "problemType": "VICTIM",
   "strategy": null,
   "mode": "Coach",
-  "roleShift": "<passive positioning pattern → active executive presence behavior (max 6 words each side, actual text — no brackets)>",
-  "behavioralObjective": "<one specific positioning action to take within 48 hours — name who, what, and the format>",
-  "reframe": "<one sentence — the belief keeping them invisible vs the sharper truth. Under 20 words. Should land like a punch.>",
-  "breakdown": "<sentence 1: root cause of the positioning gap — clarity gap, strategy gap, or structural obstacle? Sentence 2: the specific story making invisibility feel rational. Sentence 3: concrete cost — what the gap has produced in missed credibility, recognition, or opportunity.>",
+  "roleShift": "<their specific task/effort framing pattern → outcome/impact framing behavior. Max 6 words each side. Actual words — no angle brackets in output.>",
+  "behavioralObjective": "<one sentence: a specific communication or positioning action to take within 48 hours. Name the exact format (email, update, presentation, Slack message) and the audience.>",
+  "reframe": "<one sentence. The belief keeping them invisible vs the sharper truth about how executives actually evaluate work. Under 20 words. Should land like a punch.>",
+  "breakdown": "<three sentences. 1: the root of their specific positioning gap — is it language, strategy, or habit? 2: the internal logic that makes task-level framing feel safe or complete. 3: the concrete cost — what invisible work has already cost them in credibility, recognition, or opportunity.>",
   "trigger": {
-    "triggerName": "<specific fear or block around executive exposure — 6-10 words>",
-    "energyShift": "<physical or mental reset instruction — starts with a verb, concrete, 1-2 sentences>",
+    "triggerName": "<the specific doubt or block that stops them from owning their impact — 6-10 words>",
+    "energyShift": "<mental reset before communicating their work — starts with a verb, concrete, 1-2 sentences>",
     "repetitionStatement": "<identity-level, present tense, under 10 words>"
   },
-  "identityAnchor": "<one sentence: You are someone who [specific positioning behavior shift].>",
+  "identityAnchor": "<one sentence: You are someone who [specific communication or positioning shift].>",
   "script": null,
   "sections": [
     {
-      "title": "Before",
+      "title": "Task → Impact",
       "premium": false,
-      "content": "<Personalised task-to-outcome conversion specific to their work and gap:\n\nReplace this:\n— '[Task-level description from their situation]'\n— '[Another task-level pattern from their answers]'\n\nWith this:\n— '[Business-impact version of the same work]'\n— '[Business-impact version of the second example]'\n\nThen prepare your positioning sentence. Format: [What you delivered] + [business outcome] + [what it makes possible]. Write it now — one sentence, say it out loud, own it.>"
+      "content": "<Three personalised translations from task language to business impact framing — specific to their role, work type, and positioning gap. No meeting framing. No 'before you walk in'.\n\nInstead of: '[task-level phrase from their situation — how they currently describe their work]'\nSay: '[business-impact version — what it delivered, what it means for the business, what it makes possible]'\n\nInstead of: '[second task-level pattern specific to their answers]'\nSay: '[business-impact version]'\n\nInstead of: '[third task-level pattern]'\nSay: '[business-impact version]'\n\nYour positioning sentence: [What you delivered] + [business outcome] + [what it makes possible for the organisation]. One sentence. Write it. No hedging.>"
     }
   ],
-  "nextSteps": ["<Three commands this week:\n1. [Convert one piece of recent work into a business impact statement — specific to their situation]\n2. [Use one executive frame this week in their specific medium — name the exact context]\n3. [Share one piece of work proactively — who, how, and what to say]>"],
-  "closingQuestion": "<one sentence — specific to their visibility challenge, creates productive discomfort>"
+  "nextSteps": ["<Three strategic communication actions:\n1. [Reframe one existing piece of work into a business impact statement — name the specific work and the format you will use to share it]\n2. [Draft one positioning sentence about your most recent deliverable — name what 'done' looks like]\n3. [Send or share something proactively this week — name who, what format, and the single impact statement to lead with]>"],
+  "closingQuestion": "<one sentence — specific to their positioning gap and communication style, creates productive discomfort>"
 }
 
-Personalise roleShift, reframe, breakdown, trigger, behavioralObjective, identityAnchor, sections[0].content, nextSteps, and closingQuestion to the user's specific situation, audience, and positioning gap.`;
+Personalise roleShift, reframe, breakdown, trigger, behavioralObjective, identityAnchor, sections[0].content, nextSteps, and closingQuestion to the user's specific challenge, audience, medium, and positioning gap.`;
 
 const CONVERSATION_PROMPT = `You are an elite executive coach for professional women. Generate tough conversation coaching. Output raw JSON only — no markdown, no code fences.
 
@@ -879,29 +886,29 @@ function enforceSpeakUpSections(parsed: Record<string, unknown>) {
 
 function enforceExecutiveVisibilitySections(parsed: Record<string, unknown>) {
   const aiSections = (parsed.sections as { title: string; premium: boolean; content: string }[] | undefined) ?? [];
-  const beforeSection = aiSections.find((s) => s.title === "Before") ?? {
-    title: "Before",
+  const taskImpactSection = aiSections.find((s) => s.title === "Task → Impact") ?? {
+    title: "Task → Impact",
     premium: false,
     content:
-      "Convert your work into business impact before you walk in the room.\n\nReplace task language with outcome language. Not what you did — what it produced.\n\nThen prepare one positioning sentence:\n[What you delivered] + [business outcome] + [what it makes possible].\n\nWrite it. Say it out loud. That sentence is how you enter the conversation.",
+      "The translation that changes how your work lands:\n\nInstead of: 'I managed the Q3 reporting process'\nSay: 'Q3 reporting landed on time and surfaced a budget risk — finance has a decision to make by Friday'\n\nInstead of: 'I ran the team's onboarding'\nSay: 'New hire ramp time dropped by 30% — the team is productive two weeks faster than before'\n\nInstead of: 'I completed the stakeholder review'\nSay: 'The stakeholder review confirmed alignment — it removes the blocker on the next phase'\n\nYour positioning sentence: [What you delivered] + [business outcome] + [what it makes possible]. One sentence. Write it now.",
   };
 
   return {
     ...parsed,
     script: null,
     sections: [
-      beforeSection,
+      taskImpactSection,
       {
-        title: "During",
+        title: "Executive Frames",
         premium: false,
         content:
-          "Use executive framing. Three templates — use the one that fits:\n\n'The key takeaway is—'\nOne clear signal from your work. What it means for the business. What the implication is.\n\n'What this unlocks is—'\nThe opportunity your work creates. What becomes possible now. Why it matters.\n\n'The risk to watch is—'\nThe threat or constraint your work revealed. What to do about it. Why now.\n\nDo not walk executives through how you did the work. Tell them what it means and what comes next.",
+          "Five templates for communicating work at the executive level. Use the one that fits:\n\n1. Outcome + implication\n'[Deliverable] produced [result]. The implication for [area] is [one sentence].'\n\n2. What this enables\n'[Work] unlocks [specific opportunity]. What's now possible: [one sentence].'\n\n3. Risk surfaced\n'[Work] identified [specific risk]. Recommendation: [action] by [timeframe].'\n\n4. Conclusion first\n'The answer is [conclusion]. We got there by [one sentence on method]. Next step: [specific ask].'\n\n5. The business case\n'[Project] is [one-sentence case]. The decision needed: [specific ask].'\n\nAll five follow the same rule: conclusion first, context second, ask last.",
       },
       {
         title: "The Principle",
         premium: true,
         content:
-          "Executives are not evaluating your effort. They are evaluating your judgment.\n\nClarity signals confidence. Detail signals execution. Direction signals leadership.\n\nWhen you present to executives: lead with the conclusion, not the context. State what you recommend, not just what you found. Name what you need from them — a decision, a resource, a signal.\n\nThe person who says 'the key takeaway is X, and I recommend Y' is read as a leader. The person who walks through all the work to get to the conclusion is read as an executor.\n\nYou decide which one you are before you open your mouth.",
+          "Executives are not evaluating your effort. They are evaluating your judgment.\n\nClarity signals confidence. Detail signals execution. Direction signals leadership.\n\nThe rule is simple: lead with the conclusion, not the context. State what you recommend, not just what you found. Name what you need — a decision, a resource, a signal.\n\nWhen you walk through your process to reach a conclusion, you are read as an executor.\nWhen you open with the conclusion and name the implication, you are read as a strategist.\n\nThe way you communicate your work is the first data point executives use to assess your level. Use it deliberately.",
       },
     ],
   };

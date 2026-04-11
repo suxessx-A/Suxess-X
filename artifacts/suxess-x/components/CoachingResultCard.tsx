@@ -64,8 +64,8 @@ const SECTION_ICONS: Record<string, string> = {
   "Get In Early": "🎯",
   "The Two-Sentence Rule": "💡",
   "Your Lines": "🎤",
-  "Before": "📋",
-  "During": "📢",
+  "Task → Impact": "🔄",
+  "Executive Frames": "📐",
   "The Principle": "⚡",
 };
 
@@ -421,7 +421,7 @@ function PremiumLockCard({ section }: { section: CoachingSection }) {
     "What Else Is On the Table": "Negotiate everything beyond base — sign-on, equity, title, and a 6-month review.",
     "Lock a Timeline": "Get a commitment on when and what — and document it the same day.",
     "Your Lines": "Get three personalised entry lines written for your specific meeting and audience — ready to say out loud.",
-    "The Principle": "Understand the one distinction that separates executives who get read as leaders from those who get read as executors.",
+    "The Principle": "Understand how executives actually read your communication — and the one rule that shifts you from executor to strategist.",
   };
 
   return (
