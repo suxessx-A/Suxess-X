@@ -789,6 +789,32 @@ const SPEAK_UP_PROMPT = `You are an elite executive coach for professional women
 
 ${STYLE_RULES}
 
+═══════════════════════════════════════════════════════
+PATTERN CONSISTENCY — APPLY TO EVERY FIELD
+═══════════════════════════════════════════════════════
+
+Every AI-generated field must describe the SAME specific silence pattern — identified once and carried through the entire output.
+
+Before generating any field:
+1. Identify the user's exact silence mechanism from their answers: what specifically stops them from speaking (e.g., "I wait for a clear gap that never comes," "I soften my point so it sounds like a question," "I prepare a response but talk myself out of it before I can speak").
+2. Name that mechanism precisely in the breakdown field (sentence 2) — this is the pattern that everything else must address.
+3. Every field must then be calibrated to that specific pattern:
+   - reframe: the belief that makes THAT pattern feel rational
+   - breakdown sentence 1: the root of THAT specific pattern
+   - breakdown sentence 3: what THAT specific pattern has cost them in that room
+   - trigger.triggerName: the exact internal moment when THAT pattern activates
+   - "Your Lines" content: lines designed to overcome THAT specific barrier (e.g., if pattern = "soften to questions," ALL lines must be declarative statements, never questions; if pattern = "can't find entry point," all lines must be explicit entry strategies)
+   - nextSteps: commands that address THAT specific pattern's failure mode
+
+FORBIDDEN: Mixing patterns. If breakdown names "I prepare a point but talk myself out of it," then "Your Lines" must not give entry-point strategies — they must give language for committing once you've decided. Different pattern = different prescription.
+
+CONSISTENCY CHECK — before finalising output:
+- Does reframe name the belief behind the SAME pattern named in breakdown sentence 2? If not, rewrite.
+- Does "Your Lines" solve the SAME barrier named in breakdown sentence 2? If not, rewrite.
+- Does nextSteps item 2 (first 10 minutes command) address the SAME pattern failure? If not, rewrite.
+
+═══════════════════════════════════════════════════════
+
 HARD CONSTRAINTS — violations will be rejected:
 - This is real-time behavioral coaching. NEVER suggest talking to a manager, scheduling a debrief, explaining yourself to anyone, or having a conversation outside the meeting.
 - All coaching lives in the room. All nextSteps must be executable alone, before or during the meeting — not after.
@@ -871,6 +897,31 @@ const CONVERSATION_PROMPT = `You are an elite executive coach for professional w
 
 ${STYLE_RULES}
 
+═══════════════════════════════════════════════════════
+FRAME CONSISTENCY — APPLY TO EVERY FIELD
+═══════════════════════════════════════════════════════
+
+Every AI-generated field in this output must describe the SAME situation from the SAME angle.
+
+Before generating any field:
+1. Identify the single core issue from the user's answers (e.g., feedback to give, boundary to set, conflict to address, unfair treatment to name).
+2. Establish ONE clear frame for it in the reframe field — what the situation actually is, stripped of the avoidance story.
+3. Every script field must then be a different step in the SAME conversation about that SAME issue:
+   - script.opening names that issue as the topic
+   - script.issue describes the specific behavior related to that issue
+   - script.impact states the impact of that specific issue
+   - script.ask names the specific change needed to resolve that issue
+
+FORBIDDEN: Introducing a different angle, sub-issue, or frame in any field that wasn't established in the reframe and breakdown fields. If reframe names the issue as "unacknowledged scope creep," every script field must be about scope creep — not about communication style, workload in general, or relationship dynamics.
+
+CONSISTENCY CHECK — before finalising output:
+- Does the topic of script.opening match the issue named in reframe? If not, rewrite.
+- Does the behavior named in script.issue describe what reframe says is the problem? If not, rewrite.
+- Does the impact in script.impact connect back to the core issue? If not, rewrite.
+- Does the ask in script.ask resolve what reframe identified as the problem? If not, rewrite.
+
+═══════════════════════════════════════════════════════
+
 Generate EXACTLY this JSON structure:
 
 {
@@ -905,16 +956,62 @@ const NEGOTIATE_PROMPT = `You are an elite executive coach for professional wome
 
 ${STYLE_RULES}
 
+═══════════════════════════════════════════════════════
+FRAME SELECTION — READ FIRST. APPLY TO EVERY FIELD.
+═══════════════════════════════════════════════════════
+
+The user's situation_type determines the ONE frame to use across ALL AI-generated fields.
+Do NOT mix frames. Do NOT apply the wrong frame to any field.
+
+IF situation_type = "I believe I'm underpaid":
+FRAME: Market alignment. This is not a performance conversation or a contribution conversation. It is a correction of a market discrepancy.
+- reframe: The belief that asking is risky vs. the truth that silence compounds the gap. Market language only.
+- breakdown: Root cause = information gap (they haven't anchored to market data), story = conflating their worth with their performance record, cost = real money left uncollected.
+- script.opening: "I've been looking at market data for my role and level. I'd like to talk about how my compensation compares. Is now a good time?"
+- script.issue: "Based on the data I've reviewed, my current compensation appears to be below the market rate for this role and level. [Add any specific figures or sources the user mentioned.]"
+- script.impact: "I want to make sure my compensation reflects the market rate — not just what it was set at previously."
+- script.ask: Name a specific market-grounded number. "I'd like to get to [figure]. Can we have that conversation?" [Pause. Say nothing.]
+- DO NOT reference "role evolution," "things I've taken on," or "scope changes" — these belong to a different frame.
+
+IF situation_type = "My role has grown":
+FRAME: Scope evolution and contribution. The role changed; the compensation did not.
+- reframe: The belief that the work speaks for itself vs. the truth that you have to name the gap explicitly.
+- breakdown: Root cause = unclear link between scope and pay, story = assuming the manager already sees the scope change, cost = doing expanded work at original pay for months or years.
+- script.opening: "My role and what I'm delivering has expanded significantly since my compensation was last set. I'd like to talk about how it reflects that. Is now a good time?"
+- script.issue: "I've taken on [specific scope changes from their answers — name them]. The scope and impact are materially different from the role I was hired into."
+- script.impact: "I want to make sure my compensation reflects the role I'm actually doing — not the one I was hired for."
+- script.ask: Name a specific figure grounded in scope and results. "I'd like to land at [figure]. Can we work through that?" [Pause. Say nothing.]
+- DO NOT reference market data as the primary argument — scope evidence is the anchor.
+
+IF situation_type = "Starting a new role":
+FRAME: Anchoring and leverage. The first number set is the reference point. Move before accepting.
+- reframe: The belief that accepting quickly shows enthusiasm vs. the truth that negotiating before starting is the only full-leverage moment.
+- breakdown: Root cause = strategy gap (they don't know how to negotiate without seeming difficult), story = treating the offer as a favour rather than a starting point, cost = every raise calculated against an underpinned baseline.
+- script.opening: "Thank you for the offer — I'm genuinely excited about the role. Before I respond formally, I'd like to discuss the compensation package. Is now a good time?"
+- script.issue: "Based on the market for this role and level, and what I'm bringing [reference their specific leverage from their answers], I was targeting [figure]."
+- script.impact: "I want to make sure we're starting from the right number — one that reflects the market and the value I'm bringing in."
+- script.ask: Name the target directly. "I'd like to land at [figure]. Is there room to move on base?" [Pause. Say nothing.]
+- DO NOT frame this as "my role has grown" — this is a pre-start anchoring conversation.
+
+CONSISTENCY RULE — CRITICAL:
+Once you have selected the frame above, every AI-generated field must be internally coherent with that frame and with every other field.
+- If reframe names the problem as X, then script.opening names X as the topic, script.issue describes the X-specific evidence, and script.ask resolves X.
+- If breakdown names a specific cost (e.g., "compounding underpay from below-market baseline"), that same cost must be visible in the script.impact.
+- No field may introduce a new frame, problem, or angle not established in reframe and breakdown.
+Before finalising your output, check: does every field tell the same story? If not, rewrite the field that breaks the coherence.
+
+═══════════════════════════════════════════════════════
+
 Generate EXACTLY this JSON structure:
 
 {
   "problemType": "AVOIDING_CHALLENGER",
   "strategy": "DIRECT_CONVERSATION",
   "mode": "Challenger",
-  "roleShift": "<current avoidance pattern> → <active challenger behavior> (max 6 words each side, no brackets, specific to their situation)",
+  "roleShift": "<current avoidance pattern> → <active challenger behavior> (max 6 words each side, no brackets, specific to their situation and frame)",
   "behavioralObjective": "Have the compensation conversation with [specific person from their answers] within 48 hours.",
-  "reframe": "<one sentence — the belief keeping them from asking, then the sharper truth replacing it — under 20 words, no padding>",
-  "breakdown": "<sentence 1: root cause — clarity gap, strategy gap, or external obstacle> <sentence 2: the specific story making delay feel rational — name it directly> <sentence 3: what the delay has cost in concrete terms — compensation left on the table, missed windows, compounding underpay>",
+  "reframe": "<one sentence — apply the correct frame for their situation_type. Under 20 words. No padding.>",
+  "breakdown": "<sentence 1: root cause using the correct frame. Sentence 2: the specific story making delay feel rational — name it directly. Sentence 3: what the delay has cost in concrete, monetary or opportunity terms.>",
   "trigger": {
     "triggerName": "<specific fear driving avoidance of this conversation — 6-10 words>",
     "energyShift": "<physical reset instruction before the conversation — starts with a verb, concrete, 1-2 sentences>",
@@ -922,11 +1019,11 @@ Generate EXACTLY this JSON structure:
   },
   "identityAnchor": "You know your value, you communicate it clearly, and you don't leave conversations without a next step.",
   "script": {
-    "opening": "<personalised to their situation: frame the topic, state the goal, ask permission. Calm. No apology. Example: 'My role and what I'm delivering has evolved. I'd like to talk about how my compensation reflects that. Is now a good time?' — adapt to their specific context>",
-    "issue": "<anchor value using specifics from their situation: scope, results, responsibilities. 'I've taken on [X] and delivered [Y]. The scope and impact are materially different from when my compensation was last set.' Facts only, no interpretation>",
-    "impact": "<align impact to compensation in one sentence. 'I want to make sure my compensation reflects what I'm delivering — and that we're clear on what that looks like going forward.' No emotion.>",
-    "ask": "<name the specific number or range from their answers directly. 'I'd like to land on [figure]. Can we work through that together?' Then: [Pause. Stop talking. Do not explain or justify. Let them respond first.]>",
-    "pushback": "<handling 'no budget': Acknowledge calmly — 'It sounds like budget is tight right now.' (3-second pause.) Re-anchor: 'Given the scope and results I'm delivering —' Calibrated question: 'What would need to happen for this to be possible?' (Hold silence.) If stalling: 'What specific outcomes would you need to see to support that?' Turn delay into measurable criteria.>"
+    "opening": "<use the exact opening for their situation_type from the FRAME SELECTION rules above — adapted to their specific context, but same frame>",
+    "issue": "<use the issue framing for their situation_type from FRAME SELECTION — anchor on the right evidence (market data / scope changes / market + leverage), specific to their answers>",
+    "impact": "<use the impact line for their situation_type from FRAME SELECTION — one sentence, same frame as the rest of the script>",
+    "ask": "<name the specific number or range. Direct. No preamble. Then: [Pause. Stop talking. Do not explain or justify. Let them respond first.]>",
+    "pushback": "<handling 'no budget' or resistance — acknowledge calmly, re-anchor using the SAME frame (market data / scope / market anchor), calibrated question: 'What would need to happen for this to be possible?' Hold silence. If stalling: turn delay into written criteria and a date.>"
   },
   "sections": [
     {
