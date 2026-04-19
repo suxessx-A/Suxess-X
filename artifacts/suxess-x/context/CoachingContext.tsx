@@ -176,9 +176,11 @@ function safeParseResult(raw: unknown, problemType: ProblemType, chosenStrategy:
 
   const parsedProblemType = parseProblemType(obj.problemType ?? problemType);
   const rawStrategyStr = String(obj.strategy ?? "").trim().toUpperCase();
-  const parsedStrategy: CoachingStrategy | null = VALID_STRATEGIES.includes(rawStrategyStr as CoachingStrategy)
+  const aiStrategy: CoachingStrategy | null = VALID_STRATEGIES.includes(rawStrategyStr as CoachingStrategy)
     ? (rawStrategyStr as CoachingStrategy)
     : null;
+  // Always trust the user's chosen strategy over whatever the AI returned
+  const parsedStrategy: CoachingStrategy | null = chosenStrategy ?? aiStrategy;
 
   const reframe = str(obj.reframe, fallback.reframe);
   const breakdown = str(obj.breakdown, fallback.breakdown);
@@ -220,8 +222,16 @@ function safeParseResult(raw: unknown, problemType: ProblemType, chosenStrategy:
 
   const VALID_MODES = ["Challenger", "Coach", "Strategist"] as const;
   type Mode = typeof VALID_MODES[number];
+  // Derive mode from the enforced strategy first; fall back to AI-provided mode
+  const modeFromStrategy: Mode | undefined =
+    parsedStrategy === "INDIRECT_INFLUENCE" || parsedStrategy === "STRATEGIC_CONTAINMENT"
+      ? "Strategist"
+      : parsedStrategy === "DIRECT_CONVERSATION"
+      ? "Challenger"
+      : undefined;
   const rawMode = String(obj.mode ?? "").trim() as Mode;
-  const mode: Mode | undefined = VALID_MODES.includes(rawMode) ? rawMode : undefined;
+  const aiMode: Mode | undefined = VALID_MODES.includes(rawMode) ? rawMode : undefined;
+  const mode: Mode | undefined = modeFromStrategy ?? aiMode;
 
   let trigger: CoachingTrigger | undefined;
   if (typeof obj.trigger === "object" && obj.trigger !== null) {

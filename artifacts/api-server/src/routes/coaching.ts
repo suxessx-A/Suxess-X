@@ -1033,6 +1033,16 @@ router.post("/coaching/generate", async (req, res) => {
       parsed = enforceMindsetSections(parsed);
     }
 
+    // Always enforce the user's chosen strategy and the correct mode — overrides any AI drift
+    if (strategy && !isNegotiate) {
+      parsed.strategy = strategy;
+      if (strategy === "INDIRECT_INFLUENCE" || strategy === "STRATEGIC_CONTAINMENT") {
+        parsed.mode = "Strategist";
+      } else if (strategy === "DIRECT_CONVERSATION") {
+        parsed.mode = "Challenger";
+      }
+    }
+
     res.json(parsed);
   } catch (err) {
     req.log.error({ err }, "OpenAI generate error");

@@ -13,9 +13,9 @@ interface CoachingResultCardProps {
 type ThemeConfig = { color: string; bg: string; border: string };
 
 const STRATEGY_THEME: Record<CoachingStrategy, ThemeConfig & { label: string; icon: string; eyebrow: string }> = {
-  DIRECT_CONVERSATION: { label: "Challenge It Directly", eyebrow: "Challenger Mode", icon: "⚡", color: "#7c3aed", bg: "#faf5ff", border: "#ddd6fe" },
-  INDIRECT_INFLUENCE:  { label: "Shift the Dynamic",    eyebrow: "Challenger Mode", icon: "♟", color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd" },
-  STRATEGIC_CONTAINMENT: { label: "Hold the Standard",  eyebrow: "Challenger Mode", icon: "🛡", color: "#b45309", bg: "#fffbeb", border: "#fde68a" },
+  DIRECT_CONVERSATION:   { label: "Challenge It Directly", eyebrow: "Challenger Mode",  icon: "⚡", color: "#7c3aed", bg: "#faf5ff", border: "#ddd6fe" },
+  INDIRECT_INFLUENCE:    { label: "Shift the Dynamic",     eyebrow: "Strategist Mode",  icon: "♟", color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd" },
+  STRATEGIC_CONTAINMENT: { label: "Hold the Standard",     eyebrow: "Strategist Mode",  icon: "🛡", color: "#b45309", bg: "#fffbeb", border: "#fde68a" },
 };
 
 const PROBLEM_TYPE_THEME: Record<ProblemType, ThemeConfig & { label: string; icon: string; eyebrow: string }> = {
