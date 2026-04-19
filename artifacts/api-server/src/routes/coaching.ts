@@ -969,7 +969,7 @@ router.post("/coaching/generate", async (req, res) => {
     return;
   }
 
-  const isNegotiate = flowType === "negotiate";
+  const isNegotiate = flowType === "negotiate" && (strategy === "DIRECT_CONVERSATION" || strategy === null);
   const isConversation = flowType === "conversation" && strategy === "DIRECT_CONVERSATION";
   const isSpeakUp = flowType === "speak_up" && (strategy === "DIRECT_CONVERSATION" || strategy === null);
   const isExecutiveVisibility = flowType === "executive_visibility";
