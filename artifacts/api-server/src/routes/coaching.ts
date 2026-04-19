@@ -1025,33 +1025,12 @@ Generate EXACTLY this JSON structure:
     "ask": "<name the specific number or range. Direct. No preamble. Then: [Pause. Stop talking. Do not explain or justify. Let them respond first.]>",
     "pushback": "<handling 'no budget' or resistance — acknowledge calmly, re-anchor using the SAME frame (market data / scope / market anchor), calibrated question: 'What would need to happen for this to be possible?' Hold silence. If stalling: turn delay into written criteria and a date.>"
   },
-  "sections": [
-    {
-      "title": "Internal Alignment",
-      "premium": false,
-      "content": "Three things to lock in before the conversation:\\n\\nTarget: Write your number or range now — not 'higher' or 'more.' A specific figure grounded in your role, your results, and the market. Vague asks produce vague responses.\\nValue: List 3–5 measurable proof points — revenue, efficiency, scope, team impact, outcomes. One sentence each. If you can't prove it in a sentence, it doesn't go in the conversation.\\nWalk-away: Define it before you enter. Your minimum acceptable outcome. What you will do if it isn't met — push the timeline, explore options, or make a decision. Power in this conversation comes from knowing this before it starts, not during it."
-    },
-    {
-      "title": "Lead the Conversation",
-      "premium": false,
-      "content": "Five steps. Execute in order. Do not improvise the structure.\\n\\n1. Frame: 'My role and what I'm delivering has evolved. I'd like to talk about how my compensation reflects that.'\\n2. Anchor: State your measurable results and scope — specific to their situation. No softening.\\n3. Align: 'I want to make sure my compensation reflects that.'\\n4. Ask: Name the specific number or range. Directly. No preamble.\\n5. Pause: Stop talking immediately after the ask. The first person to fill the silence loses positioning. Hold it — let them respond first."
-    },
-    {
-      "title": "Handle Pushback",
-      "premium": false,
-      "content": "When they say 'no budget':\\n\\n1. Acknowledge (no resistance): 'It sounds like budget is tight right now.' Pause 3 seconds.\\n2. Re-anchor value: 'Given the scope and results I'm delivering…'\\n3. Calibrated question: 'What would need to happen for this to be possible?'\\n4. Lock next step: 'Can we set a time to revisit this with a clear timeline?'\\n\\nIf they say 'no flexibility': Mirror it back — 'No flexibility?' Then stop. Let them fill the space.\\nIf they say 'let's revisit later': 'What specific outcomes would you need to see to support that?' Turn delay into measurable criteria. Do not leave without criteria and a date."
-    },
-    {
-      "title": "Alternative Path",
-      "premium": true,
-      "content": "If compensation isn't flexible right now, ask directly:\\n'If compensation isn't flexible right now, are there other ways we can reflect this — or set a clear review point?'\\n\\nOptions to surface:\\n— Title change that reflects actual scope\\n— Expanded responsibilities formally on record\\n— Defined review timeline with written criteria\\n\\nDo not leave without a specific next step and a date. Vague commitments compound underpay. A named date with written criteria is a commitment. 'We'll revisit soon' is not."
-    }
-  ],
-  "nextSteps": ["Five actions before the conversation:\\n1. Write your target range — a specific number, today.\\n2. List 3–5 measurable proof points. One sentence each. Results, scope, outcomes.\\n3. Set your walk-away point — the minimum and what you do if it isn't met.\\n4. Prepare your opening line and say it out loud — not in your head, out loud.\\n5. Schedule the conversation within 48 hours — name the day, not 'soon.'"],
-  "closingQuestion": "<one sentence — specific to their negotiation situation, present tense, creates productive discomfort, not generic>"
+  "sections": [],
+  "nextSteps": ["placeholder"],
+  "closingQuestion": "<one sentence — specific to their negotiation situation and the selected frame, present tense, creates productive discomfort, not generic>"
 }
 
-Personalise roleShift, reframe, breakdown, trigger, script.opening, script.issue, script.ask, and closingQuestion to the user's specific situation. All other fields output exactly as specified above.`;
+IMPORTANT: Output "sections" as an empty array and "nextSteps" as ["placeholder"] — these are injected server-side with situation-specific content and will be replaced. Do NOT generate section content. Focus all generation effort on: roleShift, reframe, breakdown, trigger, identityAnchor, script (all 5 fields), and closingQuestion.`;
 
 router.post("/coaching/generate", async (req, res) => {
   const { flowType, answers, problemType, strategy } = req.body as {
@@ -1101,7 +1080,7 @@ router.post("/coaching/generate", async (req, res) => {
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      max_completion_tokens: 3000,
+      max_completion_tokens: 4500,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
