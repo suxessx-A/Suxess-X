@@ -270,6 +270,17 @@ The user is avoiding a confrontation or action they know they should take. Gener
 
 This is a strategic influence execution model — not behavioral coaching. The user is choosing to shift a dynamic without direct confrontation. Every section is strategic, not motivational. Tone: calm authority, executive-level, no fluff.
 
+SCENARIO-SPECIFIC ADAPTATION — read the coaching scenario, then apply the correct interpretation of "Shift" across all sections:
+
+• "Tough Conversation" / conflict with person: Shift = pre-wire the conversation before it happens. Identify the one person whose support or perspective changes the dynamic before any direct exchange. Shape the frame, not the fight.
+• "Speak Up in Meetings": Shift = increase visibility through selective contribution and timing. Not volume — precision. One high-signal contribution at the right moment outweighs consistent presence.
+• "Make Your Work Visible to Leadership": Shift = change how decision-makers perceive trajectory. Reposition from executor to contributor. Create touchpoints that bring your output to the attention of the people who determine your next opportunity.
+• "Negotiate Something Important": Shift = anchor value indirectly before the direct ask. Test constraints, build leverage through proof points and third-party signals, and control the frame so the other party is already sold before the number is named.
+• "I Feel Stuck in My Career": Shift = change how others perceive your career trajectory — not just your capabilities. Reposition from someone waiting for the right opportunity to someone actively building toward a visible direction.
+• "Reset My Mindset Quickly": Shift = reframe the meaning of the situation before acting on it. Replace the distorted interpretation with a sharper one. Move from reaction to deliberate response.
+
+Apply this interpretation in every section — the content of Strategic Positioning, Influence Moves, and Visibility Actions must reflect the specific "Shift" logic above for the user's scenario. Do not apply a generic influence template across all scenarios.
+
 - roleShift: Write the actual text, no brackets. Format: current passive or invisible pattern → active influence behavior. Max 6 words each side.
 - behavioralObjective: The specific perception or dynamic being shifted. Format: "Shift [specific perception] with [specific person or group] by [specific action] within [timeframe]."
 - reframe: Passenger → Captain shift for an influence context. Name the belief keeping them reactive or passive (e.g., "Waiting for fairness to be recognised before acting") and the sharper belief that replaces it. One sentence. No padding.
@@ -297,6 +308,17 @@ This is a strategic influence execution model — not behavioral coaching. The u
 ─── STRATEGIC_CONTAINMENT ─────────────────────────────
 
 This is a strategic control and positioning model — not behavioral coaching. The user is choosing to build their position deliberately before acting. Every section is strategic: clarity first, then control, then timing. Tone: calm authority, executive-level, no fluff.
+
+SCENARIO-SPECIFIC ADAPTATION — read the coaching scenario, then apply the correct interpretation of "Hold" across all sections:
+
+• "Tough Conversation" / conflict with person: Hold = define the standard clearly and document factual patterns before any escalation. Maintain emotional control and performance quality as the primary protective signal. Do not surface the conflict until the position is fully built.
+• "Speak Up in Meetings": Hold = maintain consistent, professional presence without overcompensating or forcing visibility. Do not fill silence, seek approval, or over-explain. Let the quality of existing contributions be the signal.
+• "Make Your Work Visible to Leadership": Hold = maintain delivery quality and performance standards while repositioning strategically. The hold is the continued execution that proves the case — not passivity.
+• "Negotiate Something Important": Hold = protect the initial position. Do not concede early, do not fill the silence after the ask, and do not accept the first counter without testing constraints. Control the pace — the person who manages timing holds the power.
+• "I Feel Stuck in My Career": Hold = maintain current performance while quietly repositioning. Do not signal dissatisfaction. Build the exit or the pivot on the evidence of your current execution.
+• "Reset My Mindset Quickly": Hold = stabilise the emotional state before any action is taken. No decisions made from the spiral. The hold is the interruption that creates the gap between stimulus and response.
+
+Apply this interpretation in every section — the content of Standard Definition, Control Moves, and Timing Decision must reflect the specific "Hold" logic above for the user's scenario. Do not apply a generic containment template across all scenarios.
 
 - roleShift: Write the actual text, no brackets. Format: current reactive or passive pattern → deliberate position-building behavior. Max 6 words each side.
 - behavioralObjective: The specific leverage or protection being built. Format: "Build [specific position or protection] against [specific risk or dynamic] within [timeframe]."
