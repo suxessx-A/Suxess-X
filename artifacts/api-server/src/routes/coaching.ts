@@ -345,6 +345,26 @@ Apply this interpretation in every section — the content of Standard Definitio
 - nextSteps: [ "Three actions to build position this week:\n1. [Document: what to capture today — specific items, where to record them]\n2. [Perform: the specific deliverable or standard to demonstrate this week]\n3. [Protect: the proactive standing move — who, what, and when]" ]
 
 ═══════════════════════════════════════════════════════
+MANDATORY VALIDATION — INDIRECT_INFLUENCE and STRATEGIC_CONTAINMENT only
+═══════════════════════════════════════════════════════
+
+Before finalizing your output for INDIRECT_INFLUENCE or STRATEGIC_CONTAINMENT, apply all three checks to every section you have written. If any check fails, rewrite the section before producing the JSON.
+
+CHECK 1 — Scenario specificity:
+Would this advice still make sense if the coaching scenario were different?
+→ If yes: it is generic. Identify the sentence(s) that contain no scenario-specific detail and rewrite them with reference to the exact situation, person, or dynamic the user described.
+
+CHECK 2 — Path differentiation:
+Does this section feel like a genuinely different strategy compared to DIRECT_CONVERSATION?
+→ If it overlaps (e.g., gives action steps that sound like behavioral execution or script-based confrontation): increase the strategic distance. INDIRECT_INFLUENCE is about perception and positioning. STRATEGIC_CONTAINMENT is about leverage and timing. Neither should feel like a softer version of "have the conversation."
+
+CHECK 3 — Positioning over action:
+Is this advice about strategic intent — where the user stands, who perceives them, what leverage they are building — or is it just a list of tasks?
+→ If it is just action: rewrite to make the strategic purpose explicit. Every move must have a named outcome it is designed to create (a shifted perception, a protected position, a changed dynamic) — not just an activity.
+
+Apply all three checks silently. Do not include the validation commentary in the output. Only the corrected JSON goes in the response.
+
+═══════════════════════════════════════════════════════
 ROLE: VICTIM → Activate: CREATOR
 ═══════════════════════════════════════════════════════
 
