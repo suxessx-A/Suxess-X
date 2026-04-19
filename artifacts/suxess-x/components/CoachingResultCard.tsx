@@ -25,12 +25,14 @@ const PROBLEM_TYPE_THEME: Record<ProblemType, ThemeConfig & { label: string; ico
 };
 
 const SECTION_ICONS: Record<string, string> = {
-  "State Set": "🎯",
+  "Strategic Positioning": "🎯",
+  "Influence Moves": "🔗",
+  "Visibility Actions": "👁",
+  "Standard Definition": "📌",
+  "Control Moves": "🛡",
+  "Timing Decision": "⏱",
   "Script Variations": "💬",
-  "Tactical Delivery": "📍",
   "Standard Setter": "✅",
-  "Influence Moves": "♟",
-  "Boundary Hold": "🛡",
   "Clarity Map": "🔍",
   "Direction Options": "🗺",
   "Outreach Scripts": "✉",

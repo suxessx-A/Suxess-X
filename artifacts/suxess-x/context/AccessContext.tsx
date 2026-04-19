@@ -12,7 +12,7 @@ interface AccessContextValue {
 const AccessContext = createContext<AccessContextValue | null>(null);
 
 export function AccessProvider({ children }: { children: React.ReactNode }) {
-  const [isPaid, setIsPaid] = useState(false);
+  const [isPaid, setIsPaid] = useState(true);
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
 
   useEffect(() => {

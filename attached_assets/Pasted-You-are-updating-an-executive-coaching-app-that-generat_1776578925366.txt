@@ -1,0 +1,142 @@
+You are updating an executive coaching app that generates situational guidance across three strategic paths:
+
+1. Challenge It Directly (already strong — do NOT change structure significantly)
+2. Shift the Dynamic (needs full redesign)
+3. Hold the Standard (needs full redesign)
+
+Your task is to systematically rewrite ALL flows under:
+
+* “Shift the Dynamic”
+* “Hold the Standard”
+
+---
+
+## CORE PROBLEM TO FIX
+
+Right now, all paths use the same structure:
+
+* Diagnosis
+* What to do
+* Act now
+
+This works for “Challenge Directly” (conversation-based), but fails for:
+
+* Shift (influence strategy)
+* Hold (control & positioning strategy)
+
+The current outputs feel generic, repetitive, and action-based instead of strategic.
+
+---
+
+## OBJECTIVE
+
+Transform “Shift” and “Hold” into DISTINCT EXECUTION MODELS.
+
+Each path must feel like a different way to win the situation — not a variation of the same advice.
+
+---
+
+## NEW STRUCTURES TO IMPLEMENT
+
+### 1. SHIFT THE DYNAMIC → Influence Model
+
+Replace generic sections with:
+
+#### STRATEGIC POSITIONING
+
+* Who matters in this situation?
+* Whose perception needs to shift?
+* Where is the user currently invisible or misunderstood?
+
+#### INFLUENCE MOVES
+
+* What actions change perception WITHOUT direct confrontation?
+* Pre-wiring conversations
+* Creating visibility moments
+* Aligning with stakeholders
+
+#### VISIBILITY ACTIONS
+
+* Specific ways to demonstrate value indirectly
+* Where to speak, contribute, or show up differently
+* Focus on leverage, not volume
+
+#### GUIDING PRINCIPLE
+
+Short, sharp line:
+“I influence the outcome without forcing confrontation.”
+
+---
+
+### 2. HOLD THE STANDARD → Control Model
+
+Replace generic sections with:
+
+#### STANDARD DEFINITION
+
+* What behavior, expectation, or boundary is not acceptable?
+* Clarify this in objective, non-emotional terms
+
+#### CONTROL MOVES
+
+* Document facts and patterns
+* Maintain performance without reacting emotionally
+* Avoid premature escalation
+
+#### TIMING DECISION
+
+* When should the user act vs wait?
+* What signals indicate it’s time to escalate or address directly?
+
+#### GUIDING PRINCIPLE
+
+Short, sharp line:
+“I protect my position while maintaining control.”
+
+---
+
+## CRITICAL WRITING RULES
+
+* NO generic advice like “take one action today”
+* NO productivity-style coaching
+* NO repetition across paths
+* Each path must feel like a different strategic mindset
+
+---
+
+## TONE
+
+* Direct, concise, executive-level
+* Calm authority (not motivational, not fluffy)
+* Focus on leverage, positioning, and outcomes
+
+---
+
+## CONTEXT
+
+This app is used in high-stakes professional situations:
+
+* Conflict with manager
+* Visibility challenges
+* Negotiation
+* Career positioning
+
+Users are capable professionals — do not oversimplify.
+
+---
+
+## OUTPUT REQUIREMENT
+
+Rewrite ALL “Shift the Dynamic” and “Hold the Standard” flows across all scenarios using the new structures.
+
+Ensure:
+
+* Each path feels fundamentally different
+* Advice is situational, not generic
+* The user feels like they are choosing a strategic approach, not just reading tips
+
+---
+
+Do not modify “Challenge Directly” flows unless necessary for consistency.
+
+Return updated content ready to plug into the app.
