@@ -701,6 +701,7 @@ router.post("/coaching/generate", async (req, res) => {
     let parsed;
     try {
       parsed = JSON.parse(stripped);
+      console.log("MINDSET parsed sections:", isMindset ? JSON.stringify(parsed.sections) : "not mindset");
     } catch {
       parsed = buildFallback(problemType, strategy);
     }
@@ -740,31 +741,23 @@ router.post("/coaching/generate", async (req, res) => {
 
 function enforceMindsetSections(parsed: Record<string, unknown>) {
   const aiSections = (parsed.sections as { title: string; premium: boolean; content: string }[] | undefined) ?? [];
-
-  // Trust AI output if it produced valid sections — only use fallbacks if truly empty
-  if (aiSections.length >= 2 && aiSections.every(s => s.content && s.content.length > 20)) {
-    // AI produced good content — just ensure premium flag is correct on Power Questions
+  if (aiSections.length >= 2) {
     return {
       ...parsed,
       script: null,
-      sections: aiSections.map(s => ({
+      sections: aiSections.map((s) => ({
         ...s,
         premium: s.title === "Power Questions" ? true : false,
       })),
     };
   }
-
-  // Fallback only if AI sections are missing or empty
-  const find = (title: string, fallback: string, premium: boolean) =>
-    aiSections.find((s) => s.title === title && s.content && s.content.length > 20) ?? { title, premium, content: fallback };
-
   return {
     ...parsed,
     script: null,
     sections: [
-      find("Interrupt", "You are reacting to a story your mind built, not to what actually happened.\n\nStop. This moment is not a verdict on your trajectory.", false),
-      find("Direct", "1. Write down in one sentence exactly what happened — stripped of any interpretation.\n2. Take the next concrete action in your work before reading anything else.", false),
-      find("Power Questions", "1. What specifically happened — not what it means?\n2. What is your next move today?", true),
+      { title: "Interrupt", premium: false, content: "You are reacting to a story not a fact. Name it and stop." },
+      { title: "Direct", premium: false, content: "1. Take one visible action in the next 10 minutes.\n2. Do it before reading anything else." },
+      { title: "Power Questions", premium: true, content: "1. What actually happened — not what it means?\n2. What is the one Captain choice you have right now?" },
     ],
   };
 }
