@@ -703,6 +703,8 @@ router.post("/coaching/generate", async (req, res) => {
       parsed = JSON.parse(stripped);
       console.log("MINDSET parsed sections:", isMindset ? JSON.stringify(parsed.sections) : "not mindset");
     } catch {
+      console.log("JSON PARSE FAILED for flowType:", flowType);
+      console.log("RAW AI RESPONSE:", raw.substring(0, 500));
       parsed = buildFallback(problemType, strategy);
     }
 
