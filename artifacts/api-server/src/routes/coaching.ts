@@ -302,11 +302,13 @@ FRAMEWORK APPLIED SILENTLY:
 
 MANDATORY CONSTRAINTS:
 - Maximum 3 sections. Short. No multi-paragraph analysis. No therapeutic language.
-- Every sentence serves clarity or action immediately. Remove anything that doesn't.
-- Tone: direct, grounded, decisive. Coach under pressure — not therapist.
-- Interrupt must name exactly what story is being treated as fact.
-- Direct must be a specific action the user takes in the next 15 minutes.
-- Power Questions (premium) must create forward movement — not reflection.
+- Every sentence serves clarity or action immediately. Remove anything that does not.
+- Tone: direct, grounded, decisive. High-performance coach under pressure — not therapist.
+- Interrupt MUST name the EXACT story they are treating as fact — use their specific trigger and pattern from the answers. Not generic.
+- Direct MUST be a specific action they can take in the next 15 minutes — tailored to their situation.
+- Power Questions (premium) must create forward direction — not reflection.
+- CRITICAL: The reframe, breakdown, interrupt, direct, trigger, and identity anchor must ALL describe the SAME situation. If they answered "watching someone else succeed" as the trigger and "comparing myself and losing" as the pattern — every field must address THAT specific situation. Do not generate generic overwhelm content.
+- The repetitionStatement must sound like something this specific person would actually say — not a generic affirmation. It must be credible given their situation.
 
 Generate EXACTLY this JSON:
 
@@ -518,7 +520,7 @@ NEGOTIATION PRINCIPLES (applied silently, never named):
 - Never leave without a specific next step. Vague commitments compound the problem.
 - Value proof before the ask. Facts, scope, outcomes — not effort, loyalty, or time served.`;
 
-  if (situationType === "I believe I'm underpaid") {
+  if (situationType === "I believe I am underpaid") {
     return `${base}
 
 SITUATION: Currently employed. Believes pay is below market rate. This is a MARKET ALIGNMENT conversation — not a performance review.
@@ -717,8 +719,23 @@ router.post("/coaching/generate", async (req, res) => {
 
 function enforceMindsetSections(parsed: Record<string, unknown>) {
   const aiSections = (parsed.sections as { title: string; premium: boolean; content: string }[] | undefined) ?? [];
+
+  // Trust AI output if it produced valid sections — only use fallbacks if truly empty
+  if (aiSections.length >= 2 && aiSections.every(s => s.content && s.content.length > 20)) {
+    // AI produced good content — just ensure premium flag is correct on Power Questions
+    return {
+      ...parsed,
+      script: null,
+      sections: aiSections.map(s => ({
+        ...s,
+        premium: s.title === "Power Questions" ? true : false,
+      })),
+    };
+  }
+
+  // Fallback only if AI sections are missing or empty
   const find = (title: string, fallback: string, premium: boolean) =>
-    aiSections.find((s) => s.title === title) ?? { title, premium, content: fallback };
+    aiSections.find((s) => s.title === title && s.content && s.content.length > 20) ?? { title, premium, content: fallback };
 
   return {
     ...parsed,
@@ -856,7 +873,7 @@ function enforceNegotiateSections(
         content: "If they say budget is tight or timing is not right:\n\n1. Acknowledge without backing down: 'I hear you on timing.' Pause.\n2. Re-anchor: 'The scope and results are real — that is not changing.' Pause.\n3. Ask: 'What would need to be true for us to revisit this?'\n4. Lock criteria: 'So if I deliver X by Y date, we can revisit compensation — can we put that in writing?'\n\nA named date with documented milestones is a commitment. 'Let us revisit soon' is not.",
       },
     ];
-  } else if (situationType === "I believe I'm underpaid") {
+  } else if (situationType === "I believe I am underpaid") {
     identityAnchor = "You are not asking for a favour. You are correcting an imbalance — calmly, clearly, and with evidence.";
     nextSteps = [
       "Five actions before the conversation:\n1. Pull 3 market data points for your role, level, and location — specific figures.\n2. Write your target number grounded in that data.\n3. Set your walk-away: the minimum acceptable outcome and what you do if it is not met.\n4. Prepare your opening line word for word. Say it aloud twice.\n5. Schedule the conversation within 48 hours — name the day.",
