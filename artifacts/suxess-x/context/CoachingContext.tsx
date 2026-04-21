@@ -74,6 +74,9 @@ interface CoachingContextValue {
 
 const CoachingContext = createContext<CoachingContextValue | null>(null);
 
+// Flows that have hardcoded problem types — skip evaluate, go straight to generate
+const SKIP_EVALUATE_FLOWS: FlowType[] = ["mindset", "speak_up", "executive_visibility"];
+
 function str(v: unknown, fallback: string): string {
   return typeof v === "string" && v.trim() ? v.trim() : fallback;
 }
@@ -83,6 +86,8 @@ const VALID_PROBLEM_TYPES: ProblemType[] = ["VICTIM", "AVOIDING_CHALLENGER", "OV
 
 function parseProblemType(v: unknown): ProblemType {
   const s = String(v ?? "").trim().toUpperCase() as ProblemType;
+  // Normalise PASSENGER to VICTIM for UI compatibility
+  if (s === ("PASSENGER" as unknown as ProblemType)) return "VICTIM";
   return VALID_PROBLEM_TYPES.includes(s) ? s : "AVOIDING_CHALLENGER";
 }
 
@@ -158,17 +163,17 @@ function safeParseResult(raw: unknown, problemType: ProblemType, chosenStrategy:
   const fallback: CoachingResult = {
     problemType,
     strategy: chosenStrategy,
-    reframe: "The situation is clearer than it feels.",
-    breakdown: "You know what needs to happen. The question is timing and approach.",
+    reframe: "Waiting for the right moment is the pattern. The moment is now.",
+    breakdown: "The next move is clear. The question is whether you take it today or keep building the case for why the timing is not right. Every day you wait is still a decision — just not the one you intended to make.",
     script: chosenStrategy === "DIRECT_CONVERSATION" ? {
-      opening: "I want to talk about something that has been affecting my work.",
-      issue: "There is a pattern I need to address directly.",
-      impact: "This is affecting my ability to deliver and my standing on this team.",
-      ask: "I need this to change, and I want to agree on how.",
-      pushback: "I hear you. And this still needs to be resolved.",
+      opening: "I want to address something that is affecting my work. Is now a good time?",
+      issue: "There is a specific pattern I need to name. Here is what I have observed.",
+      impact: "The effect of this on my work and results is real and measurable.",
+      ask: "What I need is a specific change, agreed on today. [Pause. Say nothing.]",
+      pushback: "I hear you. This still needs to be resolved. What would need to happen to move this forward?",
     } : null,
-    sections: [{ title: "What to Do", content: "1. Identify your highest-leverage action.\n2. Execute it before end of day.\n3. Reassess tomorrow morning." }],
-    nextSteps: ["Take one concrete action today that moves this forward."],
+    sections: [{ title: "What to Do Now", content: "1. Name the highest-leverage action available to you in the next 24 hours.\n2. Execute it before anything else today.\n3. Reassess tomorrow with new information, not the same story.", premium: false }],
+    nextSteps: ["Identify the one action you have been avoiding. That is your first move. Do it before anything else today."],
   };
 
   if (typeof raw !== "object" || raw === null) return fallback;
@@ -177,9 +182,7 @@ function safeParseResult(raw: unknown, problemType: ProblemType, chosenStrategy:
   const parsedProblemType = parseProblemType(obj.problemType ?? problemType);
   const rawStrategyStr = String(obj.strategy ?? "").trim().toUpperCase();
   const aiStrategy: CoachingStrategy | null = VALID_STRATEGIES.includes(rawStrategyStr as CoachingStrategy)
-    ? (rawStrategyStr as CoachingStrategy)
-    : null;
-  // Always trust the user's chosen strategy over whatever the AI returned
+    ? (rawStrategyStr as CoachingStrategy) : null;
   const parsedStrategy: CoachingStrategy | null = chosenStrategy ?? aiStrategy;
 
   const reframe = str(obj.reframe, fallback.reframe);
@@ -222,7 +225,6 @@ function safeParseResult(raw: unknown, problemType: ProblemType, chosenStrategy:
 
   const VALID_MODES = ["Challenger", "Coach", "Strategist"] as const;
   type Mode = typeof VALID_MODES[number];
-  // Derive mode from the enforced strategy first; fall back to AI-provided mode
   const modeFromStrategy: Mode | undefined =
     parsedStrategy === "INDIRECT_INFLUENCE" || parsedStrategy === "STRATEGIC_CONTAINMENT"
       ? "Strategist"
@@ -288,6 +290,27 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
 
   const evaluateFlow = async () => {
     if (!activeFlow) return;
+
+    // Skip evaluate for flows with hardcoded problem types — go straight to generate
+    if (SKIP_EVALUATE_FLOWS.includes(activeFlow)) {
+      const syntheticProblemType: ProblemType = activeFlow === "mindset" ? "OVERWHELMED" : "AVOIDING_CHALLENGER";
+      setRecommendation({
+        problemType: syntheticProblemType,
+        recommendedStrategy: "DIRECT_CONVERSATION",
+        assessment: {
+          DIRECT_CONVERSATION: "",
+          INDIRECT_INFLUENCE: "",
+          STRATEGIC_CONTAINMENT: "",
+        },
+        options: [
+          { type: "DIRECT_CONVERSATION", label: "Challenge it directly" },
+          { type: "INDIRECT_INFLUENCE", label: "Shift the dynamic through influence" },
+          { type: "STRATEGIC_CONTAINMENT", label: "Hold the standard while managing risk" },
+        ],
+      });
+      return;
+    }
+
     setIsEvaluating(true);
     setError(null);
     try {
