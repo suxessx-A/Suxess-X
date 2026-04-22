@@ -716,6 +716,7 @@ router.post("/coaching/generate", async (req, res) => {
     ? buildUserPrompt(flowType, answers)
     : `${context}\n\n${buildUserPrompt(flowType, answers)}\n\nGenerate coaching that activates the Captain pattern for this behavioral role and strategy.`;
 
+  console.log("SENDING TO AI - flowType:", flowType, "promptLength:", systemPrompt.length, "userPrompt:", JSON.stringify(buildUserPrompt(flowType, answers)));
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
