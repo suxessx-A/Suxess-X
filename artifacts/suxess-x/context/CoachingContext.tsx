@@ -254,7 +254,8 @@ function safeParseResult(raw: unknown, problemType: ProblemType, chosenStrategy:
 
 function getBase(): string {
   const domain = process.env.EXPO_PUBLIC_DOMAIN;
-  return domain ? `https://${domain}` : "";
+  if (domain) return `https://${domain}`;
+  return "https://d2ed2806-9e05-4352-b2bf-9740ef4876cc-00-3tdolowv9g7xu.picard.replit.dev";
 }
 
 export function CoachingProvider({ children }: { children: React.ReactNode }) {
