@@ -18,6 +18,8 @@ import { setBaseUrl } from "@workspace/api-client-react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CoachingProvider } from "@/context/CoachingContext";
 import { AccessProvider } from "@/context/AccessContext";
+import { UserProvider, useUser } from "@/context/UserContext";
+import OnboardingScreen from "@/app/onboarding";
 
 if (process.env.EXPO_PUBLIC_DOMAIN) {
   setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
@@ -34,7 +36,21 @@ function RootLayoutNav() {
       <Stack.Screen name="flow" />
       <Stack.Screen name="example" />
       <Stack.Screen name="paywall" />
+      <Stack.Screen name="onboarding" />
     </Stack>
+  );
+}
+
+function AppGate() {
+  const { hasCompletedOnboarding, isLoading } = useUser();
+  if (isLoading) return null;
+  if (!hasCompletedOnboarding) return <OnboardingScreen />;
+  return (
+    <AccessProvider>
+      <CoachingProvider>
+        <RootLayoutNav />
+      </CoachingProvider>
+    </AccessProvider>
   );
 }
 
@@ -60,11 +76,9 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
-              <AccessProvider>
-                <CoachingProvider>
-                  <RootLayoutNav />
-                </CoachingProvider>
-              </AccessProvider>
+              <UserProvider>
+                <AppGate />
+              </UserProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>
