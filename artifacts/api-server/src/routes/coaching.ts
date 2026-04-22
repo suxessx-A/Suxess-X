@@ -720,7 +720,7 @@ router.post("/coaching/generate", async (req, res) => {
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
-      max_completion_tokens: 6000,
+      max_completion_tokens: 16000,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
