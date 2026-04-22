@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
+import { useUser } from "@/context/UserContext";
 
 export type FlowType = "conversation" | "stuck" | "speak_up" | "executive_visibility" | "negotiate" | "mindset";
 export type ProblemType = "VICTIM" | "AVOIDING_CHALLENGER" | "OVERWHELMED";
@@ -254,11 +255,11 @@ function safeParseResult(raw: unknown, problemType: ProblemType, chosenStrategy:
 
 function getBase(): string {
   const domain = process.env.EXPO_PUBLIC_DOMAIN;
-  if (domain) return `https://${domain}`;
-  return "https://d2ed2806-9e05-4352-b2bf-9740ef4876cc-00-3tdolowv9g7xu.picard.replit.dev";
+  return domain ? `https://${domain}` : "";
 }
 
 export function CoachingProvider({ children }: { children: React.ReactNode }) {
+  const { profile: userProfile } = useUser();
   const [activeFlow, setActiveFlowState] = useState<FlowType | null>(null);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [recommendation, setRecommendation] = useState<StrategyRecommendation | null>(null);
@@ -342,7 +343,7 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
       const response = await fetch(`${getBase()}/api/coaching/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ flowType: activeFlow, answers, problemType, strategy }),
+        body: JSON.stringify({ flowType: activeFlow, answers, problemType, strategy, userProfile }),
       });
       if (!response.ok) throw new Error(`Server error ${response.status}`);
       const text = await response.text();
