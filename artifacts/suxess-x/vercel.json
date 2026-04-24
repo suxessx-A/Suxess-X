@@ -1,5 +1,0 @@
-{
-  "buildCommand": "npx --yes expo@54.0.27 export --platform web",
-  "outputDirectory": "dist",
-  "framework": null
-}
