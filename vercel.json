@@ -1,6 +1,5 @@
 {
-  "buildCommand": "npm install && npx expo export --platform web",
-  "outputDirectory": "dist",
-  "framework": null,
-  "installCommand": "npm install"
+  "buildCommand": "cd artifacts/suxess-x && npm install && npx expo export --platform web",
+  "outputDirectory": "artifacts/suxess-x/dist",
+  "framework": null
 }
