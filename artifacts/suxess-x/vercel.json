@@ -1,6 +1,5 @@
 {
-  "buildCommand": "npm install && npx expo export --platform web",
+  "buildCommand": "npx --yes expo@54.0.27 export --platform web",
   "outputDirectory": "dist",
-  "framework": null,
-  "installCommand": "npm install"
+  "framework": null
 }
