@@ -1,13 +1,17 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { CoachingResult, CoachingScript, CoachingSection, CoachingStrategy, CoachingTrigger, ProblemType } from "@/context/CoachingContext";
+import { useUser } from "@/context/UserContext";
+import { RefineMySituation, ExecutionLoop, saveSession } from "@/components/RefineAndExecutionLoop";
 
 interface CoachingResultCardProps {
   result: CoachingResult;
   onReset: () => void;
   ctaButton?: { label: string; onPress: () => void };
+  flowType?: string;
+  answers?: Record<string, string | string[]>;
 }
 
 type ThemeConfig = { color: string; bg: string; border: string };
@@ -454,8 +458,22 @@ function PremiumLockCard({ section }: { section: CoachingSection }) {
   );
 }
 
-export function CoachingResultCard({ result, onReset, ctaButton }: CoachingResultCardProps) {
+export function CoachingResultCard({ result, onReset, ctaButton, flowType, answers }: CoachingResultCardProps) {
   const colors = useColors();
+  const { profile } = useUser();
+  const sessionId = useRef(`session_${Date.now()}`).current;
+
+  useEffect(() => {
+    saveSession({
+      sessionId,
+      flowType: flowType ?? "unknown",
+      timestamp: Date.now(),
+      answers: answers ?? {},
+      problemType: result.problemType,
+      strategy: result.strategy,
+      userProfile: profile ?? undefined,
+    });
+  }, []);
 
   const s = StyleSheet.create({
     scroll: { flex: 1 },
@@ -533,6 +551,23 @@ export function CoachingResultCard({ result, onReset, ctaButton }: CoachingResul
       </View>
 
       {result.closingQuestion ? <ClosingQuestionCard question={result.closingQuestion} /> : null}
+
+      <RefineMySituation
+        flowType={flowType ?? "unknown"}
+        originalAnswers={answers ?? {}}
+        onRefined={(newResult) => {
+          // parent can handle if needed — for now just log
+          console.log("Refined result received", newResult);
+        }}
+        userGoal={profile?.goal}
+      />
+
+      <ExecutionLoop
+        flowType={flowType ?? "unknown"}
+        behavioralObjective={result.behavioralObjective ?? result.nextSteps[0] ?? "Take your next step."}
+        sessionId={sessionId}
+        userGoal={profile?.goal}
+      />
 
       {ctaButton ? (
         <>

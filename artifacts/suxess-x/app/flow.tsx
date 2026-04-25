@@ -579,7 +579,7 @@ export default function FlowScreen() {
           <Text style={styles.headerTitle}>Your Coaching</Text>
         </View>
         <View style={styles.resultContent}>
-          <CoachingResultCard result={result} onReset={handleReset} />
+          <CoachingResultCard result={result} onReset={handleReset} flowType={activeFlow ?? undefined} answers={answers} />
         </View>
       </View>
     );
