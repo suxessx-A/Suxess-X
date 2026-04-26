@@ -12,7 +12,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
-import { useCoaching, CoachingStrategy, StrategyRecommendation } from "@/context/CoachingContext";
+import { useCoaching, CoachingResult, CoachingStrategy, StrategyRecommendation } from "@/context/CoachingContext";
 import { ProgressBar } from "@/components/ProgressBar";
 import { OptionChip } from "@/components/OptionChip";
 import { CoachingResultCard } from "@/components/CoachingResultCard";
@@ -382,7 +382,7 @@ export default function FlowScreen() {
   const {
     activeFlow, answers, recommendation, result,
     isEvaluating, isLoading, error,
-    setAnswer, evaluateFlow, submitFlow, resetFlow,
+    setAnswer, setResult, evaluateFlow, submitFlow, resetFlow,
   } = useCoaching();
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -579,7 +579,13 @@ export default function FlowScreen() {
           <Text style={styles.headerTitle}>Your Coaching</Text>
         </View>
         <View style={styles.resultContent}>
-          <CoachingResultCard result={result} onReset={handleReset} flowType={activeFlow ?? undefined} answers={answers} />
+          <CoachingResultCard
+            result={result}
+            onReset={handleReset}
+            flowType={activeFlow ?? undefined}
+            answers={answers}
+            onRefined={(newResult) => setResult(newResult as CoachingResult)}
+          />
         </View>
       </View>
     );

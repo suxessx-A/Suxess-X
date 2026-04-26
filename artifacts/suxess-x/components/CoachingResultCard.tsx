@@ -13,6 +13,7 @@ interface CoachingResultCardProps {
   ctaButton?: { label: string; onPress: () => void };
   flowType?: string;
   answers?: Record<string, string | string[]>;
+  onRefined?: (newResult: CoachingResult) => void;
 }
 
 type ThemeConfig = { color: string; bg: string; border: string };
@@ -394,7 +395,7 @@ function SectionCard({ section, problemType, strategy }: {
   );
 }
 
-export function CoachingResultCard({ result: initialResult, onReset, ctaButton, flowType, answers }: CoachingResultCardProps) {
+export function CoachingResultCard({ result: initialResult, onReset, ctaButton, flowType, answers, onRefined: onRefinedProp }: CoachingResultCardProps) {
   const [result, setResult] = useState<CoachingResult>(initialResult);
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(false);
   console.log("RENDERING WITH REFRAME:", result.reframe?.substring(0, 40));
@@ -539,7 +540,9 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
           problemType={result.problemType}
           onRefined={(newResult) => {
             console.log("onRefined called with:", JSON.stringify(newResult).substring(0, 100));
-            setResult(newResult as CoachingResult);
+            const typed = newResult as CoachingResult;
+            setResult(typed);
+            onRefinedProp?.(typed);
           }}
         />
       ) : (

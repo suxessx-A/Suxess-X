@@ -75,6 +75,7 @@ interface CoachingContextValue {
   error: string | null;
   setActiveFlow: (flow: FlowType | null) => void;
   setAnswer: (key: string, value: string | string[]) => void;
+  setResult: (result: CoachingResult | null) => void;
   resetFlow: () => void;
   evaluateFlow: () => Promise<void>;
   submitFlow: (strategy: CoachingStrategy | null) => Promise<void>;
@@ -430,7 +431,7 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
     <CoachingContext.Provider value={{
       activeFlow, answers, recommendation, result,
       isEvaluating, isLoading, error,
-      setActiveFlow, setAnswer, resetFlow, evaluateFlow, submitFlow,
+      setActiveFlow, setAnswer, setResult, resetFlow, evaluateFlow, submitFlow,
     }}>
       {children}
       <Modal
