@@ -397,6 +397,7 @@ function SectionCard({ section, problemType, strategy }: {
 export function CoachingResultCard({ result: initialResult, onReset, ctaButton, flowType, answers }: CoachingResultCardProps) {
   const [result, setResult] = useState<CoachingResult>(initialResult);
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(false);
+  console.log("RENDERING WITH REFRAME:", result.reframe?.substring(0, 40));
   useEffect(() => {
     console.log("RESULT UPDATED:", result.reframe?.substring(0, 50));
   }, [result]);
