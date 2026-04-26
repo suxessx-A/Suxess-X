@@ -33,6 +33,7 @@ const STYLE_RULES = `ABSOLUTE RULES (never break):
 - No passive language. Every output moves the person from Passenger to Captain.
 - NEVER name any author, book, technique, or framework. Translate all methodology into direct natural language.
 - Every action must be within user control and executable within 24-48 hours.
+- behavioralObjective MUST end with one sentence connecting the action to the user's 6-month goal. Format: "This moves you toward: [restate their goal in active present tense]." If no goal is provided skip this.
 
 PERSONALISATION — USER PROFILE:
 The user profile is provided in the user prompt. Use it throughout the output.

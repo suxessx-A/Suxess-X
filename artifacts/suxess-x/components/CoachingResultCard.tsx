@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
@@ -237,15 +237,15 @@ function ExecutionHeader({ roleShift, behavioralObjective, tacticalTools }: {
     shiftLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, paddingHorizontal: 16, paddingTop: 14 },
     fromChip: {
       backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 8,
-      paddingVertical: 5, paddingHorizontal: 10,
+      paddingVertical: 5, paddingHorizontal: 10, flexShrink: 1,
     },
-    fromText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "rgba(255,255,255,0.6)" },
+    fromText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "rgba(255,255,255,0.6)", flexShrink: 1 },
     arrow: { fontSize: 16, color: "#d4a017", fontFamily: "Inter_700Bold" },
     toChip: {
       backgroundColor: "#7c3aed", borderRadius: 8,
-      paddingVertical: 5, paddingHorizontal: 10,
+      paddingVertical: 5, paddingHorizontal: 10, flexShrink: 1,
     },
-    toText: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#fff" },
+    toText: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#fff", flexShrink: 1 },
     divider: { height: 1, backgroundColor: "rgba(255,255,255,0.1)", marginHorizontal: 16 },
     objectiveWrap: { paddingVertical: 12, paddingHorizontal: 16 },
     objectiveLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#d4a017", textTransform: "uppercase", letterSpacing: 1, marginBottom: 5, },
@@ -458,7 +458,8 @@ function PremiumLockCard({ section }: { section: CoachingSection }) {
   );
 }
 
-export function CoachingResultCard({ result, onReset, ctaButton, flowType, answers }: CoachingResultCardProps) {
+export function CoachingResultCard({ result: initialResult, onReset, ctaButton, flowType, answers }: CoachingResultCardProps) {
+  const [result, setResult] = useState<CoachingResult>(initialResult);
   const colors = useColors();
   const { profile } = useUser();
   const sessionId = useRef(`session_${Date.now()}`).current;
@@ -556,8 +557,7 @@ export function CoachingResultCard({ result, onReset, ctaButton, flowType, answe
         flowType={flowType ?? "unknown"}
         originalAnswers={answers ?? {}}
         onRefined={(newResult) => {
-          // parent can handle if needed — for now just log
-          console.log("Refined result received", newResult);
+          setResult(newResult as CoachingResult);
         }}
         userGoal={profile?.goal}
       />

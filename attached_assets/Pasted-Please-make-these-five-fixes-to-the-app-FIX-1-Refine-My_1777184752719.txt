@@ -1,0 +1,25 @@
+Please make these five fixes to the app:
+
+FIX 1 — Refine My Situation must update the display
+In CoachingResultCard.tsx, find where RefineMySituation is rendered. The onRefined callback receives a new coaching result. Make it call setResult(newResult) or equivalent so the refined coaching replaces the current result on screen. The user must see new content appear after refining — right now nothing happens visually.
+
+FIX 2 — Role shift text wrapping
+In CoachingResultCard.tsx, find the roleShift display. The row container showing "Passenger pattern → Captain behavior" needs flexWrap: "wrap" added. Each text element needs flexShrink: 1 so text wraps instead of being cut off on smaller screens.
+
+FIX 3 — Execution Loop language sharpened
+In RefineAndExecutionLoop.tsx find the costText in the commitment section and replace:
+"Every moment you delay this costs more than you think. The Captain commits. The Passenger waits."
+With:
+"Right now you are in Passenger mode — waiting instead of acting. Every time you delay this specific move, you reinforce the pattern keeping you from your goal. The Captain does not wait to feel ready. They commit. Then act within 5 seconds."
+
+Find the blocker cost text and replace:
+"Every time you delay this specific action, you reinforce the pattern that keeps you from where you said you want to be in 6 months."
+With:
+"Naming what blocked you is the Captain move. The Passenger avoids and explains. The Captain identifies the obstacle and removes it. Your next move is to remove this specific blocker before tomorrow."
+
+FIX 4 — Connect action to 6-month goal in all prompts
+In artifacts/api-server/src/routes/coaching.ts find the STYLE_RULES constant and add this line at the end of it:
+"- behavioralObjective MUST end with one sentence connecting the action to the user's 6-month goal. Format: 'This moves you toward: [restate their goal in active present tense].' If no goal is provided skip this."
+
+FIX 5 — Premium lock with upgrade prompt
+In CoachingResultCard.tsx find where sections are rendered. For any section with premium: true, instead of showing a lock icon, repl

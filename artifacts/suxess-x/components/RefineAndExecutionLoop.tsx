@@ -243,7 +243,7 @@ export function ExecutionLoop({ flowType, behavioralObjective, sessionId, userGo
           </View>
         )}
         <Text style={el.costText}>
-          Every moment you delay this costs more than you think. The Captain commits. The Passenger waits.
+          Right now you are in Passenger mode — waiting instead of acting. Every time you delay this specific move, you reinforce the pattern keeping you from your goal. The Captain does not wait to feel ready. They commit. Then act within 5 seconds.
         </Text>
         <TouchableOpacity style={el.commitBtn} onPress={handleCommit}>
           <Text style={el.commitBtnText}>I commit to this today</Text>
@@ -296,7 +296,7 @@ export function ExecutionLoop({ flowType, behavioralObjective, sessionId, userGo
         <View style={el.costWrap}>
           <Text style={el.costLabel}>THE COST OF NOT ACTING</Text>
           <Text style={el.costText}>
-            Every time you delay this specific action, you reinforce the pattern that keeps you from where you said you want to be in 6 months.
+            Naming what blocked you is the Captain move. The Passenger avoids and explains. The Captain identifies the obstacle and removes it. Your next move is to remove this specific blocker before tomorrow.
           </Text>
         </View>
         <TouchableOpacity
