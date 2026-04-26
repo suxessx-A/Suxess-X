@@ -1,10 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from "react-native";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useColors } from "@/hooks/useColors";
 import { CoachingResult, CoachingScript, CoachingSection, CoachingStrategy, CoachingTrigger, ProblemType } from "@/context/CoachingContext";
 import { useUser } from "@/context/UserContext";
+import { useAccess } from "@/context/AccessContext";
 import { RefineMySituation, ExecutionLoop, saveSession } from "@/components/RefineAndExecutionLoop";
+
+const STRIPE_URL = "https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00";
 
 interface CoachingResultCardProps {
   result: CoachingResult;
@@ -394,64 +398,30 @@ function SectionCard({ section, problemType, strategy }: {
 }
 
 function PremiumLockCard({ section }: { section: CoachingSection }) {
-  const router = useRouter();
-  const icon = SECTION_ICONS[section.title] ?? "🔒";
-
   const s = StyleSheet.create({
-    card: { borderRadius: 14, marginBottom: 10, overflow: "hidden", borderWidth: 1.5, borderColor: "#e5e7eb" },
-    header: {
-      backgroundColor: "#f3f4f6", paddingVertical: 10, paddingHorizontal: 16,
-      flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    card: {
+      borderRadius: 14, marginBottom: 10, borderWidth: 1.5,
+      borderColor: "#d4a017", backgroundColor: "#fffbeb", overflow: "hidden",
     },
-    headerLeft: { flexDirection: "row", alignItems: "center", gap: 6 },
-    headerText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#6b7280", textTransform: "uppercase", letterSpacing: 1 },
-    premiumBadge: {
-      backgroundColor: "#d4a017", borderRadius: 6,
-      paddingVertical: 3, paddingHorizontal: 8,
-    },
-    premiumBadgeText: { fontSize: 9, fontFamily: "Inter_700Bold", color: "#fff", textTransform: "uppercase", letterSpacing: 1 },
-    body: { backgroundColor: "#fafafa", paddingVertical: 20, paddingHorizontal: 16, alignItems: "center" },
-    lockIcon: { fontSize: 28, marginBottom: 10 },
-    lockTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#374151", marginBottom: 6, textAlign: "center" },
-    lockDesc: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#6b7280", lineHeight: 20, textAlign: "center", marginBottom: 16 },
+    body: { paddingVertical: 20, paddingHorizontal: 18, alignItems: "center" },
+    lockIcon: { fontSize: 26, marginBottom: 8 },
+    title: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1a1a2e", marginBottom: 8, textAlign: "center" },
+    price: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#78350f", textAlign: "center", marginBottom: 16, lineHeight: 20 },
     unlockBtn: {
       backgroundColor: "#d4a017", borderRadius: 12,
-      paddingVertical: 12, paddingHorizontal: 24,
+      paddingVertical: 13, paddingHorizontal: 28,
     },
     unlockBtnText: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#fff" },
   });
 
-  const descriptions: Record<string, string> = {
-    "Outreach Scripts": "Get the exact messages to send — adapted to the person, the path, and the variant that fits.",
-    "Follow-Up Strategy": "Know exactly what to do after each conversation to keep momentum and sharpen your direction.",
-    "Discipline": "The three in-room rules that separate confident conversations from ones that collapse under pressure.",
-    "Alternative Path": "If the number isn't available, know exactly what to ask for instead — and how to lock it in.",
-    "If They Resist": "Turn budget objections and stalling into written criteria and a named review date.",
-    "What Else Is On the Table": "Negotiate everything beyond base — sign-on, equity, title, and a 6-month review.",
-    "Lock a Timeline": "Get a commitment on when and what — and document it the same day.",
-    "Your Lines": "Get three personalised entry lines written for your specific meeting and audience — ready to say out loud.",
-    "Power Questions": "Two short, sharp questions that cut through the story and point to your next move.",
-    "The Principle": "Understand how executives actually read your communication — and the one rule that shifts you from executor to strategist.",
-  };
-
   return (
     <View style={s.card}>
-      <View style={s.header}>
-        <View style={s.headerLeft}>
-          <Text style={s.headerText}>{icon}  {section.title}</Text>
-        </View>
-        <View style={s.premiumBadge}>
-          <Text style={s.premiumBadgeText}>Premium</Text>
-        </View>
-      </View>
       <View style={s.body}>
         <Text style={s.lockIcon}>🔒</Text>
-        <Text style={s.lockTitle}>{section.title}</Text>
-        <Text style={s.lockDesc}>
-          {descriptions[section.title] ?? "Unlock this section to access personalised guidance."}
-        </Text>
-        <TouchableOpacity style={s.unlockBtn} activeOpacity={0.85} onPress={() => router.push("/paywall")}>
-          <Text style={s.unlockBtnText}>Unlock Full Coaching</Text>
+        <Text style={s.title}>{section.title}</Text>
+        <Text style={s.price}>Unlock with Premium — $20/month or $6/week</Text>
+        <TouchableOpacity style={s.unlockBtn} activeOpacity={0.85} onPress={() => Linking.openURL(STRIPE_URL)}>
+          <Text style={s.unlockBtnText}>Upgrade to Premium</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -460,8 +430,10 @@ function PremiumLockCard({ section }: { section: CoachingSection }) {
 
 export function CoachingResultCard({ result: initialResult, onReset, ctaButton, flowType, answers }: CoachingResultCardProps) {
   const [result, setResult] = useState<CoachingResult>(initialResult);
+  const [showUpgradeBanner, setShowUpgradeBanner] = useState(false);
   const colors = useColors();
   const { profile } = useUser();
+  const { isPaid } = useAccess();
   const sessionId = useRef(`session_${Date.now()}`).current;
 
   useEffect(() => {
@@ -475,6 +447,17 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
       userProfile: profile ?? undefined,
     });
   }, []);
+
+  useEffect(() => {
+    if (isPaid) return;
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem("suxess_sessions");
+        const sessions = stored ? JSON.parse(stored) : [];
+        if (sessions.length >= 3) setShowUpgradeBanner(true);
+      } catch {}
+    })();
+  }, [isPaid]);
 
   const s = StyleSheet.create({
     scroll: { flex: 1 },
@@ -500,8 +483,30 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
     ctaSecondaryText: { fontSize: 14, fontFamily: "Inter_500Medium", color: colors.mutedForeground },
   });
 
+  const bs = StyleSheet.create({
+    banner: {
+      marginBottom: 14, borderRadius: 14, borderWidth: 1.5, borderColor: "#d4a017",
+      backgroundColor: "#1a1a2e", padding: 18,
+    },
+    bannerLabel: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#d4a017", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 6 },
+    bannerText: { fontSize: 14, fontFamily: "Inter_500Medium", color: "rgba(255,255,255,0.85)", lineHeight: 21, marginBottom: 14 },
+    bannerBtn: { backgroundColor: "#d4a017", borderRadius: 10, paddingVertical: 12, alignItems: "center" },
+    bannerBtnText: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#fff" },
+  });
+
   return (
     <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
+      {showUpgradeBanner && (
+        <View style={bs.banner}>
+          <Text style={bs.bannerLabel}>You have explored 3 flows</Text>
+          <Text style={bs.bannerText}>
+            Upgrade to Premium to unlock Power Questions, Refine My Situation, and your Execution Loop.
+          </Text>
+          <TouchableOpacity style={bs.bannerBtn} activeOpacity={0.85} onPress={() => Linking.openURL(STRIPE_URL)}>
+            <Text style={bs.bannerBtnText}>Upgrade — $20/month or $6/week</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       <HeaderBadge result={result} />
 
       <ExecutionHeader
