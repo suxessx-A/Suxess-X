@@ -55,13 +55,13 @@ export interface CoachingResult {
   roleShift?: string;
   behavioralObjective?: string;
   tacticalTools?: string[];
-  reframe: string;
-  breakdown: string;
+  reframe?: string;
+  breakdown?: string;
   trigger?: CoachingTrigger;
   identityAnchor?: string;
-  script: CoachingScript | null;
-  sections: CoachingSection[];
-  nextSteps: string[];
+  script?: CoachingScript | null;
+  sections?: CoachingSection[];
+  nextSteps?: string[];
   closingQuestion?: string;
 }
 

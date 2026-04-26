@@ -1,0 +1,53 @@
+Please make exactly these three fixes in CoachingResultCard.tsx. Do not change anything else.
+
+FIX 1 — Debug why onRefined is not updating the display
+After line:
+const [result, setResult] = useState<CoachingResult>(initialResult);
+
+Add this useEffect to log when result changes:
+useEffect(() => {
+  console.log("RESULT UPDATED:", result.reframe?.substring(0, 50));
+}, [result]);
+
+Also in the onRefined callback, add a console.log:
+onRefined={(newResult) => {
+  console.log("onRefined called with:", JSON.stringify(newResult).substring(0, 100));
+  setResult(newResult as CoachingResult);
+}}
+
+FIX 2 — Lock RefineMySituation behind isPaid check
+Find where RefineMySituation is rendered (around line 530) and wrap it like this:
+
+{isPaid ? (
+  <RefineMySituation
+    flowType={flowType ?? "unknown"}
+    originalAnswers={answers ?? {}}
+    problemType={result.problemType}
+    onRefined={(newResult) => {
+      console.log("onRefined called with:", JSON.stringify(newResult).substring(0, 100));
+      setResult(newResult as CoachingResult);
+    }}
+  />
+) : (
+  <PremiumLockCard
+    title="Refine My Situation"
+    description="Something changed? Get adjusted coaching based on what actually happened."
+  />
+)}
+
+FIX 3 — Make sure CoachingResult type accepts all fields from refined response
+In CoachingContext.tsx, find the CoachingResult interface and confirm it has optional fields for everything the API returns. Add these if missing:
+  reframe?: string;
+  breakdown?: string;
+  behavioralObjective?: string;
+  roleShift?: string;
+  identityAnchor?: string;
+  closingQuestion?: string;
+  script?: CoachingScript | null;
+  sections?: CoachingSection[];
+  nextSteps?: string[];
+  trigger?: CoachingTrigger;
+
+Making them all optional with ? means a partial response will not crash the component.
+
+Then rebuild and restart. After rebuilding, run a flow, click Refine My Situation (if premium) or see the lock card (if free), and show me the console output.

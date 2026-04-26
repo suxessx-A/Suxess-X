@@ -397,6 +397,9 @@ function SectionCard({ section, problemType, strategy }: {
 export function CoachingResultCard({ result: initialResult, onReset, ctaButton, flowType, answers }: CoachingResultCardProps) {
   const [result, setResult] = useState<CoachingResult>(initialResult);
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(false);
+  useEffect(() => {
+    console.log("RESULT UPDATED:", result.reframe?.substring(0, 50));
+  }, [result]);
   const colors = useColors();
   const { profile } = useUser();
   const { isPaid } = useAccess();
@@ -481,11 +484,11 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
         tacticalTools={result.tacticalTools}
       />
 
-      <BreakdownBlock reframe={result.reframe} breakdown={result.breakdown} />
+      <BreakdownBlock reframe={result.reframe ?? ""} breakdown={result.breakdown ?? ""} />
 
       {result.trigger ? <TriggerCard trigger={result.trigger} /> : null}
 
-      {result.sections
+      {(result.sections ?? [])
         .filter((s) => s.title === "State Set" || s.title === "Internal Clarity")
         .map((section, i) => (
           <SectionCard key={`pre-${i}`} section={section} problemType={result.problemType} strategy={result.strategy} />
@@ -495,7 +498,7 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
         <ScriptSection script={result.script} strategy={result.strategy} />
       )}
 
-      {result.sections
+      {(result.sections ?? [])
         .filter((s) => s.title !== "State Set" && s.title !== "Internal Clarity")
         .map((section, i) =>
           section.premium ? (
@@ -522,25 +525,32 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
         <View style={s.nextIconWrap}><Text style={s.nextIcon}>⚡</Text></View>
         <View style={s.nextContent}>
           <Text style={s.nextLabel}>Act Now</Text>
-          <Text style={s.nextText}>{result.nextSteps.join("\n")}</Text>
+          <Text style={s.nextText}>{(result.nextSteps ?? []).join("\n")}</Text>
         </View>
       </View>
 
       {result.closingQuestion ? <ClosingQuestionCard question={result.closingQuestion} /> : null}
 
-      <RefineMySituation
-        flowType={flowType ?? "unknown"}
-        originalAnswers={answers ?? {}}
-        problemType={result.problemType}
-        onRefined={(newResult) => {
-          setResult(newResult as CoachingResult);
-        }}
-        userGoal={profile?.goal}
-      />
+      {isPaid ? (
+        <RefineMySituation
+          flowType={flowType ?? "unknown"}
+          originalAnswers={answers ?? {}}
+          problemType={result.problemType}
+          onRefined={(newResult) => {
+            console.log("onRefined called with:", JSON.stringify(newResult).substring(0, 100));
+            setResult(newResult as CoachingResult);
+          }}
+        />
+      ) : (
+        <PremiumLockCard
+          title="Refine My Situation"
+          description="Something changed? Get adjusted coaching based on what actually happened."
+        />
+      )}
 
       <ExecutionLoop
         flowType={flowType ?? "unknown"}
-        behavioralObjective={result.behavioralObjective ?? result.nextSteps[0] ?? "Take your next step."}
+        behavioralObjective={result.behavioralObjective ?? result.nextSteps?.[0] ?? "Take your next step."}
         sessionId={sessionId}
         userGoal={profile?.goal}
       />
