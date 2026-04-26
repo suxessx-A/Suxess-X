@@ -9,7 +9,10 @@ import {
 } from "react-native";
 import { useUser } from "@/context/UserContext";
 
-const API_BASE = "https://d2ed2806-9e05-4352-b2bf-9740ef4876cc-00-3tdolowv9g7xu.picard.replit.dev";
+const _domain = process.env.EXPO_PUBLIC_DOMAIN;
+const API_BASE = _domain
+  ? `https://${_domain}`
+  : "https://d2ed2806-9e05-4352-b2bf-9740ef4876cc-00-3tdolowv9g7xu.picard.replit.dev";
 
 // ============================================================
 // REFINE MY SITUATION
@@ -18,11 +21,12 @@ const API_BASE = "https://d2ed2806-9e05-4352-b2bf-9740ef4876cc-00-3tdolowv9g7xu.
 interface RefineProps {
   flowType: string;
   originalAnswers: Record<string, string | string[]>;
+  problemType?: string;
   onRefined: (newResult: Record<string, unknown>) => void;
   userGoal?: string;
 }
 
-export function RefineMySituation({ flowType, originalAnswers, onRefined, userGoal }: RefineProps) {
+export function RefineMySituation({ flowType, originalAnswers, problemType, onRefined, userGoal }: RefineProps) {
   const [open, setOpen] = useState(false);
   const [update, setUpdate] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,19 +50,29 @@ export function RefineMySituation({ flowType, originalAnswers, onRefined, userGo
         refinement: text,
         refinement_context: "User is refining after attempting the action or receiving a response.",
       };
+      const payload = {
+        flowType,
+        answers: updatedAnswers,
+        problemType: problemType ?? "AVOIDING_CHALLENGER",
+        strategy: null,
+        userProfile: profile,
+      };
+      console.log("REFINE PAYLOAD:", JSON.stringify(payload));
       const res = await fetch(`${API_BASE}/api/coaching/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          flowType,
-          answers: updatedAnswers,
-          problemType: "AVOIDING_CHALLENGER",
-          strategy: null,
-          userProfile: profile,
-        }),
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("API error");
-      const data = await res.json();
+      console.log("REFINE RESPONSE STATUS:", res.status);
+      const raw = await res.text();
+      console.log("REFINE RAW RESPONSE:", raw.substring(0, 300));
+      if (!res.ok) throw new Error(`API error ${res.status}`);
+      let data: Record<string, unknown>;
+      try {
+        data = JSON.parse(raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim());
+      } catch {
+        throw new Error("JSON parse failed");
+      }
       onRefined(data);
       setDone(true);
       setOpen(false);

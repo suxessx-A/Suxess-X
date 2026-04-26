@@ -561,6 +561,7 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
       <RefineMySituation
         flowType={flowType ?? "unknown"}
         originalAnswers={answers ?? {}}
+        problemType={result.problemType}
         onRefined={(newResult) => {
           setResult(newResult as CoachingResult);
         }}
