@@ -1,20 +1,25 @@
 // ============================================================
-// PASTE THIS FILE AS: artifacts/suxess-x/components/RefineAndExecutionLoop.tsx
+// COMPLETE REPLACEMENT FILE
+// artifacts/suxess-x/components/RefineAndExecutionLoop.tsx
 // ============================================================
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
   ActivityIndicator, Platform, Linking,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUser } from "@/context/UserContext";
 
-const STRIPE_URL = "https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00";
+// ============================================================
+// CONSTANTS
+// ============================================================
 
-const _domain = process.env.EXPO_PUBLIC_DOMAIN;
-const API_BASE = _domain
-  ? `https://${_domain}`
-  : "https://d2ed2806-9e05-4352-b2bf-9740ef4876cc-00-3tdolowv9g7xu.picard.replit.dev";
+function getAPIBase(): string {
+  const domain = process.env.EXPO_PUBLIC_DOMAIN;
+  if (domain) return `https://${domain}`;
+  return "https://d2ed2806-9e05-4352-b2bf-9740ef4876cc-00-3tdolowv9g7xu.picard.replit.dev";
+}
 
 // ============================================================
 // REFINE MY SITUATION
@@ -25,61 +30,77 @@ interface RefineProps {
   originalAnswers: Record<string, string | string[]>;
   problemType?: string;
   onRefined: (newResult: Record<string, unknown>) => void;
-  userGoal?: string;
 }
 
-export function RefineMySituation({ flowType, originalAnswers, problemType, onRefined, userGoal }: RefineProps) {
+export function RefineMySituation({ flowType, originalAnswers, problemType, onRefined }: RefineProps) {
   const [open, setOpen] = useState(false);
   const [update, setUpdate] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const inputRef = useRef<TextInput>(null);
   const { profile } = useUser();
 
-  const refineOptions = [
-    "What changed?",
-    "What did they say?",
-    "What did not work?",
-    "I need to go deeper on this.",
+  const quickOptions = [
+    { label: "What changed?", starter: "What changed is: " },
+    { label: "What did they say?", starter: "They said: " },
+    { label: "What did not work?", starter: "What did not work was: " },
+    { label: "Go deeper on this.", starter: "I want to go deeper on: " },
   ];
 
-  const handleRefine = async (prompt?: string) => {
-    const text = prompt ?? update.trim();
-    if (!text) return;
+  const handleQuickTap = (starter: string) => {
+    setUpdate(starter);
+    setError(null);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  const handleRefine = async () => {
+    const text = update.trim();
+    if (!text || text.length < 5) {
+      setError("Please add a bit more detail so we can adjust your coaching.");
+      return;
+    }
     setLoading(true);
+    setError(null);
     try {
-      const updatedAnswers = {
-        ...originalAnswers,
-        refinement: text,
-        refinement_context: "User is refining after attempting the action or receiving a response.",
-      };
+      const base = getAPIBase();
       const payload = {
         flowType,
-        answers: updatedAnswers,
+        answers: {
+          ...originalAnswers,
+          refinement: text,
+          refinement_context: "User is refining after attempting the action or receiving a response. Adjust the coaching based on what changed.",
+        },
         problemType: problemType ?? "AVOIDING_CHALLENGER",
         strategy: null,
-        userProfile: profile,
+        userProfile: profile ?? null,
       };
-      console.log("REFINE PAYLOAD:", JSON.stringify(payload));
-      const res = await fetch(`${API_BASE}/api/coaching/generate`, {
+      const res = await fetch(`${base}/api/coaching/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      console.log("REFINE RESPONSE STATUS:", res.status);
-      const raw = await res.text();
-      console.log("REFINE RAW RESPONSE:", raw.substring(0, 300));
-      if (!res.ok) throw new Error(`API error ${res.status}`);
-      let data: Record<string, unknown>;
-      try {
-        data = JSON.parse(raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim());
-      } catch {
-        throw new Error("JSON parse failed");
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("Refine API error:", res.status, errText);
+        setError(`Could not connect to coaching (${res.status}). Please try again.`);
+        return;
       }
-      onRefined(data);
+      const raw = await res.text();
+      let parsed: Record<string, unknown>;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        console.error("Refine parse error. Raw:", raw.substring(0, 200));
+        setError("Received an unexpected response. Please try again.");
+        return;
+      }
+      onRefined(parsed);
       setDone(true);
       setOpen(false);
     } catch (e) {
-      console.error("Refine error:", e);
+      console.error("Refine fetch error:", e);
+      setError("Could not reach the coaching server. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -87,76 +108,113 @@ export function RefineMySituation({ flowType, originalAnswers, problemType, onRe
 
   if (done) return null;
 
-  return (
-    <View style={rs.wrap}>
-      {!open ? (
-        <TouchableOpacity style={rs.triggerBtn} onPress={() => setOpen(true)}>
+  if (!open) {
+    return (
+      <TouchableOpacity style={rs.triggerBtn} onPress={() => setOpen(true)}>
+        <View style={rs.triggerLeft}>
           <Text style={rs.triggerIcon}>🔄</Text>
-          <View style={rs.triggerText}>
+          <View>
             <Text style={rs.triggerTitle}>Refine my situation</Text>
             <Text style={rs.triggerSub}>Something changed? Get adjusted coaching.</Text>
           </View>
-          <Text style={rs.triggerArrow}>›</Text>
-        </TouchableOpacity>
-      ) : (
-        <View style={rs.panel}>
-          <Text style={rs.panelTitle}>What changed?</Text>
-          <Text style={rs.panelSub}>Tell me what happened and I will adjust your coaching.</Text>
-          <View style={rs.quickBtns}>
-            {refineOptions.map((opt) => (
-              <TouchableOpacity
-                key={opt}
-                style={rs.quickBtn}
-                onPress={() => handleRefine(opt)}
-                disabled={loading}
-              >
-                <Text style={rs.quickBtnText}>{opt}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <Text style={rs.orText}>or describe what happened</Text>
-          <TextInput
-            style={rs.input}
-            placeholder="They said no. They got defensive. I froze. What now?"
-            placeholderTextColor="rgba(0,0,0,0.3)"
-            value={update}
-            onChangeText={setUpdate}
-            multiline
-            numberOfLines={3}
-          />
-          <View style={rs.actions}>
-            <TouchableOpacity style={rs.cancelBtn} onPress={() => setOpen(false)}>
-              <Text style={rs.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[rs.refineBtn, !update.trim() && rs.refineBtnDisabled]}
-              onPress={() => handleRefine()}
-              disabled={loading || !update.trim()}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <Text style={rs.refineText}>Get adjusted coaching</Text>
-              )}
-            </TouchableOpacity>
-          </View>
         </View>
-      )}
+        <Text style={rs.triggerArrow}>›</Text>
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <View style={rs.panel}>
+      <Text style={rs.panelTitle}>What changed?</Text>
+      <Text style={rs.panelSub}>Tap an option to start, then add detail and submit.</Text>
+
+      <View style={rs.quickBtns}>
+        {quickOptions.map((opt) => (
+          <TouchableOpacity
+            key={opt.label}
+            style={[rs.quickBtn, update.startsWith(opt.starter.trim().split(":")[0]) && rs.quickBtnActive]}
+            onPress={() => handleQuickTap(opt.starter)}
+            disabled={loading}
+          >
+            <Text style={[rs.quickBtnText, update.startsWith(opt.starter.trim().split(":")[0]) && rs.quickBtnTextActive]}>
+              {opt.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <TextInput
+        ref={inputRef}
+        style={rs.input}
+        placeholder="e.g. They said no and got defensive. What now?"
+        placeholderTextColor="rgba(247,247,242,0.3)"
+        value={update}
+        onChangeText={(t) => { setUpdate(t); setError(null); }}
+        multiline
+        numberOfLines={4}
+        textAlignVertical="top"
+      />
+
+      {error && <Text style={rs.errorText}>{error}</Text>}
+
+      <View style={rs.actions}>
+        <TouchableOpacity style={rs.cancelBtn} onPress={() => { setOpen(false); setError(null); setUpdate(""); }}>
+          <Text style={rs.cancelText}>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[rs.refineBtn, (!update.trim() || loading) && rs.refineBtnDisabled]}
+          onPress={handleRefine}
+          disabled={loading || !update.trim()}
+        >
+          {loading
+            ? <ActivityIndicator color="#0A1628" size="small" />
+            : <Text style={rs.refineText}>Get adjusted coaching</Text>
+          }
+        </TouchableOpacity>
+      </View>
     </View>
+  );
+}
+
+// ============================================================
+// PREMIUM LOCK CARD — used for locked sections
+// ============================================================
+
+interface PremiumLockProps {
+  title: string;
+  description: string;
+}
+
+export function PremiumLockCard({ title, description }: PremiumLockProps) {
+  return (
+    <TouchableOpacity
+      style={pl.wrap}
+      onPress={() => Linking.openURL("https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00")}
+      activeOpacity={0.85}
+    >
+      <View style={pl.top}>
+        <View style={pl.iconWrap}>
+          <Text style={pl.icon}>🔐</Text>
+        </View>
+        <View style={pl.textWrap}>
+          <Text style={pl.title}>{title}</Text>
+          <Text style={pl.desc}>{description}</Text>
+        </View>
+        <View style={pl.badge}>
+          <Text style={pl.badgeText}>Unlock</Text>
+        </View>
+      </View>
+      <View style={pl.bottom}>
+        <Text style={pl.bottomLeft}>Premium: $20/month or $6/week</Text>
+        <Text style={pl.bottomRight}>Tap to unlock →</Text>
+      </View>
+    </TouchableOpacity>
   );
 }
 
 // ============================================================
 // EXECUTION LOOP
 // ============================================================
-
-interface ExecutionLoopProps {
-  flowType: string;
-  behavioralObjective: string;
-  sessionId: string;
-  userGoal?: string;
-  onComplete?: (data: ExecutionData) => void;
-}
 
 export interface ExecutionData {
   sessionId: string;
@@ -171,13 +229,18 @@ export interface ExecutionData {
   userGoal?: string;
 }
 
+interface ExecutionLoopProps {
+  flowType: string;
+  behavioralObjective: string;
+  sessionId: string;
+  userGoal?: string;
+  onComplete?: (data: ExecutionData) => void;
+}
+
 export function ExecutionLoop({ flowType, behavioralObjective, sessionId, userGoal, onComplete }: ExecutionLoopProps) {
-  const [committed, setCommitted] = useState(false);
-  const [checkInOpen, setCheckInOpen] = useState(false);
-  const [followedThrough, setFollowedThrough] = useState<boolean | null>(null);
+  const [stage, setStage] = useState<"commit" | "committed" | "checkin" | "blocker" | "outcome" | "done">("commit");
   const [blocker, setBlocker] = useState("");
   const [outcome, setOutcome] = useState("");
-  const [done, setDone] = useState(false);
 
   const blockerOptions = [
     "I avoided it",
@@ -187,106 +250,56 @@ export function ExecutionLoop({ flowType, behavioralObjective, sessionId, userGo
     "I lost my nerve",
   ];
 
-  const handleCommit = () => {
-    setCommitted(true);
+  const saveData = async (extra: Partial<ExecutionData>) => {
     const data: ExecutionData = {
-      sessionId,
-      flowType,
-      committed: true,
-      commitTime: Date.now(),
-      checkedIn: false,
-      userGoal,
+      sessionId, flowType,
+      committed: true, commitTime: Date.now() - 86400000,
+      checkedIn: true, checkInTime: Date.now(),
+      userGoal, ...extra,
     };
-    saveExecutionData(data);
-    scheduleCheckIn();
-  };
-
-  const scheduleCheckIn = () => {
-    // In production this triggers a push notification at 24hrs
-    // For now we show the check-in option immediately for testing
-    setTimeout(() => setCheckInOpen(true), Platform.OS === "web" ? 3000 : 86400000);
-  };
-
-  const handleCheckIn = (followed: boolean) => {
-    setFollowedThrough(followed);
-  };
-
-  const handleComplete = () => {
-    const data: ExecutionData = {
-      sessionId,
-      flowType,
-      committed: true,
-      commitTime: Date.now() - 86400000,
-      checkedIn: true,
-      checkInTime: Date.now(),
-      followedThrough: followedThrough ?? false,
-      blockers: blocker,
-      outcome,
-      userGoal,
-    };
-    saveExecutionData(data);
+    try {
+      const existing = await AsyncStorage.getItem("suxess_executions");
+      const arr: ExecutionData[] = existing ? JSON.parse(existing) : [];
+      const idx = arr.findIndex(e => e.sessionId === sessionId);
+      if (idx >= 0) arr[idx] = data; else arr.unshift(data);
+      await AsyncStorage.setItem("suxess_executions", JSON.stringify(arr.slice(0, 100)));
+    } catch (e) { console.error("saveData error:", e); }
     onComplete?.(data);
-    setDone(true);
   };
 
-  if (done) {
+  if (stage === "done") {
     return (
       <View style={el.doneWrap}>
         <Text style={el.doneIcon}>✓</Text>
-        <Text style={el.doneText}>
-          {followedThrough
-            ? "Logged. Your patterns are building."
-            : "Logged. Knowing what blocked you is the first step to removing it."}
-        </Text>
+        <Text style={el.doneText}>Logged. Every pattern you name is one you can change.</Text>
       </View>
     );
   }
 
-  if (!committed) {
+  if (stage === "committed") {
     return (
-      <View style={el.wrap}>
-        <View style={el.header}>
-          <Text style={el.headerLabel}>YOUR MOVE</Text>
-          <Text style={el.headerTitle}>Commit to this before you close the app.</Text>
-        </View>
-        <View style={el.objectiveCard}>
-          <Text style={el.objectiveText}>{behavioralObjective}</Text>
-        </View>
-        {userGoal && (
-          <View style={el.goalRow}>
-            <Text style={el.goalLabel}>YOUR 6-MONTH GOAL</Text>
-            <Text style={el.goalText}>{userGoal}</Text>
-          </View>
-        )}
-        <Text style={el.costText}>
-          Right now you are in Passenger mode — waiting instead of acting. Every time you delay this specific move, you reinforce the pattern keeping you from your goal. The Captain does not wait to feel ready. They commit. Then act within 5 seconds.
-        </Text>
-        <TouchableOpacity style={el.commitBtn} onPress={handleCommit}>
-          <Text style={el.commitBtnText}>I commit to this today</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={el.skipBtn} onPress={() => setDone(true)}>
-          <Text style={el.skipText}>Skip for now</Text>
-        </TouchableOpacity>
+      <View style={el.committedWrap}>
+        <Text style={el.committedIcon}>⚡</Text>
+        <Text style={el.committedTitle}>Committed.</Text>
+        <Text style={el.committedSub}>We will check in with you in 24 hours.</Text>
       </View>
     );
   }
 
-  if (checkInOpen && followedThrough === null) {
+  if (stage === "checkin") {
     return (
       <View style={el.wrap}>
-        <View style={el.header}>
-          <Text style={el.headerLabel}>CHECK IN</Text>
-          <Text style={el.headerTitle}>Did you follow through?</Text>
-        </View>
+        <Text style={el.headerLabel}>CHECK IN</Text>
+        <Text style={el.headerTitle}>Did you follow through?</Text>
         <View style={el.objectiveCard}>
-          <Text style={el.objectiveLabel}>You committed to:</Text>
+          <Text style={el.objectiveLabel}>YOU COMMITTED TO</Text>
           <Text style={el.objectiveText}>{behavioralObjective}</Text>
         </View>
         <View style={el.checkInBtns}>
-          <TouchableOpacity style={el.yesBtn} onPress={() => handleCheckIn(true)}>
+          <TouchableOpacity style={el.yesBtn} onPress={() => setStage("outcome")}>
             <Text style={el.yesBtnText}>Yes, I did it</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={el.noBtn} onPress={() => handleCheckIn(false)}>
+          <TouchableOpacity style={el.noBtn} onPress={() => setStage("blocker")}>
             <Text style={el.noBtnText}>Not yet</Text>
           </TouchableOpacity>
         </View>
@@ -294,10 +307,11 @@ export function ExecutionLoop({ flowType, behavioralObjective, sessionId, userGo
     );
   }
 
-  if (followedThrough === false) {
+  if (stage === "blocker") {
     return (
       <View style={el.wrap}>
-        <Text style={el.headerTitle}>What got in the way?</Text>
+        <Text style={el.headerLabel}>WHAT GOT IN THE WAY</Text>
+        <Text style={el.headerTitle}>Name it honestly.</Text>
         <View style={el.blockerOptions}>
           {blockerOptions.map((opt) => (
             <TouchableOpacity
@@ -310,14 +324,12 @@ export function ExecutionLoop({ flowType, behavioralObjective, sessionId, userGo
           ))}
         </View>
         <View style={el.costWrap}>
-          <Text style={el.costLabel}>THE COST OF NOT ACTING</Text>
-          <Text style={el.costText}>
-            Naming what blocked you is the Captain move. The Passenger avoids and explains. The Captain identifies the obstacle and removes it. Your next move is to remove this specific blocker before tomorrow.
-          </Text>
+          <Text style={el.costLabel}>THE CAPTAIN MOVE</Text>
+          <Text style={el.costText}>Naming what blocked you is not failure. It is the first step to removing it. The Passenger avoids and explains. The Captain identifies the obstacle and acts on it before tomorrow.</Text>
         </View>
         <TouchableOpacity
           style={[el.commitBtn, !blocker && el.commitBtnDisabled]}
-          onPress={handleComplete}
+          onPress={async () => { await saveData({ followedThrough: false, blockers: blocker }); setStage("done"); }}
           disabled={!blocker}
         >
           <Text style={el.commitBtnText}>Log this and move forward</Text>
@@ -326,23 +338,25 @@ export function ExecutionLoop({ flowType, behavioralObjective, sessionId, userGo
     );
   }
 
-  if (followedThrough === true) {
+  if (stage === "outcome") {
     return (
       <View style={el.wrap}>
+        <Text style={el.headerLabel}>OUTCOME</Text>
         <Text style={el.headerTitle}>What happened?</Text>
-        <Text style={el.headerSub}>One line. What was the outcome?</Text>
+        <Text style={el.headerSub}>One line. What was the result?</Text>
         <TextInput
           style={el.outcomeInput}
-          placeholder="They listened. Got pushed back. Landed well. Not sure yet."
-          placeholderTextColor="rgba(0,0,0,0.3)"
+          placeholder="They listened. Got pushed back. It landed well. Not sure yet."
+          placeholderTextColor="rgba(247,247,242,0.3)"
           value={outcome}
           onChangeText={setOutcome}
           multiline
           numberOfLines={3}
+          textAlignVertical="top"
         />
         <TouchableOpacity
           style={[el.commitBtn, !outcome.trim() && el.commitBtnDisabled]}
-          onPress={handleComplete}
+          onPress={async () => { await saveData({ followedThrough: true, outcome }); setStage("done"); }}
           disabled={!outcome.trim()}
         >
           <Text style={el.commitBtnText}>Log this outcome</Text>
@@ -351,24 +365,37 @@ export function ExecutionLoop({ flowType, behavioralObjective, sessionId, userGo
     );
   }
 
-  if (committed && !checkInOpen) {
-    return (
-      <View style={el.committedWrap}>
-        <Text style={el.committedIcon}>⚡</Text>
-        <Text style={el.committedTitle}>Committed.</Text>
-        <Text style={el.committedSub}>We will check in with you in 24 hours.</Text>
+  // Default: commit stage
+  return (
+    <View style={el.wrap}>
+      <Text style={el.headerLabel}>YOUR MOVE</Text>
+      <Text style={el.headerTitle}>Commit before you close this.</Text>
+      <View style={el.objectiveCard}>
+        <Text style={el.objectiveText}>{behavioralObjective}</Text>
       </View>
-    );
-  }
-
-  return null;
+      {userGoal && (
+        <View style={el.goalRow}>
+          <Text style={el.goalLabel}>THIS MOVES YOU TOWARD</Text>
+          <Text style={el.goalText}>{userGoal}</Text>
+        </View>
+      )}
+      <View style={el.costWrap}>
+        <Text style={el.costLabel}>CAPTAIN VS PASSENGER</Text>
+        <Text style={el.costText}>Right now you are in Passenger mode — waiting instead of acting. Every time you delay this specific move, you reinforce the pattern keeping you from your goal. The Captain does not wait to feel ready. They commit. Then act within 5 seconds.</Text>
+      </View>
+      <TouchableOpacity style={el.commitBtn} onPress={() => setStage("committed")}>
+        <Text style={el.commitBtnText}>I commit to this today</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={el.skipBtn} onPress={() => setStage("done")}>
+        <Text style={el.skipText}>Skip for now</Text>
+      </TouchableOpacity>
+    </View>
+  );
 }
 
 // ============================================================
-// DATA COLLECTION FOR PEER PAIRING AND COACH ESCALATION
+// SESSION STORAGE
 // ============================================================
-
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface SessionRecord {
   sessionId: string;
@@ -377,80 +404,24 @@ export interface SessionRecord {
   answers: Record<string, string | string[]>;
   problemType: string;
   strategy: string | null;
-  executionData?: ExecutionData;
-  userProfile?: {
-    name?: string;
-    industry?: string;
-    level?: string;
-    challenge?: string;
-    goal?: string;
-    timezone?: string;
-  };
+  userProfile?: Record<string, string | undefined>;
 }
 
 export async function saveSession(record: SessionRecord): Promise<void> {
   try {
     const existing = await AsyncStorage.getItem("suxess_sessions");
     const sessions: SessionRecord[] = existing ? JSON.parse(existing) : [];
-    sessions.unshift(record);
-    // Keep last 50 sessions
-    const trimmed = sessions.slice(0, 50);
-    await AsyncStorage.setItem("suxess_sessions", JSON.stringify(trimmed));
-  } catch (e) {
-    console.error("saveSession error:", e);
-  }
-}
-
-export async function saveExecutionData(data: ExecutionData): Promise<void> {
-  try {
-    const existing = await AsyncStorage.getItem("suxess_executions");
-    const executions: ExecutionData[] = existing ? JSON.parse(existing) : [];
-    // Update or insert
-    const idx = executions.findIndex(e => e.sessionId === data.sessionId);
-    if (idx >= 0) executions[idx] = data;
-    else executions.unshift(data);
-    await AsyncStorage.setItem("suxess_executions", JSON.stringify(executions.slice(0, 100)));
-  } catch (e) {
-    console.error("saveExecutionData error:", e);
-  }
+    const idx = sessions.findIndex(s => s.sessionId === record.sessionId);
+    if (idx >= 0) sessions[idx] = record; else sessions.unshift(record);
+    await AsyncStorage.setItem("suxess_sessions", JSON.stringify(sessions.slice(0, 50)));
+  } catch (e) { console.error("saveSession error:", e); }
 }
 
 export async function getSessionHistory(): Promise<SessionRecord[]> {
   try {
     const existing = await AsyncStorage.getItem("suxess_sessions");
     return existing ? JSON.parse(existing) : [];
-  } catch {
-    return [];
-  }
-}
-
-export async function getPeerPairingData(): Promise<{
-  flowTypes: string[];
-  followThroughRate: number;
-  primaryChallenge: string;
-  timezone: string;
-  sessionsCompleted: number;
-}> {
-  try {
-    const sessions = await getSessionHistory();
-    const executions: ExecutionData[] = JSON.parse(
-      await AsyncStorage.getItem("suxess_executions") ?? "[]"
-    );
-    const flowTypes = [...new Set(sessions.map(s => s.flowType))];
-    const completed = executions.filter(e => e.followedThrough === true).length;
-    const total = executions.filter(e => e.checkedIn).length;
-    const followThroughRate = total > 0 ? completed / total : 0;
-    const profile = sessions[0]?.userProfile;
-    return {
-      flowTypes,
-      followThroughRate,
-      primaryChallenge: profile?.challenge ?? "",
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      sessionsCompleted: sessions.length,
-    };
-  } catch {
-    return { flowTypes: [], followThroughRate: 0, primaryChallenge: "", timezone: "", sessionsCompleted: 0 };
-  }
+  } catch { return []; }
 }
 
 // ============================================================
@@ -458,102 +429,156 @@ export async function getPeerPairingData(): Promise<{
 // ============================================================
 
 const rs = StyleSheet.create({
-  wrap: { marginTop: 16, marginHorizontal: 16, marginBottom: 8 },
-  triggerBtn: { flexDirection: "row", alignItems: "center", backgroundColor: "rgba(124,58,237,0.06)", borderWidth: 1, borderColor: "rgba(124,58,237,0.15)", borderRadius: 12, padding: 16, gap: 12 },
-  triggerIcon: { fontSize: 20 },
-  triggerText: { flex: 1 },
-  triggerTitle: { fontSize: 15, fontWeight: "700", color: "#1a1a2e", fontFamily: "Inter_700Bold" },
-  triggerSub: { fontSize: 12, color: "rgba(0,0,0,0.45)", marginTop: 2, fontFamily: "Inter_400Regular" },
-  triggerArrow: { fontSize: 20, color: "#7c3aed", fontWeight: "700" },
-  panel: { backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: "rgba(124,58,237,0.2)", padding: 20 },
-  panelTitle: { fontSize: 18, fontWeight: "800", color: "#1a1a2e", marginBottom: 6, fontFamily: "Inter_700Bold" },
-  panelSub: { fontSize: 14, color: "rgba(0,0,0,0.5)", marginBottom: 16, fontFamily: "Inter_400Regular" },
-  quickBtns: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 14 },
-  quickBtn: { backgroundColor: "rgba(124,58,237,0.08)", borderWidth: 1, borderColor: "rgba(124,58,237,0.2)", borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8 },
-  quickBtnText: { fontSize: 13, color: "#7c3aed", fontWeight: "600", fontFamily: "Inter_600SemiBold" },
-  orText: { fontSize: 12, color: "rgba(0,0,0,0.35)", marginBottom: 10, fontFamily: "Inter_400Regular" },
-  input: { backgroundColor: "rgba(0,0,0,0.04)", borderRadius: 10, borderWidth: 1, borderColor: "rgba(0,0,0,0.1)", padding: 14, fontSize: 14, color: "#1a1a2e", minHeight: 90, textAlignVertical: "top", fontFamily: "Inter_400Regular", marginBottom: 14 },
-  actions: { flexDirection: "row", gap: 10 },
-  cancelBtn: { flex: 1, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: "rgba(0,0,0,0.1)", alignItems: "center" },
-  cancelText: { fontSize: 14, color: "rgba(0,0,0,0.4)", fontFamily: "Inter_600SemiBold" },
+  triggerBtn: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    backgroundColor: "rgba(124,58,237,0.08)", borderWidth: 1.5,
+    borderColor: "rgba(124,58,237,0.25)", borderRadius: 14, padding: 16,
+    marginTop: 12,
+  },
+  triggerLeft: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
+  triggerIcon: { fontSize: 22 },
+  triggerTitle: { fontSize: 15, fontWeight: "700", color: "#7c3aed", fontFamily: "Inter_700Bold" },
+  triggerSub: { fontSize: 12, color: "rgba(124,58,237,0.6)", marginTop: 2, fontFamily: "Inter_400Regular" },
+  triggerArrow: { fontSize: 22, color: "#7c3aed", fontWeight: "700" },
+  panel: {
+    backgroundColor: "#0a1628", borderRadius: 16, borderWidth: 1.5,
+    borderColor: "rgba(124,58,237,0.3)", padding: 20, marginTop: 12,
+  },
+  panelTitle: { fontSize: 20, fontWeight: "800", color: "#F7F7F2", marginBottom: 6, fontFamily: "Inter_700Bold" },
+  panelSub: { fontSize: 13, color: "rgba(247,247,242,0.5)", marginBottom: 16, fontFamily: "Inter_400Regular" },
+  quickBtns: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 },
+  quickBtn: {
+    backgroundColor: "rgba(124,58,237,0.1)", borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.25)", borderRadius: 20, paddingHorizontal: 14, paddingVertical: 9,
+  },
+  quickBtnActive: { backgroundColor: "rgba(124,58,237,0.25)", borderColor: "#7c3aed" },
+  quickBtnText: { fontSize: 13, color: "#9f7aea", fontWeight: "600", fontFamily: "Inter_600SemiBold" },
+  quickBtnTextActive: { color: "#F7F7F2" },
+  input: {
+    backgroundColor: "rgba(247,247,242,0.06)", borderRadius: 12, borderWidth: 1,
+    borderColor: "rgba(247,247,242,0.15)", padding: 14, fontSize: 14,
+    color: "#F7F7F2", minHeight: 100, marginBottom: 8, fontFamily: "Inter_400Regular",
+  },
+  errorText: { fontSize: 13, color: "#f87171", marginBottom: 12, fontFamily: "Inter_400Regular", lineHeight: 18 },
+  actions: { flexDirection: "row", gap: 10, marginTop: 4 },
+  cancelBtn: {
+    flex: 1, padding: 14, borderRadius: 10, borderWidth: 1,
+    borderColor: "rgba(247,247,242,0.15)", alignItems: "center",
+  },
+  cancelText: { fontSize: 14, color: "rgba(247,247,242,0.4)", fontFamily: "Inter_600SemiBold" },
   refineBtn: { flex: 2, padding: 14, borderRadius: 10, backgroundColor: "#7c3aed", alignItems: "center" },
   refineBtnDisabled: { backgroundColor: "rgba(124,58,237,0.3)" },
   refineText: { fontSize: 14, fontWeight: "700", color: "#fff", fontFamily: "Inter_700Bold" },
 });
 
+const pl = StyleSheet.create({
+  wrap: {
+    marginTop: 12, borderRadius: 16, borderWidth: 1.5,
+    borderColor: "rgba(201,149,42,0.4)", backgroundColor: "rgba(201,149,42,0.06)",
+    overflow: "hidden",
+  },
+  top: { padding: 20, flexDirection: "row", alignItems: "center", gap: 14 },
+  iconWrap: {
+    width: 48, height: 48, borderRadius: 14,
+    backgroundColor: "rgba(201,149,42,0.15)", alignItems: "center", justifyContent: "center",
+  },
+  icon: { fontSize: 24 },
+  textWrap: { flex: 1 },
+  title: { fontSize: 16, fontWeight: "700", color: "#C9952A", fontFamily: "Inter_700Bold", marginBottom: 3 },
+  desc: { fontSize: 13, color: "rgba(247,247,242,0.55)", fontFamily: "Inter_400Regular", lineHeight: 18 },
+  badge: {
+    backgroundColor: "#C9952A", borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8,
+  },
+  badgeText: { fontSize: 13, fontWeight: "700", color: "#0A1628", fontFamily: "Inter_700Bold" },
+  bottom: {
+    backgroundColor: "rgba(201,149,42,0.08)", paddingHorizontal: 20, paddingVertical: 12,
+    borderTopWidth: 1, borderTopColor: "rgba(201,149,42,0.15)",
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+  },
+  bottomLeft: { fontSize: 13, color: "rgba(201,149,42,0.8)", fontFamily: "Inter_500Medium" },
+  bottomRight: { fontSize: 13, color: "#C9952A", fontFamily: "Inter_700Bold" },
+});
+
 const el = StyleSheet.create({
-  wrap: { marginTop: 20, marginHorizontal: 16, backgroundColor: "#0a1628", borderRadius: 16, padding: 22, marginBottom: 12 },
-  header: { marginBottom: 16 },
-  headerLabel: { fontSize: 10, fontWeight: "700", letterSpacing: 1.5, color: "#00D4AA", marginBottom: 6, fontFamily: "Inter_700Bold" },
+  wrap: {
+    marginTop: 16, backgroundColor: "#0a1628", borderRadius: 16,
+    borderWidth: 1, borderColor: "rgba(0,212,170,0.2)", padding: 22,
+  },
+  headerLabel: {
+    fontSize: 10, fontWeight: "700", letterSpacing: 1.5,
+    color: "#00D4AA", marginBottom: 6, fontFamily: "Inter_700Bold",
+  },
   headerTitle: { fontSize: 20, fontWeight: "800", color: "#F7F7F2", fontFamily: "Inter_700Bold" },
   headerSub: { fontSize: 14, color: "rgba(247,247,242,0.55)", marginTop: 4, fontFamily: "Inter_400Regular" },
-  objectiveCard: { backgroundColor: "rgba(0,212,170,0.08)", borderRadius: 10, borderWidth: 1, borderColor: "rgba(0,212,170,0.2)", padding: 16, marginBottom: 14 },
-  objectiveLabel: { fontSize: 10, fontWeight: "700", letterSpacing: 1.5, color: "rgba(247,247,242,0.4)", marginBottom: 6, fontFamily: "Inter_700Bold" },
+  objectiveCard: {
+    backgroundColor: "rgba(0,212,170,0.08)", borderRadius: 10,
+    borderWidth: 1, borderColor: "rgba(0,212,170,0.2)", padding: 16, marginTop: 14, marginBottom: 14,
+  },
+  objectiveLabel: {
+    fontSize: 9, fontWeight: "700", letterSpacing: 1.5,
+    color: "rgba(247,247,242,0.4)", marginBottom: 6, fontFamily: "Inter_700Bold",
+  },
   objectiveText: { fontSize: 15, fontWeight: "700", color: "#F7F7F2", lineHeight: 22, fontFamily: "Inter_700Bold" },
-  goalRow: { backgroundColor: "rgba(245,166,35,0.08)", borderRadius: 10, borderWidth: 1, borderColor: "rgba(245,166,35,0.2)", padding: 14, marginBottom: 14 },
-  goalLabel: { fontSize: 9, fontWeight: "700", letterSpacing: 1.5, color: "#F5A623", marginBottom: 5, fontFamily: "Inter_700Bold" },
+  goalRow: {
+    backgroundColor: "rgba(245,166,35,0.08)", borderRadius: 10,
+    borderWidth: 1, borderColor: "rgba(245,166,35,0.2)", padding: 14, marginBottom: 14,
+  },
+  goalLabel: {
+    fontSize: 9, fontWeight: "700", letterSpacing: 1.5,
+    color: "#F5A623", marginBottom: 5, fontFamily: "Inter_700Bold",
+  },
   goalText: { fontSize: 13, color: "rgba(247,247,242,0.75)", lineHeight: 20, fontFamily: "Inter_400Regular" },
-  costWrap: { backgroundColor: "rgba(245,166,35,0.06)", borderRadius: 10, borderWidth: 1, borderColor: "rgba(245,166,35,0.15)", padding: 14, marginBottom: 16 },
-  costLabel: { fontSize: 9, fontWeight: "700", letterSpacing: 1.5, color: "#F5A623", marginBottom: 6, fontFamily: "Inter_700Bold" },
-  costText: { fontSize: 13, color: "rgba(247,247,242,0.6)", lineHeight: 20, fontFamily: "Inter_400Regular", marginBottom: 0 },
-  commitBtn: { backgroundColor: "#00D4AA", borderRadius: 12, paddingVertical: 16, alignItems: "center", marginBottom: 10 },
+  costWrap: {
+    backgroundColor: "rgba(245,166,35,0.06)", borderRadius: 10,
+    borderWidth: 1, borderColor: "rgba(245,166,35,0.15)", padding: 14, marginBottom: 16,
+  },
+  costLabel: {
+    fontSize: 9, fontWeight: "700", letterSpacing: 1.5,
+    color: "#F5A623", marginBottom: 6, fontFamily: "Inter_700Bold",
+  },
+  costText: { fontSize: 13, color: "rgba(247,247,242,0.7)", lineHeight: 20, fontFamily: "Inter_400Regular" },
+  commitBtn: {
+    backgroundColor: "#00D4AA", borderRadius: 12,
+    paddingVertical: 16, alignItems: "center", marginBottom: 10,
+  },
   commitBtnDisabled: { backgroundColor: "rgba(0,212,170,0.3)" },
   commitBtnText: { fontSize: 15, fontWeight: "700", color: "#0a1628", fontFamily: "Inter_700Bold" },
   skipBtn: { alignItems: "center", paddingVertical: 8 },
-  skipText: { fontSize: 13, color: "rgba(247,247,242,0.3)", fontFamily: "Inter_400Regular" },
-  committedWrap: { marginTop: 16, marginHorizontal: 16, backgroundColor: "#0a1628", borderRadius: 14, padding: 20, alignItems: "center", marginBottom: 12 },
+  skipText: { fontSize: 13, color: "rgba(247,247,242,0.25)", fontFamily: "Inter_400Regular" },
+  committedWrap: {
+    marginTop: 16, backgroundColor: "#0a1628", borderRadius: 14,
+    borderWidth: 1, borderColor: "rgba(0,212,170,0.2)", padding: 20, alignItems: "center",
+  },
   committedIcon: { fontSize: 28, marginBottom: 8 },
-  committedTitle: { fontSize: 20, fontWeight: "800", color: "#00D4AA", fontFamily: "Inter_700Bold" },
+  committedTitle: { fontSize: 22, fontWeight: "800", color: "#00D4AA", fontFamily: "Inter_700Bold" },
   committedSub: { fontSize: 13, color: "rgba(247,247,242,0.45)", marginTop: 4, fontFamily: "Inter_400Regular" },
   checkInBtns: { flexDirection: "row", gap: 12, marginTop: 16 },
   yesBtn: { flex: 1, backgroundColor: "#00D4AA", borderRadius: 12, paddingVertical: 16, alignItems: "center" },
   yesBtnText: { fontSize: 15, fontWeight: "700", color: "#0a1628", fontFamily: "Inter_700Bold" },
-  noBtn: { flex: 1, backgroundColor: "rgba(247,247,242,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(247,247,242,0.15)", paddingVertical: 16, alignItems: "center" },
+  noBtn: {
+    flex: 1, borderRadius: 12, borderWidth: 1,
+    borderColor: "rgba(247,247,242,0.15)", paddingVertical: 16, alignItems: "center",
+    backgroundColor: "rgba(247,247,242,0.04)",
+  },
   noBtnText: { fontSize: 15, fontWeight: "600", color: "rgba(247,247,242,0.7)", fontFamily: "Inter_600SemiBold" },
   blockerOptions: { marginTop: 12, gap: 8, marginBottom: 16 },
-  blockerBtn: { backgroundColor: "rgba(247,247,242,0.05)", borderWidth: 1, borderColor: "rgba(247,247,242,0.1)", borderRadius: 10, paddingHorizontal: 16, paddingVertical: 13 },
+  blockerBtn: {
+    backgroundColor: "rgba(247,247,242,0.05)", borderWidth: 1,
+    borderColor: "rgba(247,247,242,0.1)", borderRadius: 10, paddingHorizontal: 16, paddingVertical: 13,
+  },
   blockerBtnSelected: { borderColor: "#F5A623", backgroundColor: "rgba(245,166,35,0.1)" },
   blockerText: { fontSize: 14, color: "rgba(247,247,242,0.6)", fontFamily: "Inter_500Medium" },
   blockerTextSelected: { color: "#F5A623", fontWeight: "700" },
-  outcomeInput: { backgroundColor: "rgba(247,247,242,0.06)", borderRadius: 10, borderWidth: 1, borderColor: "rgba(247,247,242,0.12)", padding: 14, fontSize: 14, color: "#F7F7F2", minHeight: 90, textAlignVertical: "top", fontFamily: "Inter_400Regular", marginBottom: 16, marginTop: 12 },
-  doneWrap: { marginTop: 12, marginHorizontal: 16, flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "rgba(0,212,170,0.06)", borderRadius: 10, borderWidth: 1, borderColor: "rgba(0,212,170,0.15)", padding: 14, marginBottom: 8 },
+  outcomeInput: {
+    backgroundColor: "rgba(247,247,242,0.06)", borderRadius: 10, borderWidth: 1,
+    borderColor: "rgba(247,247,242,0.12)", padding: 14, fontSize: 14, color: "#F7F7F2",
+    minHeight: 90, marginBottom: 16, marginTop: 12, fontFamily: "Inter_400Regular",
+  },
+  doneWrap: {
+    marginTop: 12, flexDirection: "row", alignItems: "center", gap: 10,
+    backgroundColor: "rgba(0,212,170,0.06)", borderRadius: 10,
+    borderWidth: 1, borderColor: "rgba(0,212,170,0.15)", padding: 14,
+  },
   doneIcon: { fontSize: 18, color: "#00D4AA" },
   doneText: { flex: 1, fontSize: 13, color: "rgba(0,212,170,0.9)", lineHeight: 19, fontFamily: "Inter_400Regular" },
 });
-
-// ============================================================
-// PREMIUM LOCK CARD
-// ============================================================
-
-const pl = StyleSheet.create({
-  card: {
-    borderRadius: 14, marginBottom: 10, borderWidth: 1.5,
-    borderColor: "#d4a017", backgroundColor: "#fffbeb",
-  },
-  body: { paddingVertical: 22, paddingHorizontal: 18, alignItems: "center" },
-  lockIcon: { fontSize: 26, marginBottom: 8 },
-  title: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1a1a2e", marginBottom: 6, textAlign: "center" },
-  description: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#78350f", textAlign: "center", lineHeight: 20, marginBottom: 16 },
-  price: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#92400e", textAlign: "center", marginBottom: 14 },
-  unlockBtn: {
-    backgroundColor: "#d4a017", borderRadius: 12,
-    paddingVertical: 13, paddingHorizontal: 28,
-  },
-  unlockBtnText: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#fff" },
-});
-
-export function PremiumLockCard({ title, description }: { title: string; description: string }) {
-  return (
-    <View style={pl.card}>
-      <View style={pl.body}>
-        <Text style={pl.lockIcon}>🔒</Text>
-        <Text style={pl.title}>{title}</Text>
-        <Text style={pl.description}>{description}</Text>
-        <Text style={pl.price}>Unlock with Premium — $20/month or $6/week</Text>
-        <TouchableOpacity style={pl.unlockBtn} activeOpacity={0.85} onPress={() => Linking.openURL(STRIPE_URL)}>
-          <Text style={pl.unlockBtnText}>Upgrade to Premium</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
