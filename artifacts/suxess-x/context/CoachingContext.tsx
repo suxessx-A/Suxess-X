@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useState } from "react";
+import { Modal, View, Text, TouchableOpacity, StyleSheet, Linking } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUser } from "@/context/UserContext";
+
+const STRIPE_WEEKLY  = "https://buy.stripe.com/4gM6oJ3WzgCn1uXaPW5kk01";
+const STRIPE_MONTHLY = "https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00";
 
 export type FlowType = "conversation" | "stuck" | "speak_up" | "executive_visibility" | "negotiate" | "mindset";
 export type ProblemType = "VICTIM" | "AVOIDING_CHALLENGER" | "OVERWHELMED";
@@ -258,6 +263,8 @@ function getBase(): string {
   return domain ? `https://${domain}` : "";
 }
 
+type GateModal = { visible: true; message: string } | { visible: false };
+
 export function CoachingProvider({ children }: { children: React.ReactNode }) {
   const { profile: userProfile } = useUser();
   const [activeFlow, setActiveFlowState] = useState<FlowType | null>(null);
@@ -267,13 +274,58 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [gateModal, setGateModal] = useState<GateModal>({ visible: false });
+
+  async function checkFlowAccess(flow: FlowType): Promise<boolean> {
+    try {
+      const premium = await AsyncStorage.getItem("suxess_premium");
+      if (premium === "true") return true;
+
+      const stored = await AsyncStorage.getItem("suxess_sessions");
+      const sessions: { flowType: string }[] = stored ? JSON.parse(stored) : [];
+      const usedFlows = [...new Set(sessions.map((s) => s.flowType))];
+
+      const alreadyUsed = usedFlows.includes(flow);
+      if (alreadyUsed) {
+        setGateModal({
+          visible: true,
+          message: "You have already used this flow on the free tier. Upgrade to Premium for unlimited runs across all 6 flows.",
+        });
+        return false;
+      }
+
+      if (usedFlows.length >= 3) {
+        setGateModal({
+          visible: true,
+          message: "You have completed your 3 free flows. Upgrade to Premium to access all 6 flows with unlimited runs.",
+        });
+        return false;
+      }
+
+      return true;
+    } catch {
+      return true;
+    }
+  }
 
   const setActiveFlow = (flow: FlowType | null) => {
-    setActiveFlowState(flow);
-    setAnswers({});
-    setRecommendation(null);
-    setResult(null);
-    setError(null);
+    if (flow === null) {
+      setActiveFlowState(null);
+      setAnswers({});
+      setRecommendation(null);
+      setResult(null);
+      setError(null);
+      return;
+    }
+    checkFlowAccess(flow).then((allowed) => {
+      if (allowed) {
+        setActiveFlowState(flow);
+        setAnswers({});
+        setRecommendation(null);
+        setResult(null);
+        setError(null);
+      }
+    });
   };
 
   const setAnswer = (key: string, value: string | string[]) => {
@@ -358,6 +410,19 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const gm = StyleSheet.create({
+    overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" },
+    sheet: { backgroundColor: "#fff", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 28, paddingBottom: 40 },
+    eyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#d4a017", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 },
+    title: { fontSize: 18, fontFamily: "Inter_700Bold", color: "#1a1a2e", lineHeight: 26, marginBottom: 20 },
+    btnPrimary: { backgroundColor: "#1a1a2e", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginBottom: 10 },
+    btnPrimaryText: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#fff" },
+    btnSecondary: { backgroundColor: "#d4a017", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginBottom: 16 },
+    btnSecondaryText: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#fff" },
+    dismiss: { alignItems: "center", paddingVertical: 8 },
+    dismissText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#9ca3af" },
+  });
+
   return (
     <CoachingContext.Provider value={{
       activeFlow, answers, recommendation, result,
@@ -365,6 +430,28 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
       setActiveFlow, setAnswer, resetFlow, evaluateFlow, submitFlow,
     }}>
       {children}
+      <Modal
+        visible={gateModal.visible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setGateModal({ visible: false })}
+      >
+        <View style={gm.overlay}>
+          <View style={gm.sheet}>
+            <Text style={gm.eyebrow}>Premium Required</Text>
+            <Text style={gm.title}>{gateModal.visible ? gateModal.message : ""}</Text>
+            <TouchableOpacity style={gm.btnPrimary} activeOpacity={0.85} onPress={() => Linking.openURL(STRIPE_MONTHLY)}>
+              <Text style={gm.btnPrimaryText}>Monthly — $20/month</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={gm.btnSecondary} activeOpacity={0.85} onPress={() => Linking.openURL(STRIPE_WEEKLY)}>
+              <Text style={gm.btnSecondaryText}>Weekly — $6/week</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={gm.dismiss} onPress={() => setGateModal({ visible: false })}>
+              <Text style={gm.dismissText}>Not now</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </CoachingContext.Provider>
   );
 }
