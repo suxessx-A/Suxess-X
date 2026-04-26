@@ -3,6 +3,8 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, Linking } from "react-
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUser } from "@/context/UserContext";
 
+const TESTING_MODE = true;
+
 const STRIPE_WEEKLY  = "https://buy.stripe.com/4gM6oJ3WzgCn1uXaPW5kk01";
 const STRIPE_MONTHLY = "https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00";
 
@@ -277,6 +279,7 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
   const [gateModal, setGateModal] = useState<GateModal>({ visible: false });
 
   async function checkFlowAccess(flow: FlowType): Promise<boolean> {
+    if (TESTING_MODE) return true;
     try {
       const premium = await AsyncStorage.getItem("suxess_premium");
       if (premium === "true") return true;
