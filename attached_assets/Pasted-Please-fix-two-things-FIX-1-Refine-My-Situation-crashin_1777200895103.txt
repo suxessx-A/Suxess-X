@@ -1,0 +1,175 @@
+Please fix two things:
+
+FIX 1 — Refine My Situation crashing with "Something went wrong"
+
+In artifacts/suxess-x/components/RefineAndExecutionLoop.tsx:
+
+1. Wrap the entire handleRefine function in a proper try/catch and add console logging:
+
+const handleRefine = async (prompt?: string) => {
+  const text = prompt ?? update.trim();
+  if (!text) return;
+  setLoading(true);
+  try {
+    const domain = process.env.EXPO_PUBLIC_DOMAIN;
+    const base = domain
+      ? `https://${domain}`
+      : "https://d2ed2806-9e05-4352-b2bf-9740ef4876cc-00-3tdolowv9g7xu.picard.replit.dev";
+
+    const payload = {
+      flowType,
+      answers: { ...originalAnswers, refinement: text },
+      problemType: problemType ?? "AVOIDING_CHALLENGER",
+      strategy: null,
+      userProfile: profile ?? null,
+    };
+    console.log("REFINE PAYLOAD:", JSON.stringify(payload).substring(0, 300));
+
+    const res = await fetch(`${base}/api/coaching/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    console.log("REFINE STATUS:", res.status);
+    const raw = await res.text();
+    console.log("REFINE RAW:", raw.substring(0, 300));
+
+    if (!res.ok) {
+      setError("The coaching server returned an error. Please try again.");
+      return;
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      setError("Could not read the coaching response. Please try again.");
+      return;
+    }
+
+    onRefined(parsed);
+    setDone(true);
+    setOpen(false);
+  } catch (e) {
+    console.error("Refine error:", e);
+    setError("Could not connect to coaching. Check your connection and try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+2. Add error state to the component:
+const [error, setError] = useState<string | null>(null);
+
+3. Show the error inline instead of crashing:
+{error && (
+  <Text style={{ color: "#dc2626", fontSize: 13, marginBottom: 12, lineHeight: 18 }}>
+    {error}
+  </Text>
+)}
+
+4. Also add problemType as a prop to RefineMySituation:
+interface RefineProps {
+  flowType: string;
+  originalAnswers: Record<string, string | string[]>;
+  onRefined: (newResult: Record<string, unknown>) => void;
+  problemType?: string;
+  userGoal?: string;
+}
+
+5. In CoachingResultCard.tsx where RefineMySituation is rendered, pass result.problemType as the problemType prop.
+
+FIX 2 — Premium features must be visually inviting not invisible
+
+In CoachingResultCard.tsx find where premium locked sections are displayed. Replace the current locked section display with this more prominent design:
+
+For each section where premium is true, show this instead of a greyed out card:
+
+<TouchableOpacity
+  onPress={() => Linking.openURL("https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00")}
+  style={{
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 16,
+    overflow: "hidden",
+    borderWidth: 1.5,
+    borderColor: "rgba(201,149,42,0.4)",
+    backgroundColor: "rgba(201,149,42,0.06)",
+  }}
+>
+  <View style={{
+    padding: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  }}>
+    <View style={{
+      width: 44,
+      height: 44,
+      borderRadius: 12,
+      backgroundColor: "rgba(201,149,42,0.15)",
+      alignItems: "center",
+      justifyContent: "center",
+    }}>
+      <Text style={{ fontSize: 22 }}>🔐</Text>
+    </View>
+    <View style={{ flex: 1 }}>
+      <Text style={{
+        fontSize: 16,
+        fontWeight: "700",
+        color: "#C9952A",
+        fontFamily: "Inter_700Bold",
+        marginBottom: 3,
+      }}>
+        {section.title}
+      </Text>
+      <Text style={{
+        fontSize: 13,
+        color: "rgba(247,247,242,0.55)",
+        fontFamily: "Inter_400Regular",
+        lineHeight: 18,
+      }}>
+        Two sharp questions that cut through the story and point to your next move.
+      </Text>
+    </View>
+    <View style={{
+      backgroundColor: "#C9952A",
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+    }}>
+      <Text style={{
+        fontSize: 12,
+        fontWeight: "700",
+        color: "#0A1628",
+        fontFamily: "Inter_700Bold",
+      }}>Unlock</Text>
+    </View>
+  </View>
+  <View style={{
+    backgroundColor: "rgba(201,149,42,0.08)",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(201,149,42,0.15)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  }}>
+    <Text style={{
+      fontSize: 13,
+      color: "rgba(201,149,42,0.8)",
+      fontFamily: "Inter_500Medium",
+    }}>Premium: $20/month or $6/week</Text>
+    <Text style={{
+      fontSize: 13,
+      color: "#C9952A",
+      fontFamily: "Inter_700Bold",
+    }}>Tap to unlock →</Text>
+  </View>
+</TouchableOpacity>
+
+Make sure Linking is imported from react-native at the top of CoachingResultCard.tsx.
+
+Then rebuild and restart. After rebuilding, test Refine My Situation and show me the console output from the logs added in FIX 1.

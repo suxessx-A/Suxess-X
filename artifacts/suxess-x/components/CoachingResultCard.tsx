@@ -1,14 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from "react-native";
-import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useColors } from "@/hooks/useColors";
 import { CoachingResult, CoachingScript, CoachingSection, CoachingStrategy, CoachingTrigger, ProblemType } from "@/context/CoachingContext";
 import { useUser } from "@/context/UserContext";
 import { useAccess } from "@/context/AccessContext";
-import { RefineMySituation, ExecutionLoop, saveSession } from "@/components/RefineAndExecutionLoop";
-
-const STRIPE_URL = "https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00";
+import { RefineMySituation, ExecutionLoop, saveSession, PremiumLockCard } from "@/components/RefineAndExecutionLoop";
 
 interface CoachingResultCardProps {
   result: CoachingResult;
@@ -397,37 +394,6 @@ function SectionCard({ section, problemType, strategy }: {
   );
 }
 
-function PremiumLockCard({ section }: { section: CoachingSection }) {
-  const s = StyleSheet.create({
-    card: {
-      borderRadius: 14, marginBottom: 10, borderWidth: 1.5,
-      borderColor: "#d4a017", backgroundColor: "#fffbeb", overflow: "hidden",
-    },
-    body: { paddingVertical: 20, paddingHorizontal: 18, alignItems: "center" },
-    lockIcon: { fontSize: 26, marginBottom: 8 },
-    title: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1a1a2e", marginBottom: 8, textAlign: "center" },
-    price: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#78350f", textAlign: "center", marginBottom: 16, lineHeight: 20 },
-    unlockBtn: {
-      backgroundColor: "#d4a017", borderRadius: 12,
-      paddingVertical: 13, paddingHorizontal: 28,
-    },
-    unlockBtnText: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#fff" },
-  });
-
-  return (
-    <View style={s.card}>
-      <View style={s.body}>
-        <Text style={s.lockIcon}>🔒</Text>
-        <Text style={s.title}>{section.title}</Text>
-        <Text style={s.price}>Unlock with Premium — $20/month or $6/week</Text>
-        <TouchableOpacity style={s.unlockBtn} activeOpacity={0.85} onPress={() => Linking.openURL(STRIPE_URL)}>
-          <Text style={s.unlockBtnText}>Upgrade to Premium</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
-
 export function CoachingResultCard({ result: initialResult, onReset, ctaButton, flowType, answers }: CoachingResultCardProps) {
   const [result, setResult] = useState<CoachingResult>(initialResult);
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(false);
@@ -502,7 +468,7 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
           <Text style={bs.bannerText}>
             Upgrade to Premium to unlock Power Questions, Refine My Situation, and your Execution Loop.
           </Text>
-          <TouchableOpacity style={bs.bannerBtn} activeOpacity={0.85} onPress={() => Linking.openURL(STRIPE_URL)}>
+          <TouchableOpacity style={bs.bannerBtn} activeOpacity={0.85} onPress={() => Linking.openURL("https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00")}>
             <Text style={bs.bannerBtnText}>Upgrade — $20/month or $6/week</Text>
           </TouchableOpacity>
         </View>
@@ -533,7 +499,11 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
         .filter((s) => s.title !== "State Set" && s.title !== "Internal Clarity")
         .map((section, i) =>
           section.premium ? (
-            <PremiumLockCard key={i} section={section} />
+            <PremiumLockCard
+              key={i}
+              title={section.title}
+              description="Two sharp questions that cut through the story and point to your next move."
+            />
           ) : (
             <SectionCard
               key={i}

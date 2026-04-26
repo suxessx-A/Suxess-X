@@ -5,9 +5,11 @@
 import React, { useState } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
-  ActivityIndicator, Platform,
+  ActivityIndicator, Platform, Linking,
 } from "react-native";
 import { useUser } from "@/context/UserContext";
+
+const STRIPE_URL = "https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00";
 
 const _domain = process.env.EXPO_PUBLIC_DOMAIN;
 const API_BASE = _domain
@@ -518,3 +520,40 @@ const el = StyleSheet.create({
   doneIcon: { fontSize: 18, color: "#00D4AA" },
   doneText: { flex: 1, fontSize: 13, color: "rgba(0,212,170,0.9)", lineHeight: 19, fontFamily: "Inter_400Regular" },
 });
+
+// ============================================================
+// PREMIUM LOCK CARD
+// ============================================================
+
+const pl = StyleSheet.create({
+  card: {
+    borderRadius: 14, marginBottom: 10, borderWidth: 1.5,
+    borderColor: "#d4a017", backgroundColor: "#fffbeb",
+  },
+  body: { paddingVertical: 22, paddingHorizontal: 18, alignItems: "center" },
+  lockIcon: { fontSize: 26, marginBottom: 8 },
+  title: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1a1a2e", marginBottom: 6, textAlign: "center" },
+  description: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#78350f", textAlign: "center", lineHeight: 20, marginBottom: 16 },
+  price: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#92400e", textAlign: "center", marginBottom: 14 },
+  unlockBtn: {
+    backgroundColor: "#d4a017", borderRadius: 12,
+    paddingVertical: 13, paddingHorizontal: 28,
+  },
+  unlockBtnText: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#fff" },
+});
+
+export function PremiumLockCard({ title, description }: { title: string; description: string }) {
+  return (
+    <View style={pl.card}>
+      <View style={pl.body}>
+        <Text style={pl.lockIcon}>🔒</Text>
+        <Text style={pl.title}>{title}</Text>
+        <Text style={pl.description}>{description}</Text>
+        <Text style={pl.price}>Unlock with Premium — $20/month or $6/week</Text>
+        <TouchableOpacity style={pl.unlockBtn} activeOpacity={0.85} onPress={() => Linking.openURL(STRIPE_URL)}>
+          <Text style={pl.unlockBtnText}>Upgrade to Premium</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
