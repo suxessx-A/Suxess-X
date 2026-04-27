@@ -5,7 +5,7 @@ import { useColors } from "@/hooks/useColors";
 import { CoachingResult, CoachingScript, CoachingSection, CoachingStrategy, CoachingTrigger, ProblemType } from "@/context/CoachingContext";
 import { useUser } from "@/context/UserContext";
 import { useAccess } from "@/context/AccessContext";
-import { ExecutionLoop, saveSession, PremiumLockCard } from "@/components/RefineAndExecutionLoop";
+import { ExecutionLoop, saveSession } from "@/components/RefineAndExecutionLoop";
 
 interface CoachingResultCardProps {
   result: CoachingResult;
@@ -505,23 +505,15 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
       )}
 
       {(result.sections ?? [])
-        .filter((s) => s.title !== "State Set" && s.title !== "Internal Clarity")
-        .map((section, i) =>
-          section.premium ? (
-            <PremiumLockCard
-              key={i}
-              title={section.title}
-              description="Two sharp questions that cut through the story and point to your next move."
-            />
-          ) : (
-            <SectionCard
-              key={i}
-              section={section}
-              problemType={result.problemType}
-              strategy={result.strategy}
-            />
-          )
-        )}
+        .filter((s) => s.title !== "State Set" && s.title !== "Internal Clarity" && !s.premium)
+        .map((section, i) => (
+          <SectionCard
+            key={i}
+            section={section}
+            problemType={result.problemType}
+            strategy={result.strategy}
+          />
+        ))}
 
       {result.identityAnchor ? <IdentityAnchorCard anchor={result.identityAnchor} /> : null}
 
