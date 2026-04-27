@@ -148,26 +148,24 @@ interface PremiumLockProps {
 export function PremiumLockCard({ title, description }: PremiumLockProps) {
   return (
     <TouchableOpacity
-      style={pl.wrap}
       onPress={() => Linking.openURL("https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00")}
-      activeOpacity={0.85}
+      activeOpacity={0.82}
+      style={{
+        marginTop: 10,
+        borderRadius: 12,
+        backgroundColor: "#C9952A",
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        gap: 10,
+      }}
     >
-      <View style={pl.top}>
-        <View style={pl.iconWrap}>
-          <Text style={pl.icon}>🔐</Text>
-        </View>
-        <View style={pl.textWrap}>
-          <Text style={pl.title}>{title}</Text>
-          <Text style={pl.desc}>{description}</Text>
-        </View>
-        <View style={pl.badge}>
-          <Text style={pl.badgeText}>Unlock</Text>
-        </View>
-      </View>
-      <View style={pl.bottom}>
-        <Text style={pl.bottomLeft}>Premium: $20/month — less than a coffee a week</Text>
-        <Text style={pl.bottomRight}>Tap to unlock →</Text>
-      </View>
+      <Text style={{ fontSize: 16 }}>🔐</Text>
+      <Text style={{ flex: 1, fontSize: 13, fontWeight: "700", color: "#0A1628", fontFamily: "Inter_700Bold", lineHeight: 18 }}>
+        Unlock Premium for less than a coffee a week — $20/month
+      </Text>
+      <Text style={{ fontSize: 13, color: "#0A1628", fontFamily: "Inter_700Bold", opacity: 0.7 }}>→</Text>
     </TouchableOpacity>
   );
 }
