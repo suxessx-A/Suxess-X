@@ -66,7 +66,15 @@ export function RefineMySituation({ flowType, originalAnswers, problemType }: { 
       if (!res.ok) { setError(`Server error ${res.status}. Try again.`); return; }
       const parsed = JSON.parse(raw);
       const safe = safeParseResult(parsed, problemType ?? "AVOIDING_CHALLENGER", null);
-      setResult(safe as any);
+      console.log("SAFE RESULT KEYS:", Object.keys(safe));
+      console.log("SAFE RESULT SECTIONS:", JSON.stringify(safe.sections));
+      console.log("SAFE RESULT PROBLEMTYPE:", safe.problemType);
+      try {
+        setResult(safe as any);
+        console.log("setResult called successfully");
+      } catch (e: any) {
+        console.error("setResult THREW:", e?.message);
+      }
       setOpen(false);
       setUpdate("");
     } catch (e: any) {

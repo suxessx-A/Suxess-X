@@ -399,6 +399,10 @@ export default function FlowScreen() {
     }
   }, [recommendation]);
 
+  useEffect(() => {
+    console.log("FLOW RESULT CHANGED:", result ? result.reframe?.substring(0, 30) : "NULL");
+  }, [result]);
+
   if (!activeFlow) return null;
 
   const flowSteps = flows[activeFlow] ?? [];
