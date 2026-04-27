@@ -168,7 +168,7 @@ function safeParseRecommendation(raw: unknown): StrategyRecommendation {
   return { problemType, recommendedStrategy, assessment, options, powerDiagnosis, riskLevel, outcomeGoal, whenNotTo };
 }
 
-function safeParseResult(raw: unknown, problemType: ProblemType, chosenStrategy: CoachingStrategy | null): CoachingResult {
+export function safeParseResult(raw: unknown, problemType: ProblemType, chosenStrategy: CoachingStrategy | null): CoachingResult {
   const fallback: CoachingResult = {
     problemType,
     strategy: chosenStrategy,

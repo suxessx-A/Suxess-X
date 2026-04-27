@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUser } from "@/context/UserContext";
-import { useCoaching } from "@/context/CoachingContext";
+import { useCoaching, safeParseResult } from "@/context/CoachingContext";
 
 // ============================================================
 // CONSTANTS
@@ -65,7 +65,8 @@ export function RefineMySituation({ flowType, originalAnswers, problemType }: { 
       const raw = await res.text();
       if (!res.ok) { setError(`Server error ${res.status}. Try again.`); return; }
       const parsed = JSON.parse(raw);
-      setResult(parsed as any);
+      const safe = safeParseResult(parsed, problemType ?? "AVOIDING_CHALLENGER", null);
+      setResult(safe as any);
       setOpen(false);
       setUpdate("");
     } catch (e: any) {
