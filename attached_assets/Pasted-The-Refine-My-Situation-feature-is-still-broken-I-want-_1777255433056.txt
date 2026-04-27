@@ -1,0 +1,122 @@
+The Refine My Situation feature is still broken. I want to replace the entire approach with something simpler that definitely works.
+
+In artifacts/suxess-x/components/RefineAndExecutionLoop.tsx, replace the entire RefineMySituation component with this simpler version that does not depend on onRefined or context at all — it makes the API call and navigates to a new result directly:
+
+export function RefineMySituation({ flowType, originalAnswers, problemType }: { flowType: string; originalAnswers: Record<string, string | string[]>; problemType?: string; }) {
+  const [open, setOpen] = useState(false);
+  const [update, setUpdate] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [refinedResult, setRefinedResult] = useState<Record<string, unknown> | null>(null);
+  const inputRef = useRef<TextInput>(null);
+  const { profile } = useUser();
+  const { setResult } = useCoaching();
+
+  const starters = [
+    { label: "What changed?", starter: "What changed is: " },
+    { label: "What did they say?", starter: "They said: " },
+    { label: "What did not work?", starter: "What did not work was: " },
+    { label: "Go deeper.", starter: "I want to go deeper on: " },
+  ];
+
+  const submit = async () => {
+    const text = update.trim();
+    if (text.length < 5) { setError("Please add more detail."); return; }
+    setLoading(true);
+    setError(null);
+    try {
+      const domain = process.env.EXPO_PUBLIC_DOMAIN;
+      const base = domain ? `https://${domain}` : "https://d2ed2806-9e05-4352-b2bf-9740ef4876cc-00-3tdolowv9g7xu.picard.replit.dev";
+      const body = JSON.stringify({
+        flowType,
+        answers: { ...originalAnswers, refinement: text },
+        problemType: problemType ?? "AVOIDING_CHALLENGER",
+        strategy: null,
+        userProfile: profile ?? null,
+      });
+      const res = await fetch(`${base}/api/coaching/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+      const raw = await res.text();
+      if (!res.ok) { setError(`Server error ${res.status}. Try again.`); return; }
+      const parsed = JSON.parse(raw);
+      setResult(parsed as any);
+      setOpen(false);
+      setUpdate("");
+    } catch (e: any) {
+      setError("Connection failed. Check your internet and try again.");
+      console.error("Refine error:", e?.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <TouchableOpacity
+        onPress={() => setOpen(true)}
+        style={{ marginTop: 12, padding: 16, backgroundColor: "rgba(124,58,237,0.1)", borderRadius: 14, borderWidth: 1.5, borderColor: "rgba(124,58,237,0.3)", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}
+      >
+        <View>
+          <Text style={{ color: "#9f7aea", fontSize: 15, fontWeight: "700" }}>🔄 Refine my situation</Text>
+          <Text style={{ color: "rgba(124,58,237,0.6)", fontSize: 12, marginTop: 2 }}>Something changed? Get adjusted coaching.</Text>
+        </View>
+        <Text style={{ color: "#9f7aea", fontSize: 22 }}>›</Text>
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <View style={{ marginTop: 12, backgroundColor: "#0a1628", borderRadius: 16, borderWidth: 1.5, borderColor: "rgba(124,58,237,0.3)", padding: 20 }}>
+      <Text style={{ color: "#F7F7F2", fontSize: 20, fontWeight: "800", marginBottom: 6 }}>What changed?</Text>
+      <Text style={{ color: "rgba(247,247,242,0.5)", fontSize: 13, marginBottom: 16 }}>Tap an option then add detail.</Text>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+        {starters.map(opt => (
+          <TouchableOpacity key={opt.label} onPress={() => { setUpdate(opt.starter); setTimeout(() => inputRef.current?.focus(), 100); }} style={{ backgroundColor: "rgba(124,58,237,0.15)", borderRadius: 20, paddingHorizontal: 14, paddingVertical: 9, borderWidth: 1, borderColor: "rgba(124,58,237,0.3)" }}>
+            <Text style={{ color: "#9f7aea", fontSize: 13, fontWeight: "600" }}>{opt.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <TextInput
+        ref={inputRef}
+        style={{ backgroundColor: "rgba(247,247,242,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(247,247,242,0.15)", padding: 14, fontSize: 14, color: "#F7F7F2", minHeight: 100, textAlignVertical: "top" }}
+        placeholder="e.g. They said no and got defensive. What now?"
+        placeholderTextColor="rgba(247,247,242,0.3)"
+        value={update}
+        onChangeText={t => { setUpdate(t); setError(null); }}
+        multiline
+      />
+      {error ? <Text style={{ color: "#f87171", fontSize: 13, marginTop: 8 }}>{error}</Text> : null}
+      <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
+        <TouchableOpacity onPress={() => { setOpen(false); setUpdate(""); setError(null); }} style={{ flex: 1, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: "rgba(247,247,242,0.15)", alignItems: "center" }}>
+          <Text style={{ color: "rgba(247,247,242,0.4)", fontSize: 14 }}>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={submit} disabled={loading || update.trim().length < 5} style={{ flex: 2, padding: 14, borderRadius: 10, backgroundColor: loading || update.trim().length < 5 ? "rgba(124,58,237,0.3)" : "#7c3aed", alignItems: "center" }}>
+          {loading ? <ActivityIndicator color="#fff" size="small" /> : <Text style={{ color: "#fff", fontSize: 14, fontWeight: "700" }}>Get adjusted coaching</Text>}
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+Also add this import at the top of the file if not already there:
+import { useCoaching } from "@/context/CoachingContext";
+
+Then in CoachingResultCard.tsx, update the RefineMySituation render to remove the onRefined prop since it is no longer needed — the component handles everything internally via useCoaching:
+
+{isPaid ? (
+  <RefineMySituation
+    flowType={flowType ?? "unknown"}
+    originalAnswers={answers ?? {}}
+    problemType={result.problemType}
+  />
+) : (
+  <PremiumLockCard
+    title="Refine My Situation"
+    description="Something changed? Get adjusted coaching based on what actually happened."
+  />
+)}
+
+Then rebuild and restart.

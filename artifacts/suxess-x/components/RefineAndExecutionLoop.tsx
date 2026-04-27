@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUser } from "@/context/UserContext";
+import { useCoaching } from "@/context/CoachingContext";
 
 // ============================================================
 // CONSTANTS
@@ -25,151 +26,98 @@ function getAPIBase(): string {
 // REFINE MY SITUATION
 // ============================================================
 
-interface RefineProps {
-  flowType: string;
-  originalAnswers: Record<string, string | string[]>;
-  problemType?: string;
-  onRefined: (newResult: Record<string, unknown>) => void;
-}
-
-export function RefineMySituation({ flowType, originalAnswers, problemType, onRefined }: RefineProps) {
+export function RefineMySituation({ flowType, originalAnswers, problemType }: { flowType: string; originalAnswers: Record<string, string | string[]>; problemType?: string; }) {
   const [open, setOpen] = useState(false);
   const [update, setUpdate] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const { profile } = useUser();
+  const { setResult } = useCoaching();
 
-  const quickOptions = [
+  const starters = [
     { label: "What changed?", starter: "What changed is: " },
     { label: "What did they say?", starter: "They said: " },
     { label: "What did not work?", starter: "What did not work was: " },
-    { label: "Go deeper on this.", starter: "I want to go deeper on: " },
+    { label: "Go deeper.", starter: "I want to go deeper on: " },
   ];
 
-  const handleQuickTap = (starter: string) => {
-    setUpdate(starter);
-    setError(null);
-    setTimeout(() => inputRef.current?.focus(), 100);
-  };
-
-  const handleRefine = async () => {
+  const submit = async () => {
     const text = update.trim();
-    if (!text || text.length < 5) {
-      setError("Please add a bit more detail so we can adjust your coaching.");
-      return;
-    }
+    if (text.length < 5) { setError("Please add more detail."); return; }
     setLoading(true);
     setError(null);
     try {
-      const base = getAPIBase();
-      const payload = {
+      const domain = process.env.EXPO_PUBLIC_DOMAIN;
+      const base = domain ? `https://${domain}` : "https://d2ed2806-9e05-4352-b2bf-9740ef4876cc-00-3tdolowv9g7xu.picard.replit.dev";
+      const body = JSON.stringify({
         flowType,
-        answers: {
-          ...originalAnswers,
-          refinement: text,
-          refinement_context: "User is refining after attempting the action or receiving a response. Adjust the coaching based on what changed.",
-        },
+        answers: { ...originalAnswers, refinement: text },
         problemType: problemType ?? "AVOIDING_CHALLENGER",
         strategy: null,
         userProfile: profile ?? null,
-      };
+      });
       const res = await fetch(`${base}/api/coaching/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body,
       });
-      if (!res.ok) {
-        const errText = await res.text();
-        console.error("Refine API error:", res.status, errText);
-        setError(`Could not connect to coaching (${res.status}). Please try again.`);
-        return;
-      }
       const raw = await res.text();
-      let parsed: Record<string, unknown>;
-      try {
-        parsed = JSON.parse(raw);
-      } catch {
-        console.error("Refine parse error. Raw:", raw.substring(0, 200));
-        setError("Received an unexpected response. Please try again.");
-        return;
-      }
-      onRefined(parsed);
-      setDone(true);
+      if (!res.ok) { setError(`Server error ${res.status}. Try again.`); return; }
+      const parsed = JSON.parse(raw);
+      setResult(parsed as any);
       setOpen(false);
-    } catch (e) {
-      console.error("Refine fetch error:", e);
-      setError("Could not reach the coaching server. Check your connection and try again.");
+      setUpdate("");
+    } catch (e: any) {
+      setError("Connection failed. Check your internet and try again.");
+      console.error("Refine error:", e?.message);
     } finally {
       setLoading(false);
     }
   };
 
-  if (done) return null;
-
   if (!open) {
     return (
-      <TouchableOpacity style={rs.triggerBtn} onPress={() => setOpen(true)}>
-        <View style={rs.triggerLeft}>
-          <Text style={rs.triggerIcon}>🔄</Text>
-          <View>
-            <Text style={rs.triggerTitle}>Refine my situation</Text>
-            <Text style={rs.triggerSub}>Something changed? Get adjusted coaching.</Text>
-          </View>
+      <TouchableOpacity
+        onPress={() => setOpen(true)}
+        style={{ marginTop: 12, padding: 16, backgroundColor: "rgba(124,58,237,0.1)", borderRadius: 14, borderWidth: 1.5, borderColor: "rgba(124,58,237,0.3)", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}
+      >
+        <View>
+          <Text style={{ color: "#9f7aea", fontSize: 15, fontWeight: "700" }}>🔄 Refine my situation</Text>
+          <Text style={{ color: "rgba(124,58,237,0.6)", fontSize: 12, marginTop: 2 }}>Something changed? Get adjusted coaching.</Text>
         </View>
-        <Text style={rs.triggerArrow}>›</Text>
+        <Text style={{ color: "#9f7aea", fontSize: 22 }}>›</Text>
       </TouchableOpacity>
     );
   }
 
   return (
-    <View style={rs.panel}>
-      <Text style={rs.panelTitle}>What changed?</Text>
-      <Text style={rs.panelSub}>Tap an option to start, then add detail and submit.</Text>
-
-      <View style={rs.quickBtns}>
-        {quickOptions.map((opt) => (
-          <TouchableOpacity
-            key={opt.label}
-            style={[rs.quickBtn, update.startsWith(opt.starter.trim().split(":")[0]) && rs.quickBtnActive]}
-            onPress={() => handleQuickTap(opt.starter)}
-            disabled={loading}
-          >
-            <Text style={[rs.quickBtnText, update.startsWith(opt.starter.trim().split(":")[0]) && rs.quickBtnTextActive]}>
-              {opt.label}
-            </Text>
+    <View style={{ marginTop: 12, backgroundColor: "#0a1628", borderRadius: 16, borderWidth: 1.5, borderColor: "rgba(124,58,237,0.3)", padding: 20 }}>
+      <Text style={{ color: "#F7F7F2", fontSize: 20, fontWeight: "800", marginBottom: 6 }}>What changed?</Text>
+      <Text style={{ color: "rgba(247,247,242,0.5)", fontSize: 13, marginBottom: 16 }}>Tap an option then add detail.</Text>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+        {starters.map(opt => (
+          <TouchableOpacity key={opt.label} onPress={() => { setUpdate(opt.starter); setTimeout(() => inputRef.current?.focus(), 100); }} style={{ backgroundColor: "rgba(124,58,237,0.15)", borderRadius: 20, paddingHorizontal: 14, paddingVertical: 9, borderWidth: 1, borderColor: "rgba(124,58,237,0.3)" }}>
+            <Text style={{ color: "#9f7aea", fontSize: 13, fontWeight: "600" }}>{opt.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
-
       <TextInput
         ref={inputRef}
-        style={rs.input}
+        style={{ backgroundColor: "rgba(247,247,242,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(247,247,242,0.15)", padding: 14, fontSize: 14, color: "#F7F7F2", minHeight: 100, textAlignVertical: "top" }}
         placeholder="e.g. They said no and got defensive. What now?"
         placeholderTextColor="rgba(247,247,242,0.3)"
         value={update}
-        onChangeText={(t) => { setUpdate(t); setError(null); }}
+        onChangeText={t => { setUpdate(t); setError(null); }}
         multiline
-        numberOfLines={4}
-        textAlignVertical="top"
       />
-
-      {error && <Text style={rs.errorText}>{error}</Text>}
-
-      <View style={rs.actions}>
-        <TouchableOpacity style={rs.cancelBtn} onPress={() => { setOpen(false); setError(null); setUpdate(""); }}>
-          <Text style={rs.cancelText}>Cancel</Text>
+      {error ? <Text style={{ color: "#f87171", fontSize: 13, marginTop: 8 }}>{error}</Text> : null}
+      <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
+        <TouchableOpacity onPress={() => { setOpen(false); setUpdate(""); setError(null); }} style={{ flex: 1, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: "rgba(247,247,242,0.15)", alignItems: "center" }}>
+          <Text style={{ color: "rgba(247,247,242,0.4)", fontSize: 14 }}>Cancel</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[rs.refineBtn, (!update.trim() || loading) && rs.refineBtnDisabled]}
-          onPress={handleRefine}
-          disabled={loading || !update.trim()}
-        >
-          {loading
-            ? <ActivityIndicator color="#0A1628" size="small" />
-            : <Text style={rs.refineText}>Get adjusted coaching</Text>
-          }
+        <TouchableOpacity onPress={submit} disabled={loading || update.trim().length < 5} style={{ flex: 2, padding: 14, borderRadius: 10, backgroundColor: loading || update.trim().length < 5 ? "rgba(124,58,237,0.3)" : "#7c3aed", alignItems: "center" }}>
+          {loading ? <ActivityIndicator color="#fff" size="small" /> : <Text style={{ color: "#fff", fontSize: 14, fontWeight: "700" }}>Get adjusted coaching</Text>}
         </TouchableOpacity>
       </View>
     </View>

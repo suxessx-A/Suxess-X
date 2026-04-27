@@ -538,12 +538,6 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
           flowType={flowType ?? "unknown"}
           originalAnswers={answers ?? {}}
           problemType={result.problemType}
-          onRefined={(newResult) => {
-            console.log("onRefined called with:", JSON.stringify(newResult).substring(0, 100));
-            const typed = newResult as CoachingResult;
-            setResult(typed);
-            onRefinedProp?.(typed);
-          }}
         />
       ) : (
         <PremiumLockCard
