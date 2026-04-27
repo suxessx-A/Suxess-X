@@ -7,6 +7,9 @@ import { useUser } from "@/context/UserContext";
 import { useAccess } from "@/context/AccessContext";
 import { ExecutionLoop, saveSession, PremiumLockCard } from "@/components/RefineAndExecutionLoop";
 
+// TESTING_MODE: set to false before LinkedIn launch to enable paywall + flow limits
+const TESTING_MODE = true;
+
 interface CoachingResultCardProps {
   result: CoachingResult;
   onReset: () => void;
@@ -424,7 +427,7 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
   }, []);
 
   useEffect(() => {
-    if (isPaid) return;
+    if (TESTING_MODE || isPaid) return;
     (async () => {
       try {
         const stored = await AsyncStorage.getItem("suxess_sessions");
@@ -478,7 +481,7 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
             Upgrade to Premium to unlock Power Questions, Refine My Situation, and your Execution Loop.
           </Text>
           <TouchableOpacity style={bs.bannerBtn} activeOpacity={0.85} onPress={() => Linking.openURL("https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00")}>
-            <Text style={bs.bannerBtnText}>Upgrade — $20/month or $6/week</Text>
+            <Text style={bs.bannerBtnText}>Upgrade — $20/month</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -505,15 +508,23 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
       )}
 
       {(result.sections ?? [])
-        .filter((s) => s.title !== "State Set" && s.title !== "Internal Clarity" && !s.premium)
-        .map((section, i) => (
-          <SectionCard
-            key={i}
-            section={section}
-            problemType={result.problemType}
-            strategy={result.strategy}
-          />
-        ))}
+        .filter((s) => s.title !== "State Set" && s.title !== "Internal Clarity")
+        .map((section, i) =>
+          section.premium ? (
+            <PremiumLockCard
+              key={i}
+              title={section.title}
+              description="Two sharp questions that cut through the story and point to your next move."
+            />
+          ) : (
+            <SectionCard
+              key={i}
+              section={section}
+              problemType={result.problemType}
+              strategy={result.strategy}
+            />
+          )
+        )}
 
       {result.identityAnchor ? <IdentityAnchorCard anchor={result.identityAnchor} /> : null}
 
@@ -529,7 +540,7 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
 
       {result.closingQuestion ? <ClosingQuestionCard question={result.closingQuestion} /> : null}
 
-      {!isPaid && <PremiumLockCard title="" description="" />}
+      {!TESTING_MODE && !isPaid && <PremiumLockCard title="" description="" />}
 
       <ExecutionLoop
         flowType={flowType ?? "unknown"}
