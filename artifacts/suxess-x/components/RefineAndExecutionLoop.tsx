@@ -152,20 +152,21 @@ export function PremiumLockCard({ title, description }: PremiumLockProps) {
       activeOpacity={0.82}
       style={{
         marginTop: 10,
-        borderRadius: 12,
-        backgroundColor: "#C9952A",
+        marginBottom: 18,
+        borderRadius: 14,
+        backgroundColor: "#00C853",
         flexDirection: "row",
         alignItems: "center",
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        gap: 10,
+        paddingVertical: 18,
+        paddingHorizontal: 18,
+        gap: 12,
       }}
     >
-      <Text style={{ fontSize: 16 }}>🔐</Text>
-      <Text style={{ flex: 1, fontSize: 13, fontWeight: "700", color: "#0A1628", fontFamily: "Inter_700Bold", lineHeight: 18 }}>
+      <Text style={{ fontSize: 20 }}>🔐</Text>
+      <Text style={{ flex: 1, fontSize: 16, fontWeight: "800", color: "#0A1628", fontFamily: "Inter_700Bold", lineHeight: 22 }}>
         Unlock Premium for less than a coffee a week — $20/month
       </Text>
-      <Text style={{ fontSize: 13, color: "#0A1628", fontFamily: "Inter_700Bold", opacity: 0.7 }}>→</Text>
+      <Text style={{ fontSize: 18, color: "#0A1628", fontFamily: "Inter_700Bold" }}>→</Text>
     </TouchableOpacity>
   );
 }
