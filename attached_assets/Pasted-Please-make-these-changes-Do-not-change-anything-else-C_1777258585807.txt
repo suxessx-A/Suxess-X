@@ -1,0 +1,115 @@
+Please make these changes. Do not change anything else.
+
+CHANGE 1 — Remove Refine My Situation from UI completely
+In CoachingResultCard.tsx remove the RefineMySituation render block and its import.
+In RefineAndExecutionLoop.tsx comment out the entire RefineMySituation function with /* and */
+
+CHANGE 2 — Subscription prompt for non-paid users
+In CoachingResultCard.tsx after the closing question card add this for non-paid users only wrapped in {!isPaid && ( ... )}:
+
+<TouchableOpacity
+  onPress={() => Linking.openURL("https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00")}
+  style={{ marginHorizontal: 16, marginTop: 20, marginBottom: 8, borderRadius: 16, backgroundColor: "#0a1628", borderWidth: 1.5, borderColor: "rgba(201,149,42,0.4)", overflow: "hidden" }}
+>
+  <View style={{ padding: 20 }}>
+    <Text style={{ fontSize: 11, fontWeight: "700", letterSpacing: 1.5, color: "#C9952A", marginBottom: 8, fontFamily: "Inter_700Bold" }}>UNLOCK PREMIUM</Text>
+    <Text style={{ fontSize: 20, fontWeight: "800", color: "#F7F7F2", marginBottom: 6, fontFamily: "Inter_700Bold" }}>Less than a coffee a week.</Text>
+    <Text style={{ fontSize: 14, color: "rgba(247,247,242,0.6)", lineHeight: 22, marginBottom: 16, fontFamily: "Inter_400Regular" }}>$20/month unlocks Power Questions, your Execution Loop, session history, and weekly progress tracking.</Text>
+    <View style={{ backgroundColor: "#C9952A", borderRadius: 10, paddingVertical: 14, alignItems: "center" }}>
+      <Text style={{ fontSize: 15, fontWeight: "700", color: "#0A1628", fontFamily: "Inter_700Bold" }}>Unlock Premium — $20/month</Text>
+    </View>
+  </View>
+  <View style={{ backgroundColor: "rgba(201,149,42,0.08)", paddingHorizontal: 20, paddingVertical: 10, borderTopWidth: 1, borderTopColor: "rgba(201,149,42,0.15)" }}>
+    <Text style={{ fontSize: 12, color: "rgba(201,149,42,0.7)", textAlign: "center", fontFamily: "Inter_400Regular" }}>Cancel anytime. No lock-in.</Text>
+  </View>
+</TouchableOpacity>
+
+Make sure Linking is imported from react-native.
+
+CHANGE 3 — Execution Loop gates Start a New Flow
+The "Start a New Flow" button must only appear AFTER the user has completed the Execution Loop interaction (either committed or skipped with a reason). Before that interaction the button must not be visible.
+
+In CoachingResultCard.tsx:
+Add state: const [executionComplete, setExecutionComplete] = useState(false);
+Pass to ExecutionLoop: onComplete={(data) => { saveExecutionData(data); setExecutionComplete(true); }}
+Wrap the existing "Start a New Flow" / reset button render in: {executionComplete && ( ... )}
+
+CHANGE 4 — Skip flow asks why and schedules notification
+In RefineAndExecutionLoop.tsx, in the ExecutionLoop component, replace the current "Skip for now" button handler so that instead of immediately going to stage "done", it goes to a new stage called "skip_reason".
+
+Add "skip_reason" to the stage type.
+
+When stage is "skip_reason" render this:
+
+<View style={el.wrap}>
+  <Text style={el.headerLabel}>BEFORE YOU MOVE ON</Text>
+  <Text style={el.headerTitle}>What is getting in the way?</Text>
+  <Text style={{ color: "rgba(247,247,242,0.55)", fontSize: 14, marginTop: 4, marginBottom: 16, fontFamily: "Inter_400Regular" }}>
+    Naming it is the Captain move. We will follow up with you tomorrow.
+  </Text>
+  {[
+    "I am avoiding it",
+    "I did not have time",
+    "I am not sure what to say",
+    "The moment did not come up yet",
+    "Something else changed",
+  ].map((opt) => (
+    <TouchableOpacity
+      key={opt}
+      style={[el.blockerBtn, blocker === opt && el.blockerBtnSelected]}
+      onPress={() => setBlocker(opt)}
+    >
+      <Text style={[el.blockerText, blocker === opt && el.blockerTextSelected]}>{opt}</Text>
+    </TouchableOpacity>
+  ))}
+  <TouchableOpacity
+    style={[el.commitBtn, { marginTop: 16 }, !blocker && el.commitBtnDisabled]}
+    disabled={!blocker}
+    onPress={async () => {
+      await scheduleSkipFollowUp(behavioralObjective);
+      const data: ExecutionData = {
+        sessionId, flowType,
+        committed: false, commitTime: Date.now(),
+        checkedIn: true, checkInTime: Date.now(),
+        followedThrough: false,
+        blockers: blocker,
+        userGoal,
+      };
+      await saveExecutionData(data);
+      onComplete?.(data);
+      setStage("done");
+    }}
+  >
+    <Text style={el.commitBtnText}>Got it — remind me tomorrow</Text>
+  </TouchableOpacity>
+</View>
+
+Add this function before the ExecutionLoop component:
+
+async function scheduleSkipFollowUp(action: string) {
+  try {
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== "granted") return;
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Captain or Passenger — you decide.",
+        body: action,
+        data: { type: "skip_followup" },
+      },
+      trigger: { seconds: 86400 },
+    });
+  } catch (e) {
+    console.log("Notifications not available:", e);
+  }
+}
+
+Add this import at the top of RefineAndExecutionLoop.tsx:
+import * as Notifications from "expo-notifications";
+
+CHANGE 5 — Update PremiumLockCard price text
+In RefineAndExecutionLoop.tsx find PremiumLockCard bottomLeft text and change:
+"Premium: $20/month or $6/week"
+To:
+"Premium: $20/month — less than a coffee a week"
+
+Then rebuild and restart.

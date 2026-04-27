@@ -8,6 +8,7 @@ import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
   ActivityIndicator, Platform, Linking,
 } from "react-native";
+import * as Notifications from "expo-notifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUser } from "@/context/UserContext";
 import { useCoaching, safeParseResult } from "@/context/CoachingContext";
@@ -26,6 +27,7 @@ function getAPIBase(): string {
 // REFINE MY SITUATION
 // ============================================================
 
+/* COMMENTED OUT — removed from UI per product decision
 export function RefineMySituation({ flowType, originalAnswers, problemType }: { flowType: string; originalAnswers: Record<string, string | string[]>; problemType?: string; }) {
   const [open, setOpen] = useState(false);
   const [update, setUpdate] = useState("");
@@ -132,6 +134,7 @@ export function RefineMySituation({ flowType, originalAnswers, problemType }: { 
     </View>
   );
 }
+*/
 
 // ============================================================
 // PREMIUM LOCK CARD — used for locked sections
@@ -162,7 +165,7 @@ export function PremiumLockCard({ title, description }: PremiumLockProps) {
         </View>
       </View>
       <View style={pl.bottom}>
-        <Text style={pl.bottomLeft}>Premium: $20/month or $6/week</Text>
+        <Text style={pl.bottomLeft}>Premium: $20/month — less than a coffee a week</Text>
         <Text style={pl.bottomRight}>Tap to unlock →</Text>
       </View>
     </TouchableOpacity>
@@ -194,8 +197,25 @@ interface ExecutionLoopProps {
   onComplete?: (data: ExecutionData) => void;
 }
 
+async function scheduleSkipFollowUp(action: string) {
+  try {
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== "granted") return;
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Captain or Passenger — you decide.",
+        body: action,
+        data: { type: "skip_followup" },
+      },
+      trigger: { seconds: 86400 },
+    });
+  } catch (e) {
+    console.log("Notifications not available:", e);
+  }
+}
+
 export function ExecutionLoop({ flowType, behavioralObjective, sessionId, userGoal, onComplete }: ExecutionLoopProps) {
-  const [stage, setStage] = useState<"commit" | "committed" | "checkin" | "blocker" | "outcome" | "done">("commit");
+  const [stage, setStage] = useState<"commit" | "committed" | "checkin" | "blocker" | "outcome" | "skip_reason" | "done">("commit");
   const [blocker, setBlocker] = useState("");
   const [outcome, setOutcome] = useState("");
 
@@ -222,6 +242,16 @@ export function ExecutionLoop({ flowType, behavioralObjective, sessionId, userGo
       await AsyncStorage.setItem("suxess_executions", JSON.stringify(arr.slice(0, 100)));
     } catch (e) { console.error("saveData error:", e); }
     onComplete?.(data);
+  };
+
+  const saveExecutionData = async (data: ExecutionData) => {
+    try {
+      const existing = await AsyncStorage.getItem("suxess_executions");
+      const arr: ExecutionData[] = existing ? JSON.parse(existing) : [];
+      const idx = arr.findIndex(e => e.sessionId === data.sessionId);
+      if (idx >= 0) arr[idx] = data; else arr.unshift(data);
+      await AsyncStorage.setItem("suxess_executions", JSON.stringify(arr.slice(0, 100)));
+    } catch (e) { console.error("saveExecutionData error:", e); }
   };
 
   if (stage === "done") {
@@ -322,6 +352,53 @@ export function ExecutionLoop({ flowType, behavioralObjective, sessionId, userGo
     );
   }
 
+  if (stage === "skip_reason") {
+    return (
+      <View style={el.wrap}>
+        <Text style={el.headerLabel}>BEFORE YOU MOVE ON</Text>
+        <Text style={el.headerTitle}>What is getting in the way?</Text>
+        <Text style={{ color: "rgba(247,247,242,0.55)", fontSize: 14, marginTop: 4, marginBottom: 16, fontFamily: "Inter_400Regular" }}>
+          Naming it is the Captain move. We will follow up with you tomorrow.
+        </Text>
+        {[
+          "I am avoiding it",
+          "I did not have time",
+          "I am not sure what to say",
+          "The moment did not come up yet",
+          "Something else changed",
+        ].map((opt) => (
+          <TouchableOpacity
+            key={opt}
+            style={[el.blockerBtn, blocker === opt && el.blockerBtnSelected]}
+            onPress={() => setBlocker(opt)}
+          >
+            <Text style={[el.blockerText, blocker === opt && el.blockerTextSelected]}>{opt}</Text>
+          </TouchableOpacity>
+        ))}
+        <TouchableOpacity
+          style={[el.commitBtn, { marginTop: 16 }, !blocker && el.commitBtnDisabled]}
+          disabled={!blocker}
+          onPress={async () => {
+            await scheduleSkipFollowUp(behavioralObjective);
+            const data: ExecutionData = {
+              sessionId, flowType,
+              committed: false, commitTime: Date.now(),
+              checkedIn: true, checkInTime: Date.now(),
+              followedThrough: false,
+              blockers: blocker,
+              userGoal,
+            };
+            await saveExecutionData(data);
+            onComplete?.(data);
+            setStage("done");
+          }}
+        >
+          <Text style={el.commitBtnText}>Got it — remind me tomorrow</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   // Default: commit stage
   return (
     <View style={el.wrap}>
@@ -343,7 +420,7 @@ export function ExecutionLoop({ flowType, behavioralObjective, sessionId, userGo
       <TouchableOpacity style={el.commitBtn} onPress={() => setStage("committed")}>
         <Text style={el.commitBtnText}>I commit to this today</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={el.skipBtn} onPress={() => setStage("done")}>
+      <TouchableOpacity style={el.skipBtn} onPress={() => setStage("skip_reason")}>
         <Text style={el.skipText}>Skip for now</Text>
       </TouchableOpacity>
     </View>

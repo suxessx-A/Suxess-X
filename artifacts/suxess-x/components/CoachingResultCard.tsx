@@ -5,7 +5,7 @@ import { useColors } from "@/hooks/useColors";
 import { CoachingResult, CoachingScript, CoachingSection, CoachingStrategy, CoachingTrigger, ProblemType } from "@/context/CoachingContext";
 import { useUser } from "@/context/UserContext";
 import { useAccess } from "@/context/AccessContext";
-import { RefineMySituation, ExecutionLoop, saveSession, PremiumLockCard } from "@/components/RefineAndExecutionLoop";
+import { ExecutionLoop, saveSession, PremiumLockCard } from "@/components/RefineAndExecutionLoop";
 
 interface CoachingResultCardProps {
   result: CoachingResult;
@@ -409,6 +409,7 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
   const { profile } = useUser();
   const { isPaid } = useAccess();
   const sessionId = useRef(`session_${Date.now()}`).current;
+  const [executionComplete, setExecutionComplete] = useState(false);
 
   useEffect(() => {
     saveSession({
@@ -536,17 +537,23 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
 
       {result.closingQuestion ? <ClosingQuestionCard question={result.closingQuestion} /> : null}
 
-      {isPaid ? (
-        <RefineMySituation
-          flowType={flowType ?? "unknown"}
-          originalAnswers={answers ?? {}}
-          problemType={result.problemType}
-        />
-      ) : (
-        <PremiumLockCard
-          title="Refine My Situation"
-          description="Something changed? Get adjusted coaching based on what actually happened."
-        />
+      {!isPaid && (
+        <TouchableOpacity
+          onPress={() => Linking.openURL("https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00")}
+          style={{ marginHorizontal: 16, marginTop: 20, marginBottom: 8, borderRadius: 16, backgroundColor: "#0a1628", borderWidth: 1.5, borderColor: "rgba(201,149,42,0.4)", overflow: "hidden" }}
+        >
+          <View style={{ padding: 20 }}>
+            <Text style={{ fontSize: 11, fontWeight: "700", letterSpacing: 1.5, color: "#C9952A", marginBottom: 8, fontFamily: "Inter_700Bold" }}>UNLOCK PREMIUM</Text>
+            <Text style={{ fontSize: 20, fontWeight: "800", color: "#F7F7F2", marginBottom: 6, fontFamily: "Inter_700Bold" }}>Less than a coffee a week.</Text>
+            <Text style={{ fontSize: 14, color: "rgba(247,247,242,0.6)", lineHeight: 22, marginBottom: 16, fontFamily: "Inter_400Regular" }}>$20/month unlocks Power Questions, your Execution Loop, session history, and weekly progress tracking.</Text>
+            <View style={{ backgroundColor: "#C9952A", borderRadius: 10, paddingVertical: 14, alignItems: "center" }}>
+              <Text style={{ fontSize: 15, fontWeight: "700", color: "#0A1628", fontFamily: "Inter_700Bold" }}>Unlock Premium — $20/month</Text>
+            </View>
+          </View>
+          <View style={{ backgroundColor: "rgba(201,149,42,0.08)", paddingHorizontal: 20, paddingVertical: 10, borderTopWidth: 1, borderTopColor: "rgba(201,149,42,0.15)" }}>
+            <Text style={{ fontSize: 12, color: "rgba(201,149,42,0.7)", textAlign: "center", fontFamily: "Inter_400Regular" }}>Cancel anytime. No lock-in.</Text>
+          </View>
+        </TouchableOpacity>
       )}
 
       <ExecutionLoop
@@ -554,9 +561,10 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
         behavioralObjective={result.behavioralObjective ?? result.nextSteps?.[0] ?? "Take your next step."}
         sessionId={sessionId}
         userGoal={profile?.goal}
+        onComplete={() => setExecutionComplete(true)}
       />
 
-      {ctaButton ? (
+      {executionComplete && (ctaButton ? (
         <>
           <TouchableOpacity style={s.ctaBtn} onPress={ctaButton.onPress} activeOpacity={0.85}>
             <Text style={s.ctaBtnText}>{ctaButton.label}</Text>
@@ -569,7 +577,7 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
         <TouchableOpacity style={s.resetBtn} onPress={onReset} activeOpacity={0.8}>
           <Text style={s.resetBtnText}>Start a New Flow</Text>
         </TouchableOpacity>
-      )}
+      ))}
     </ScrollView>
   );
 }
