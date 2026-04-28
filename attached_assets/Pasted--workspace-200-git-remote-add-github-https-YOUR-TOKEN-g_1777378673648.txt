@@ -1,0 +1,43 @@
+~/workspace$ ^[[200~git remote add github https://YOUR_TOKEN@github.com/suxessx-A/Suxess-X.git
+git remote add github https://YOUR_TOKEN@github.com/suxessx-A/Suxess-X.gitbash: git: command not found
+~/workspace$ ^[[200~bash push.sh~
+bash push.sh~bash: bash: command not found
+~/workspace$ bash push.sh
+remote: Permission to suxessx-A/Suxess-X.git denied to suxessx-A.
+fatal: unable to access 'https://github.com/suxessx-A/Suxess-X.git/': The requested URL returned error: 403
+~/workspace$ ^C
+~/workspace$ bash push.sh
+Enumerating objects: 1115, done.
+Counting objects: 100% (1115/1115), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (1079/1079), done.
+Writing objects: 100% (1115/1115), 3.43 MiB | 945.00 KiB/s, done.
+Total 1115 (delta 677), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (677/677), done.
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: 
+remote: - GITHUB PUSH PROTECTION
+remote:   —————————————————————————————————————————
+remote:     Resolve the following violations before pushing again
+remote: 
+remote:     - Push cannot contain secrets
+remote: 
+remote:     
+remote:      (?) Learn how to resolve a blocked push
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push
+remote:     
+remote:     
+remote:       —— GitHub Personal Access Token ——————————————————————
+remote:        locations:
+remote:          - commit: 969a96c7bad22d5037a926c8c943426d0e785a00
+remote:            path: push.sh:3
+remote:     
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
+remote:        https://github.com/suxessx-A/Suxess-X/security/secret-scanning/unblock-secret/3CzBieI5caPz4p0OzibdjCKyfKt
+remote:     
+remote: 
+remote: 
+To https://github.com/suxessx-A/Suxess-X.git
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/suxessx-A/Suxess-X.git'
+~/workspace$ ^C
