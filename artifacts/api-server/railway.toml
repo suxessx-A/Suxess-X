@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "npm install -g pnpm && pnpm install --no-frozen-lockfile && node build.mjs"
+buildCommand = "npm install --legacy-peer-deps && node build.mjs"
 
 [deploy]
 startCommand = "node dist/index.mjs"
