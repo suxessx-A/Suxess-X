@@ -29,6 +29,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Root sanity check
+app.get("/", (_req, res) => {
+  res.send("API is running");
+});
+
+// Mount under /api for Replit proxy, and / for Railway direct access
 app.use("/api", router);
+app.use("/", router);
 
 export default app;

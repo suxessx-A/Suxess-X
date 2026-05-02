@@ -4,7 +4,7 @@ import coachingRouter from "./coaching";
 
 const router: IRouter = Router();
 
-router.use(healthRouter);
-router.use(coachingRouter);
+router.use("/health", healthRouter);
+router.use("/coaching", coachingRouter);
 
 export default router;
