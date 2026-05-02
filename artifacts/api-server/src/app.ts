@@ -38,7 +38,7 @@ app.use("/api", router);
 app.use("/", router);
 
 // Fallback: serve index.html for any unmatched route
-app.get("*", (_req, res) => {
+app.use((_req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
