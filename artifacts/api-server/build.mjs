@@ -124,6 +124,7 @@ buildAll()
   .then(async () => {
     const publicSrc = path.resolve(artifactDir, "public");
     const publicDest = path.resolve(artifactDir, "dist", "public");
+    await rm(publicDest, { recursive: true, force: true });
     await cp(publicSrc, publicDest, { recursive: true });
   })
   .catch((err) => {
