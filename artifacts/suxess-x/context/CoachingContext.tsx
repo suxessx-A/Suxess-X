@@ -7,6 +7,7 @@ const TESTING_MODE = true;
 
 const STRIPE_WEEKLY  = "https://buy.stripe.com/4gM6oJ3WzgCn1uXaPW5kk01";
 const STRIPE_MONTHLY = "https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00";
+const WAITLIST_URL   = "https://forms.gle/suxessx-premium-plus-waitlist";
 
 export type FlowType = "conversation" | "stuck" | "speak_up" | "executive_visibility" | "negotiate" | "mindset";
 export type ProblemType = "VICTIM" | "AVOIDING_CHALLENGER" | "OVERWHELMED";
@@ -423,6 +424,8 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
     btnPrimaryText: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#fff" },
     btnSecondary: { backgroundColor: "#d4a017", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginBottom: 16 },
     btnSecondaryText: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#fff" },
+    btnWaitlist: { borderRadius: 14, paddingVertical: 16, alignItems: "center", marginBottom: 10, borderWidth: 1.5, borderColor: "#7c3aed" },
+    btnWaitlistText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#7c3aed" },
     dismiss: { alignItems: "center", paddingVertical: 8 },
     dismissText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#9ca3af" },
   });
@@ -449,6 +452,9 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
             </TouchableOpacity>
             <TouchableOpacity style={gm.btnSecondary} activeOpacity={0.85} onPress={() => Linking.openURL(STRIPE_WEEKLY)}>
               <Text style={gm.btnSecondaryText}>Weekly — $6/week</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={gm.btnWaitlist} activeOpacity={0.85} onPress={() => Linking.openURL(WAITLIST_URL)}>
+              <Text style={gm.btnWaitlistText}>Join Premium Plus Waitlist</Text>
             </TouchableOpacity>
             <TouchableOpacity style={gm.dismiss} onPress={() => setGateModal({ visible: false })}>
               <Text style={gm.dismissText}>Not now</Text>

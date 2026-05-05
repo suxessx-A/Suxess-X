@@ -5,6 +5,7 @@ const USER_PROFILE_KEY = "suxess_user_profile";
 
 export interface UserProfile {
   name: string;
+  email: string;
   industry: string;
   level: string;
   challenge: string;

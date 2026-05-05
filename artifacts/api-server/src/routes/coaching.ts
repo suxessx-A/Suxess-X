@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import OpenAI from "openai";
+import { createCommitment, getCommitment, checkIn, pendingForEmail } from "../lib/db";
 
 const router: IRouter = Router();
 
@@ -741,5 +742,44 @@ Generate positioning coaching for someone whose audience is ${answers.audience ?
   const lines = Object.entries(answers).map(([k, v]) => `- ${k}: ${Array.isArray(v) ? v.join(", ") : v}`).join("\n");
   return `${profileSection}Coaching scenario: ${flowType}\n\nUser situation:\n${lines}`;
 }
+
+// ── Commitment / check-in endpoints ──────────────────────────────────────────
+
+router.post("/commitment", (req, res) => {
+  const { email, flowType, objective } = req.body as {
+    email?: string;
+    flowType?: string;
+    objective?: string;
+  };
+  if (!flowType || !objective) {
+    res.status(400).json({ error: "flowType and objective are required" });
+    return;
+  }
+  const c = createCommitment(email ?? null, flowType, objective);
+  res.json({ id: c.id, objective: c.objective, createdAt: c.createdAt });
+});
+
+router.get("/commitment/:id", (req, res) => {
+  const c = getCommitment(req.params.id);
+  if (!c) { res.status(404).json({ error: "Not found" }); return; }
+  res.json(c);
+});
+
+router.post("/commitment/:id/checkin", (req, res) => {
+  const { followedThrough } = req.body as { followedThrough?: boolean };
+  if (typeof followedThrough !== "boolean") {
+    res.status(400).json({ error: "followedThrough (boolean) is required" });
+    return;
+  }
+  const c = checkIn(req.params.id, followedThrough);
+  if (!c) { res.status(404).json({ error: "Not found" }); return; }
+  res.json(c);
+});
+
+router.get("/pending", (req, res) => {
+  const { email } = req.query as { email?: string };
+  if (!email) { res.status(400).json({ error: "email query param required" }); return; }
+  res.json(pendingForEmail(email));
+});
 
 export default router;
