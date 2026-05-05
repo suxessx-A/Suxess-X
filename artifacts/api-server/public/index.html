@@ -2,36 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>Suxess X</title>
-    <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
-    <style id="expo-reset">
-      /* These styles make the body full-height */
-      html,
-      body {
-        height: 100%;
-      }
-      /* These styles disable body scrolling if you are using <ScrollView> */
-      body {
-        overflow: hidden;
-      }
-      /* These styles make the root element full-height */
-      #root {
-        display: flex;
-        height: 100%;
-        flex: 1;
+    <meta name="theme-color" content="#0a0a14" />
+    <title>Amplify X — AI Executive Coaching</title>
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { height: 100%; background: #0a0a14; }
+      body { overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+      #root { min-height: 100%; }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
       }
     </style>
-  <link rel="preload" href="/_expo/static/css/global-ee28cd676502bab844de8854bf9898d7.css" as="style"><link rel="stylesheet" href="/_expo/static/css/global-ee28cd676502bab844de8854bf9898d7.css"><link rel="icon" href="/favicon.ico" /></head>
-
+  </head>
   <body>
-    <!-- Use static rendering with Expo Router to support running without JavaScript. -->
-    <noscript>
-      You need to enable JavaScript to run this app.
-    </noscript>
-    <!-- The root element for your Expo app. -->
+    <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-  <script src="/_expo/static/js/web/entry-00914b8f8658dd743b0bb62c2a1b85c6.js" defer></script>
-</body>
+    <script type="module" src="/bundle.js"></script>
+  </body>
 </html>

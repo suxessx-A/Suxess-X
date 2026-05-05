@@ -120,8 +120,25 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
   });
 }
 
+async function buildFrontend() {
+  await esbuild({
+    entryPoints: [path.resolve(artifactDir, "public-src/App.tsx")],
+    bundle: true,
+    platform: "browser",
+    format: "esm",
+    outfile: path.resolve(artifactDir, "public/bundle.js"),
+    jsx: "automatic",
+    minify: true,
+    logLevel: "info",
+    define: {
+      "process.env.NODE_ENV": '"production"',
+    },
+  });
+}
+
 buildAll()
   .then(async () => {
+    await buildFrontend();
     const publicSrc = path.resolve(artifactDir, "public");
     const publicDest = path.resolve(artifactDir, "dist", "public");
     await rm(publicDest, { recursive: true, force: true });

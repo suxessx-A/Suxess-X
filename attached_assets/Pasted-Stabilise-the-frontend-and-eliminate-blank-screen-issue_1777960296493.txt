@@ -1,0 +1,62 @@
+Stabilise the frontend and eliminate blank screen issues in the web app.
+
+Context:
+
+* Backend is working correctly on Railway (/api/health returns OK)
+* Frontend loads index.html but React app is not rendering (blank screen)
+* No API calls are triggered → app is failing on startup
+* The app was originally built with Expo but is now being served as a web app via Express
+* Current issue is a broken frontend build/runtime mismatch
+
+What I need you to do:
+
+1. Fix frontend rendering
+
+* Ensure the React app mounts correctly into <div id="root">
+* Identify why the JS bundle is not executing properly
+* Remove any broken Expo web dependencies if they are causing runtime failure
+* Ensure the correct entry file is being loaded
+
+2. Fix build pipeline
+
+* Ensure frontend builds consistently into dist/public
+* Verify index.html correctly references the built JS bundle
+* Remove any stale or conflicting build outputs (_expo, old bundles, etc.)
+* Ensure Railway will always receive a complete, working frontend build
+
+3. Add runtime safety (critical)
+
+* Prevent blank screen under any failure condition
+* Add a global error boundary in React
+* Add fallback UI:
+
+  * “Something went wrong — please refresh or try again”
+* Ensure the app always renders something
+
+4. Protect core user flow (“Analyse My Situation”)
+
+* Add loading state when request is in progress
+* Add error handling if API fails
+* Show retry option instead of crashing
+* Ensure user always gets a response or clear message
+
+5. Verify API integration
+
+* Ensure frontend calls correct Railway API URL (not Replit)
+* Handle API failures gracefully (no crash on undefined data)
+
+6. Clean architecture
+
+* Ensure app is fully web-based (no partial Expo runtime assumptions)
+* Remove unused Expo dependencies if not required
+* Keep setup simple and stable for deployment
+
+Goal:
+
+* App loads reliably (no blank screen)
+* React mounts consistently
+* Core flow works end-to-end without crashing
+* Failures are handled gracefully (never silent)
+* Deployment to Railway results in a stable, usable app
+
+Do not over-engineer. Focus on stability, clarity, and making the app work reliably for real users.
