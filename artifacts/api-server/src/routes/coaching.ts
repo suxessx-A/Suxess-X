@@ -444,7 +444,7 @@ ALL FIELDS MUST use offer-negotiation framing. Do not use "my role has grown" or
 ${NEGOTIATE_PROMPT_SHARED_SUFFIX}`;
 }
 
-router.post("/coaching/evaluate", async (req, res) => {
+router.post("/evaluate", async (req, res) => {
   const { flowType, answers } = req.body as {
     flowType: string;
     answers: Record<string, string | string[]>;
@@ -486,7 +486,7 @@ router.post("/coaching/evaluate", async (req, res) => {
   }
 });
 
-router.post("/coaching/generate", async (req, res) => {
+router.post("/generate", async (req, res) => {
   const { flowType, answers, problemType, strategy, userProfile } = req.body as {
     flowType: string;
     answers: Record<string, string | string[]>;

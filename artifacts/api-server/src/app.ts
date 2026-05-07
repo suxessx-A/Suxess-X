@@ -30,15 +30,19 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve frontend static files from dist/public
-app.use(express.static(path.join(__dirname, "public")));
-
-// Mount under /api for Replit proxy, and / for Railway direct access
+// API routes FIRST — must be registered before static files
 app.use("/api", router);
 app.use("/", router);
 
-// Fallback: serve index.html for any unmatched route
+// Static files SECOND
+app.use(express.static(path.join(__dirname, "public")));
+
+// Catch-all LAST — never intercept API routes
 app.use((_req, res) => {
+  if (_req.path.startsWith("/api")) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
