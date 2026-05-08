@@ -5,9 +5,8 @@ import { useUser } from "@/context/UserContext";
 
 const TESTING_MODE = true;
 
-const STRIPE_WEEKLY  = "https://buy.stripe.com/4gM6oJ3WzgCn1uXaPW5kk01";
 const STRIPE_MONTHLY = "https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00";
-const WAITLIST_URL   = "https://forms.gle/suxessx-premium-plus-waitlist";
+const WAITLIST_URL   = "https://waitlist.amplify-x.co?source=momentum";
 
 export type FlowType = "conversation" | "stuck" | "speak_up" | "executive_visibility" | "negotiate" | "mindset";
 export type ProblemType = "VICTIM" | "AVOIDING_CHALLENGER" | "OVERWHELMED";
@@ -87,6 +86,15 @@ const CoachingContext = createContext<CoachingContextValue | null>(null);
 // Flows that have hardcoded problem types — skip evaluate, go straight to generate
 const SKIP_EVALUATE_FLOWS: FlowType[] = ["mindset", "speak_up", "executive_visibility"];
 
+// THIS IS THE CRITICAL FIX — getBase was missing from this file
+function getBase(): string {
+  if (typeof window !== "undefined" && window.location && window.location.origin && window.location.origin !== "null") {
+    return window.location.origin;
+  }
+  const domain = process.env.EXPO_PUBLIC_DOMAIN;
+  return domain ? `https://${domain}` : "";
+}
+
 function str(v: unknown, fallback: string): string {
   return typeof v === "string" && v.trim() ? v.trim() : fallback;
 }
@@ -96,7 +104,6 @@ const VALID_PROBLEM_TYPES: ProblemType[] = ["VICTIM", "AVOIDING_CHALLENGER", "OV
 
 function parseProblemType(v: unknown): ProblemType {
   const s = String(v ?? "").trim().toUpperCase() as ProblemType;
-  // Normalise PASSENGER to VICTIM for UI compatibility
   if (s === ("PASSENGER" as unknown as ProblemType)) return "VICTIM";
   return VALID_PROBLEM_TYPES.includes(s) ? s : "AVOIDING_CHALLENGER";
 }
@@ -179,7 +186,7 @@ export function safeParseResult(raw: unknown, problemType: ProblemType, chosenSt
       opening: "I want to address something that is affecting my work. Is now a good time?",
       issue: "There is a specific pattern I need to name. Here is what I have observed.",
       impact: "The effect of this on my work and results is real and measurable.",
-      ask: "What I need is a specific change, agreed on today. [Pause. Say nothing.]",
+      ask: "What I need is a specific change, agreed on today. Pause. Say nothing.",
       pushback: "I hear you. This still needs to be resolved. What would need to happen to move this forward?",
     } : null,
     sections: [{ title: "What to Do Now", content: "1. Name the highest-leverage action available to you in the next 24 hours.\n2. Execute it before anything else today.\n3. Reassess tomorrow with new information, not the same story.", premium: false }],
@@ -189,88 +196,73 @@ export function safeParseResult(raw: unknown, problemType: ProblemType, chosenSt
   if (typeof raw !== "object" || raw === null) return fallback;
   const obj = raw as Record<string, unknown>;
 
-  const parsedProblemType = parseProblemType(obj.problemType ?? problemType);
-  const rawStrategyStr = String(obj.strategy ?? "").trim().toUpperCase();
-  const aiStrategy: CoachingStrategy | null = VALID_STRATEGIES.includes(rawStrategyStr as CoachingStrategy)
-    ? (rawStrategyStr as CoachingStrategy) : null;
-  const parsedStrategy: CoachingStrategy | null = chosenStrategy ?? aiStrategy;
+  const problemTypeOut = parseProblemType(obj.problemType ?? problemType);
+  const strategyOut = obj.strategy != null ? parseStrategy(obj.strategy) : chosenStrategy;
 
-  const reframe = str(obj.reframe, fallback.reframe);
-  const breakdown = str(obj.breakdown, fallback.breakdown);
+  function safeStr(v: unknown): string | undefined {
+    return typeof v === "string" && v.trim() ? v.trim() : undefined;
+  }
 
-  let script: CoachingScript | null = null;
-  if (parsedStrategy === "DIRECT_CONVERSATION" && typeof obj.script === "object" && obj.script !== null) {
-    const s = obj.script as Record<string, unknown>;
-    script = {
-      opening: str(s.opening, "I want to address something directly."),
-      issue: str(s.issue, "There is a behavior that needs to change."),
-      impact: str(s.impact, "This is affecting my work and credibility."),
-      ask: str(s.ask, "I need this resolved."),
-      pushback: str(s.pushback, "I understand. This still needs to be addressed."),
+  function safeSections(v: unknown): CoachingSection[] {
+    if (!Array.isArray(v)) return fallback.sections!;
+    const parsed = v.map((s: unknown) => {
+      if (typeof s !== "object" || s === null) return null;
+      const sec = s as Record<string, unknown>;
+      const title = safeStr(sec.title);
+      const content = safeStr(sec.content);
+      if (!title || !content) return null;
+      return { title, content, premium: sec.premium === true };
+    }).filter(Boolean) as CoachingSection[];
+    return parsed.length > 0 ? parsed : fallback.sections!;
+  }
+
+  function safeNextSteps(v: unknown): string[] {
+    if (!Array.isArray(v)) return fallback.nextSteps!;
+    const parsed = v.filter((s): s is string => typeof s === "string" && s.trim().length > 0);
+    return parsed.length > 0 ? parsed : fallback.nextSteps!;
+  }
+
+  function safeTrigger(v: unknown): CoachingTrigger | undefined {
+    if (typeof v !== "object" || v === null) return undefined;
+    const t = v as Record<string, unknown>;
+    const triggerName = safeStr(t.triggerName);
+    const energyShift = safeStr(t.energyShift);
+    const repetitionStatement = safeStr(t.repetitionStatement);
+    if (!triggerName || !energyShift || !repetitionStatement) return undefined;
+    return { triggerName, energyShift, repetitionStatement };
+  }
+
+  function safeScript(v: unknown): CoachingScript | null {
+    if (v === null || v === undefined) return null;
+    if (typeof v !== "object") return null;
+    const s = v as Record<string, unknown>;
+    return {
+      opening: safeStr(s.opening) ?? "",
+      issue: safeStr(s.issue) ?? "",
+      impact: safeStr(s.impact) ?? "",
+      ask: safeStr(s.ask) ?? "",
+      pushback: safeStr(s.pushback) ?? "",
     };
   }
 
-  let sections: CoachingSection[] = fallback.sections;
-  if (Array.isArray(obj.sections) && obj.sections.length > 0) {
-    const parsed = obj.sections
-      .filter((s): s is Record<string, unknown> => typeof s === "object" && s !== null)
-      .map((s) => ({
-        title: str(s.title, "Insight"),
-        content: str(s.content, ""),
-        premium: s.premium === true,
-      }))
-      .filter((s) => s.content.length > 0);
-    if (parsed.length > 0) sections = parsed;
-  }
-
-  const nextSteps: string[] = Array.isArray(obj.nextSteps)
-    ? obj.nextSteps.filter((s) => typeof s === "string" && s.trim()).map((s) => String(s).trim())
-    : fallback.nextSteps;
-
-  const roleShift = typeof obj.roleShift === "string" ? obj.roleShift.trim() : undefined;
-  const behavioralObjective = typeof obj.behavioralObjective === "string" ? obj.behavioralObjective.trim() : undefined;
-  const tacticalTools: string[] = Array.isArray(obj.tacticalTools)
-    ? obj.tacticalTools.filter((t) => typeof t === "string" && t.trim()).map((t) => String(t).trim())
-    : [];
-
-  const VALID_MODES = ["Challenger", "Coach", "Strategist"] as const;
-  type Mode = typeof VALID_MODES[number];
-  const modeFromStrategy: Mode | undefined =
-    parsedStrategy === "INDIRECT_INFLUENCE" || parsedStrategy === "STRATEGIC_CONTAINMENT"
-      ? "Strategist"
-      : parsedStrategy === "DIRECT_CONVERSATION"
-      ? "Challenger"
-      : undefined;
-  const rawMode = String(obj.mode ?? "").trim() as Mode;
-  const aiMode: Mode | undefined = VALID_MODES.includes(rawMode) ? rawMode : undefined;
-  const mode: Mode | undefined = modeFromStrategy ?? aiMode;
-
-  let trigger: CoachingTrigger | undefined;
-  if (typeof obj.trigger === "object" && obj.trigger !== null) {
-    const t = obj.trigger as Record<string, unknown>;
-    trigger = {
-      triggerName: str(t.triggerName, ""),
-      energyShift: str(t.energyShift, ""),
-      repetitionStatement: str(t.repetitionStatement, ""),
-    };
-    if (!trigger.triggerName && !trigger.energyShift && !trigger.repetitionStatement) trigger = undefined;
-  }
-
-  const identityAnchor = typeof obj.identityAnchor === "string" ? obj.identityAnchor.trim() : undefined;
-  const closingQuestion = typeof obj.closingQuestion === "string" ? obj.closingQuestion.trim() : undefined;
-
-  return { problemType: parsedProblemType, strategy: parsedStrategy, mode, roleShift, behavioralObjective, tacticalTools, reframe, breakdown, trigger, identityAnchor, script, sections, nextSteps, closingQuestion };
+  return {
+    problemType: problemTypeOut,
+    strategy: strategyOut,
+    mode: (obj.mode === "Challenger" || obj.mode === "Coach" || obj.mode === "Strategist") ? obj.mode : undefined,
+    roleShift: safeStr(obj.roleShift),
+    behavioralObjective: safeStr(obj.behavioralObjective),
+    reframe: safeStr(obj.reframe) ?? fallback.reframe,
+    breakdown: safeStr(obj.breakdown) ?? fallback.breakdown,
+    trigger: safeTrigger(obj.trigger),
+    identityAnchor: safeStr(obj.identityAnchor),
+    script: safeScript(obj.script),
+    sections: safeSections(obj.sections),
+    nextSteps: safeNextSteps(obj.nextSteps),
+    closingQuestion: safeStr(obj.closingQuestion),
+  };
 }
-
-function getBase(): string {
-  const domain = process.env.EXPO_PUBLIC_DOMAIN;
-  return domain ? `https://${domain}` : "";
-}
-
-type GateModal = { visible: true; message: string } | { visible: false };
 
 export function CoachingProvider({ children }: { children: React.ReactNode }) {
-  const { profile: userProfile } = useUser();
   const [activeFlow, setActiveFlowState] = useState<FlowType | null>(null);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [recommendation, setRecommendation] = useState<StrategyRecommendation | null>(null);
@@ -278,7 +270,15 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [gateModal, setGateModal] = useState<GateModal>({ visible: false });
+  const [gateModal, setGateModal] = useState<{ visible: boolean; message?: string }>({ visible: false });
+  const { profile } = useUser();
+  const userProfile = profile ? {
+    name: profile.name,
+    industry: profile.industry,
+    level: profile.level,
+    challenge: profile.challenge,
+    goal: profile.goal,
+  } : null;
 
   async function checkFlowAccess(flow: FlowType): Promise<boolean> {
     if (TESTING_MODE) return true;
@@ -350,9 +350,9 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
   const evaluateFlow = async () => {
     if (!activeFlow) return;
 
-    // Skip evaluate for flows with hardcoded problem types — go straight to generate
     if (SKIP_EVALUATE_FLOWS.includes(activeFlow)) {
       const syntheticProblemType: ProblemType = activeFlow === "mindset" ? "OVERWHELMED" : "AVOIDING_CHALLENGER";
+      setIsEvaluating(true);
       setRecommendation({
         problemType: syntheticProblemType,
         recommendedStrategy: "DIRECT_CONVERSATION",
@@ -367,13 +367,16 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
           { type: "STRATEGIC_CONTAINMENT", label: "Hold the standard while managing risk" },
         ],
       });
+      setIsEvaluating(false);
       return;
     }
 
     setIsEvaluating(true);
     setError(null);
     try {
-      const response = await fetch(`${getBase()}/api/coaching/evaluate`, {
+      const base = getBase();
+      console.log("evaluateFlow calling:", `${base}/api/coaching/evaluate`);
+      const response = await fetch(`${base}/api/coaching/evaluate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ flowType: activeFlow, answers }),
@@ -384,8 +387,9 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
       let parsed: unknown;
       try { parsed = JSON.parse(stripped); } catch { parsed = null; }
       setRecommendation(safeParseRecommendation(parsed));
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      console.error("evaluateFlow error:", err);
+      setError("Something went wrong analysing your situation. Please try again.");
     } finally {
       setIsEvaluating(false);
     }
@@ -397,7 +401,9 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${getBase()}/api/coaching/generate`, {
+      const base = getBase();
+      console.log("submitFlow calling:", `${base}/api/coaching/generate`);
+      const response = await fetch(`${base}/api/coaching/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ flowType: activeFlow, answers, problemType, strategy, userProfile }),
@@ -408,8 +414,9 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
       let parsed: unknown;
       try { parsed = JSON.parse(stripped); } catch { parsed = null; }
       setResult(safeParseResult(parsed, problemType, strategy));
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      console.error("submitFlow error:", err);
+      setError("Something went wrong generating your coaching. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -418,12 +425,10 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
   const gm = StyleSheet.create({
     overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" },
     sheet: { backgroundColor: "#fff", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 28, paddingBottom: 40 },
-    eyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#d4a017", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 },
+    eyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#C9952A", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 },
     title: { fontSize: 18, fontFamily: "Inter_700Bold", color: "#1a1a2e", lineHeight: 26, marginBottom: 20 },
-    btnPrimary: { backgroundColor: "#1a1a2e", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginBottom: 10 },
-    btnPrimaryText: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#fff" },
-    btnSecondary: { backgroundColor: "#d4a017", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginBottom: 16 },
-    btnSecondaryText: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#fff" },
+    btnPrimary: { backgroundColor: "#00D4AA", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginBottom: 10 },
+    btnPrimaryText: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#0A1628" },
     btnWaitlist: { borderRadius: 14, paddingVertical: 16, alignItems: "center", marginBottom: 10, borderWidth: 1.5, borderColor: "#7c3aed" },
     btnWaitlistText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#7c3aed" },
     dismiss: { alignItems: "center", paddingVertical: 8 },
@@ -448,10 +453,7 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
             <Text style={gm.eyebrow}>Premium Required</Text>
             <Text style={gm.title}>{gateModal.visible ? gateModal.message : ""}</Text>
             <TouchableOpacity style={gm.btnPrimary} activeOpacity={0.85} onPress={() => Linking.openURL(STRIPE_MONTHLY)}>
-              <Text style={gm.btnPrimaryText}>Monthly — $20/month</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={gm.btnSecondary} activeOpacity={0.85} onPress={() => Linking.openURL(STRIPE_WEEKLY)}>
-              <Text style={gm.btnSecondaryText}>Weekly — $6/week</Text>
+              <Text style={gm.btnPrimaryText}>Unlock Premium — $20/month</Text>
             </TouchableOpacity>
             <TouchableOpacity style={gm.btnWaitlist} activeOpacity={0.85} onPress={() => Linking.openURL(WAITLIST_URL)}>
               <Text style={gm.btnWaitlistText}>Join Premium Plus Waitlist</Text>
