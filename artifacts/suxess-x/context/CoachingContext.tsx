@@ -353,14 +353,30 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
     if (SKIP_EVALUATE_FLOWS.includes(activeFlow)) {
       const syntheticProblemType: ProblemType = activeFlow === "mindset" ? "OVERWHELMED" : "AVOIDING_CHALLENGER";
       setIsEvaluating(true);
+
+      const assessmentByFlow: Record<string, Record<CoachingStrategy, string>> = {
+        speak_up: {
+          DIRECT_CONVERSATION: "Name your point clearly and claim your space in the room. The moment you have the answer is the moment to use it.",
+          INDIRECT_INFLUENCE: "Build visibility through questions and positioning before the meeting so your perspective is expected, not a surprise.",
+          STRATEGIC_CONTAINMENT: "Document your contributions and create a paper trail that speaks for you when the room does not.",
+        },
+        executive_visibility: {
+          DIRECT_CONVERSATION: "Make your results visible directly to the people who need to see them. Name the impact, connect it to the business, and put it in front of the right audience.",
+          INDIRECT_INFLUENCE: "Reposition yourself through the language others use about you. Shift from being seen as an executor to being seen as a strategist through how you frame your work.",
+          STRATEGIC_CONTAINMENT: "Protect your positioning by ensuring your contributions are attributed correctly before others claim the narrative.",
+        },
+      };
+
+      const flowAssessment = assessmentByFlow[activeFlow] ?? {
+        DIRECT_CONVERSATION: "Naming the issue directly gives you the clearest signal on how to move forward.",
+        INDIRECT_INFLUENCE: "Shifting perception and building leverage is a higher-return move than direct confrontation here.",
+        STRATEGIC_CONTAINMENT: "Protecting your position and managing risk is the priority before any direct action.",
+      };
+
       setRecommendation({
         problemType: syntheticProblemType,
         recommendedStrategy: "DIRECT_CONVERSATION",
-        assessment: {
-          DIRECT_CONVERSATION: "",
-          INDIRECT_INFLUENCE: "",
-          STRATEGIC_CONTAINMENT: "",
-        },
+        assessment: flowAssessment,
         options: [
           { type: "DIRECT_CONVERSATION", label: "Challenge it directly" },
           { type: "INDIRECT_INFLUENCE", label: "Shift the dynamic through influence" },
@@ -456,7 +472,7 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
               <Text style={gm.btnPrimaryText}>Unlock Premium — $20/month</Text>
             </TouchableOpacity>
             <TouchableOpacity style={gm.btnWaitlist} activeOpacity={0.85} onPress={() => Linking.openURL(WAITLIST_URL)}>
-              <Text style={gm.btnWaitlistText}>Join Premium Plus Waitlist</Text>
+              <Text style={gm.btnWaitlistText">Join Premium Plus Waitlist</Text>
             </TouchableOpacity>
             <TouchableOpacity style={gm.dismiss} onPress={() => setGateModal({ visible: false })}>
               <Text style={gm.dismissText}>Not now</Text>
