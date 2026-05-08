@@ -472,7 +472,7 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
               <Text style={gm.btnPrimaryText}>Unlock Premium — $20/month</Text>
             </TouchableOpacity>
             <TouchableOpacity style={gm.btnWaitlist} activeOpacity={0.85} onPress={() => Linking.openURL(WAITLIST_URL)}>
-              <Text style={gm.btnWaitlistText">Join Premium Plus Waitlist</Text>
+              <Text style={gm.btnWaitlistText}>Join Premium Plus Waitlist</Text>
             </TouchableOpacity>
             <TouchableOpacity style={gm.dismiss} onPress={() => setGateModal({ visible: false })}>
               <Text style={gm.dismissText}>Not now</Text>
