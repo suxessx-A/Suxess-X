@@ -499,19 +499,29 @@ function ResultScreen({ result, onReset }: { result: CoachingResult; onReset: ()
         </div>
 
         {/* Role Shift */}
-        {result.roleShift && (() => {
-          const parts = result.roleShift.split("—");
-          return (
-            <div style={{ borderRadius: 14, border: `1px solid rgba(255,255,255,0.08)`, background: "#1a1a2e", padding: 16, marginBottom: 12 }}>
-              <p style={{ fontSize: 9, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "Inter, sans-serif", marginBottom: 10 }}>Role Shift</p>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 13, color: "#ff6b6b", fontFamily: "Inter, sans-serif", fontWeight: 600 }}>{parts[0]?.trim()}</span>
-                <span style={{ color: C.gold, fontSize: 16 }}>→</span>
-                <span style={{ fontSize: 13, color: "#69db7c", fontFamily: "Inter, sans-serif", fontWeight: 700 }}>{parts[1]?.trim()}</span>
-              </div>
+        {result.roleShift && (
+          <div style={{margin:'12px 0',padding:'16px',background:'#1a1a2e',borderRadius:'14px',border:'1px solid rgba(124,58,237,0.2)'}}>
+            <div style={{fontSize:'10px',fontWeight:700,letterSpacing:'1.5px',textTransform:'uppercase',color:'rgba(255,255,255,0.4)',marginBottom:'10px'}}>ROLE SHIFT</div>
+            <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+              {(() => {
+                const parts = result.roleShift.split(/\s*[→\-–—]+\s*/);
+                const from = parts[0]?.trim();
+                const to = parts[1]?.trim();
+                return (<>
+                  {from && <div style={{flex:1,background:'rgba(239,68,68,0.1)',borderRadius:'8px',padding:'10px'}}>
+                    <div style={{fontSize:'9px',fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'rgba(239,68,68,0.7)',marginBottom:'3px'}}>FROM</div>
+                    <div style={{fontSize:'13px',fontWeight:600,color:'rgba(255,255,255,0.85)',lineHeight:'1.4'}}>{from}</div>
+                  </div>}
+                  {to && <div style={{fontSize:'20px',color:'#d4a017',fontWeight:700}}>→</div>}
+                  {to && <div style={{flex:1,background:'rgba(124,58,237,0.15)',borderRadius:'8px',padding:'10px'}}>
+                    <div style={{fontSize:'9px',fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'#a78bfa',marginBottom:'3px'}}>TO</div>
+                    <div style={{fontSize:'13px',fontWeight:700,color:'#fff',lineHeight:'1.4'}}>{to}</div>
+                  </div>}
+                </>);
+              })()}
             </div>
-          );
-        })()}
+          </div>
+        )}
 
         {/* Behavioral Objective */}
         {result.behavioralObjective && (
@@ -542,10 +552,14 @@ function ResultScreen({ result, onReset }: { result: CoachingResult; onReset: ()
           <div style={{ borderRadius: 14, marginBottom: 12, overflow: "hidden" }}>
             {sectionHeader("#92400e", "⚡  Energy Reset")}
             <div style={{ background: "#fffbeb", padding: "14px 16px" }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "#78350f", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "Inter, sans-serif", marginBottom: 4 }}>Trigger</p>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "#1a1a2e", fontFamily: "Inter, sans-serif", lineHeight: 1.6, marginBottom: 12 }}>{result.trigger.triggerName}</p>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "#78350f", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "Inter, sans-serif", marginBottom: 4 }}>Reset first</p>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "#1a1a2e", fontFamily: "Inter, sans-serif", lineHeight: 1.6, marginBottom: 12 }}>{result.trigger.energyShift}</p>
+              <div style={{marginBottom:'12px'}}>
+                <div style={{fontSize:'9px',fontWeight:700,letterSpacing:'1.5px',textTransform:'uppercase',color:'#78350f',marginBottom:'4px'}}>TRIGGER</div>
+                <div style={{fontSize:'14px',color:'#1a1a2e',lineHeight:'1.6'}}>{result.trigger.triggerName}</div>
+              </div>
+              <div style={{marginBottom:'14px'}}>
+                <div style={{fontSize:'9px',fontWeight:700,letterSpacing:'1.5px',textTransform:'uppercase',color:'#78350f',marginBottom:'4px'}}>RESET FIRST</div>
+                <div style={{fontSize:'14px',color:'#1a1a2e',lineHeight:'1.6'}}>{result.trigger.energyShift}</div>
+              </div>
               <div style={{ background: "#1a1a2e", borderRadius: 12, padding: 16, textAlign: "center" }}>
                 <p style={{ fontSize: 9, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "Inter, sans-serif", marginBottom: 8 }}>Say 8× aloud</p>
                 <p style={{ fontSize: 18, fontWeight: 700, color: "#fff", fontFamily: "Inter, sans-serif", lineHeight: 1.5 }}>"{result.trigger.repetitionStatement}"</p>
@@ -613,12 +627,10 @@ function ResultScreen({ result, onReset }: { result: CoachingResult; onReset: ()
 
         {/* Premium lock */}
         {result.sections?.some(s => s.premium) && (
-          <a href="https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00" target="_blank" rel="noopener noreferrer"
-            style={{ display: "flex", alignItems: "center", gap: 12, background: "#00C853", borderRadius: 14, padding: 18, marginBottom: 12, textDecoration: "none" }}>
-            <span style={{ fontSize: 20 }}>🔐</span>
-            <span style={{ flex: 1, fontSize: 16, fontWeight: 800, color: "#0A1628", fontFamily: "Inter, sans-serif", lineHeight: 1.35 }}>Unlock Premium — less than a coffee a week: $20/month</span>
-            <span style={{ fontSize: 18, color: "#0A1628", fontWeight: 700 }}>→</span>
-          </a>
+          <div style={{borderRadius:'10px',border:'1.5px solid #00D4AA',background:'rgba(0,212,170,0.06)',padding:'14px 18px',textAlign:'center',cursor:'pointer',marginBottom:'10px'}} onClick={()=>window.open('https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00','_blank')}>
+            <div style={{fontSize:'12px',fontWeight:700,letterSpacing:'2px',textTransform:'uppercase',color:'#00D4AA',marginBottom:'4px'}}>UNLOCK PREMIUM</div>
+            <div style={{fontSize:'11px',color:'rgba(26,26,46,0.55)'}}>Less than a coffee a week &nbsp;·&nbsp; $20/month</div>
+          </div>
         )}
 
         {/* Next Steps */}
@@ -638,6 +650,29 @@ function ResultScreen({ result, onReset }: { result: CoachingResult; onReset: ()
             <p style={{ fontSize: 16, fontWeight: 600, color: "#1a1a2e", fontFamily: "Inter, sans-serif", lineHeight: 1.6, margin: 0 }}>{result.closingQuestion}</p>
           </div>
         )}
+
+        {/* Premium Plus */}
+        <div style={{marginTop:'24px'}}>
+          <div style={{fontSize:'10px',fontWeight:700,letterSpacing:'2px',textTransform:'uppercase',color:'#7c3aed',textAlign:'center',marginBottom:'6px'}}>PREMIUM PLUS — COMING SOON</div>
+          <div style={{fontSize:'18px',fontWeight:800,color:'#1a1a2e',textAlign:'center',marginBottom:'16px'}}>Go further. Move faster.</div>
+          {[
+            {icon:'👥',title:'Peer Accountability',desc:"Get paired with someone working on the same challenges. Both of you see each other's commitments and follow-through."},
+            {icon:'🎯',title:'Coach Escalation',desc:'Book a session with a vetted coach who already knows your history and patterns. No briefing required.'},
+            {icon:'💬',title:'Personalised AI Coach',desc:'A coach built on your session history and patterns. It already knows who you are and what keeps getting in the way.'},
+          ].map((item,i)=>(
+            <div key={i} style={{borderRadius:'12px',border:'1px solid rgba(124,58,237,0.2)',background:'rgba(124,58,237,0.04)',padding:'18px',marginBottom:'10px',cursor:'pointer'}} onClick={()=>window.open('https://waitlist.amplify-x.co?source=momentum','_blank')}>
+              <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'8px'}}>
+                <span style={{fontSize:'22px'}}>{item.icon}</span>
+                <div>
+                  <div style={{fontSize:'9px',fontWeight:700,letterSpacing:'1.5px',textTransform:'uppercase',color:'#7c3aed',marginBottom:'2px'}}>PREMIUM PLUS</div>
+                  <div style={{fontSize:'16px',fontWeight:700,color:'#1a1a2e'}}>{item.title}</div>
+                </div>
+              </div>
+              <div style={{fontSize:'13px',color:'rgba(26,26,46,0.55)',lineHeight:'1.6',marginBottom:'10px'}}>{item.desc}</div>
+              <div style={{fontSize:'12px',fontWeight:700,color:'#7c3aed'}}>Join the waitlist →</div>
+            </div>
+          ))}
+        </div>
 
         <button onClick={onReset} style={{ width: "100%", border: `2px solid ${C.primary}`, borderRadius: 16, padding: 16, fontSize: 15, fontWeight: 600, color: C.primary, background: "none", cursor: "pointer", fontFamily: "Inter, sans-serif", marginBottom: 12 }}>
           Start another flow
