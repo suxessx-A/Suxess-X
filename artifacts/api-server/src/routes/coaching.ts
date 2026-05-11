@@ -453,7 +453,7 @@ router.post("/evaluate", async (req, res) => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       max_completion_tokens: 800,
       messages: [
         { role: "system", content: EVALUATE_PROMPT },
@@ -514,7 +514,7 @@ router.post("/generate", async (req, res) => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       max_completion_tokens: 16000,
       messages: [
         { role: "system", content: systemPrompt },
