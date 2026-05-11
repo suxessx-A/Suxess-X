@@ -140,7 +140,7 @@ Give them one physical state reset — energy before language, state before acti
 Then one Captain choice to make right now, executable in under 15 minutes.
 
 5. IDENTITY REPETITION.
-One Captain identity statement said 22 times aloud before acting.
+One Captain identity statement said 8 times aloud before acting.
 Credible, present tense, specific to their pattern.
 Not generic motivation. The specific identity shift from their Passenger pattern to Captain.
 
@@ -150,8 +150,8 @@ OUTPUT — use this exact JSON structure, all fields personalised to their answe
   "problemType": "OVERWHELMED",
   "strategy": null,
   "mode": "Coach",
-  "roleShift": "exact Passenger pattern they are in — exact Captain choice they are making. Max 5 words each side.",
-  "behavioralObjective": "one specific Captain action in the next 30 minutes. Verb first. Visible output.",
+  "roleShift": "exact mindset Passenger pattern (Self-Doubt/Comparison/Victim thought) — exact Captain mindset shift. Max 5 words each side. Must relate to their specific mindset pattern ONLY.",
+  "behavioralObjective": "one specific MINDSET RESET action in the next 30 minutes — must be a physical state-change action (movement, breathing, writing, or saying something aloud). NOT a career strategy, relationship, or negotiation action. Verb first.",
   "reframe": "story vs grounded fact. One sentence. Under 15 words. Punchy.",
   "breakdown": "two sentences. First: exact Passenger pattern and story. Second: the fact stripped bare and the Captain choice now available.",
   "trigger": {
@@ -178,7 +178,7 @@ OUTPUT — use this exact JSON structure, all fields personalised to their answe
       "content": "Two questions under 10 words each. Force a Captain choice — not reflection.\n\n1. [strips the story, names the real situation]\n2. [forces the specific Captain choice available right now]"
     }
   ],
-  "nextSteps": ["Two Captain commands:\n1. State reset: [specific physical action] — then say [repetitionStatement] 22 times aloud before anything else.\n2. [First Direct action — name it exactly. Do it now.]"],
+  "nextSteps": ["Two Captain commands:\n1. State reset: [specific physical action] — then say [repetitionStatement] 8 times aloud before anything else.\n2. [First Direct action — name it exactly. Do it now.]"],
   "closingQuestion": "One sentence. Forces a Captain choice right now. Under 12 words. Specific to their situation. Use their name."
 }`;
 
@@ -416,9 +416,13 @@ NEGOTIATION PRINCIPLES (embedded, never named):
 - Calibrated questions move the conversation without confrontation: "What would need to happen for this to be possible?"
 - Never leave without a specific next step. Vague commitments compound the problem.
 - Plant seeds early. The ask should never be the first time they hear about the topic.
-- Know your walk-away point and be genuinely willing to use it. That is where your leverage lives.`;
+- Know your walk-away point and be genuinely willing to use it. That is where your leverage lives.
+- Create urgency: signal you are a flight risk, that you have options, that you are 100% committed but not 100% loyal. Most people negotiate from fear of loss — use that.
+- Complement first: acknowledge the organisation and the leader genuinely before naming the ask. This opens the door.
+- Plant seeds: the ask should never be the first time they hear about the topic. Raise it in passing before the formal conversation.
+- Shut up after the ask: silence is leverage. The first person to fill the silence loses positioning.`;
 
-  if (situationType === "I believe I am underpaid") {
+  if (situationType === "A salary increase" || situationType === "I believe I am underpaid") {
     return `${base}
 
 SITUATION: Currently employed. Pay is below market rate. This is a market alignment conversation, not a performance review.
@@ -427,7 +431,7 @@ ALL FIELDS MUST use market-rate framing.
 ${NEGOTIATE_PROMPT_SHARED_SUFFIX}`;
   }
 
-  if (situationType === "My role has grown") {
+  if (situationType === "Additional scope or resources" || situationType === "A promotion" || situationType === "My role has grown") {
     return `${base}
 
 SITUATION: Currently employed. Responsibilities have expanded materially since compensation was last set.
@@ -438,8 +442,9 @@ ${NEGOTIATE_PROMPT_SHARED_SUFFIX}`;
 
   return `${base}
 
-SITUATION: Has received a job offer. Has not accepted yet. This is the full-leverage window.
+SITUATION: Negotiating terms on a new job offer or a role change opportunity. Has not accepted yet.
 FRAME: The first number agreed to becomes the baseline for every future raise. Move before accepting.
+CRITICAL: Do NOT use language like "I am excited about this opportunity" — this is a compensation negotiation, not a thank-you. Stay focused on their target number, their leverage, and securing a commitment.
 ALL FIELDS MUST use offer-negotiation framing. Do not use "my role has grown" or market underpay language.
 ${NEGOTIATE_PROMPT_SHARED_SUFFIX}`;
 }
@@ -453,7 +458,7 @@ router.post("/evaluate", async (req, res) => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       max_completion_tokens: 800,
       messages: [
         { role: "system", content: EVALUATE_PROMPT },
@@ -514,7 +519,7 @@ router.post("/generate", async (req, res) => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       max_completion_tokens: 16000,
       messages: [
         { role: "system", content: systemPrompt },
@@ -601,7 +606,7 @@ function enforceNegotiateSections(parsed: Record<string, unknown>, answers: Reco
   let identityAnchor: string, nextSteps: string[];
   let sections: { title: string; premium: boolean; content: string }[];
 
-  if (sit === "My role has grown") {
+  if (sit === "Additional scope or resources" || sit === "A promotion" || sit === "My role has grown") {
     identityAnchor = "You lead with results, not requests — and you do not leave the room without a commitment.";
     nextSteps = ["Five actions before the conversation:\n1. Write 3-5 specific scope changes since your last compensation review. One sentence each, measurable.\n2. Attach a concrete outcome to each: revenue, efficiency, team impact, risk reduced.\n3. Write your target number and your floor. Both down before the conversation.\n4. Prepare your opening line and say it aloud — not in your head.\n5. Schedule the conversation within 48 hours — name the day."];
     sections = [
@@ -610,7 +615,7 @@ function enforceNegotiateSections(parsed: Record<string, unknown>, answers: Reco
       { title: "Bridge to Compensation", premium: false, content: "Once you have walked through scope and outcomes, make the direct connection.\n\nWhat I have described is materially different from the role I was in when my compensation was last reviewed. I want to make sure what I am paid reflects what I am delivering.\n\nThen name the number. No preamble.\n\nIf they need to think: Of course. When can we pick this up? Name a specific date. Do not leave it open." },
       { title: "If They Resist", premium: true, content: "If they say budget is tight or timing is not right:\n\n1. Acknowledge without backing down: I hear you on timing. Pause.\n2. Re-anchor: The scope and results are real — that is not changing. Pause.\n3. Ask: What would need to be true for us to revisit this?\n4. Lock criteria: So if I deliver X by Y date, we can revisit compensation — can we put that in writing?\n\nA named date with documented milestones is a commitment. Let us revisit soon is not." },
     ];
-  } else if (sit === "I believe I am underpaid") {
+  } else if (sit === "A salary increase" || sit === "I believe I am underpaid") {
     identityAnchor = "You are not asking for a favour. You are correcting an imbalance — calmly, clearly, and with evidence.";
     nextSteps = ["Five actions before the conversation:\n1. Pull 3 market data points for your role, level, and location — specific figures.\n2. Write your target number grounded in that data.\n3. Set your walk-away: the minimum acceptable outcome and what you do if it is not met.\n4. Prepare your opening line word for word. Say it aloud twice.\n5. Schedule the conversation within 48 hours — name the day."];
     sections = [
@@ -743,43 +748,43 @@ Generate positioning coaching for someone whose audience is ${answers.audience ?
   return `${profileSection}Coaching scenario: ${flowType}\n\nUser situation:\n${lines}`;
 }
 
-  // ── Commitment / check-in endpoints ──────────────────────────────────────────
+// ── Commitment / check-in endpoints ──────────────────────────────────────────
 
-  router.post("/commitment", (req, res) => {
-    const { email, flowType, objective } = req.body as {
-      email?: string;
-      flowType?: string;
-      objective?: string;
-    };
-    if (!flowType || !objective) {
-      res.status(400).json({ error: "flowType and objective are required" });
-      return;
-    }
-    const c = createCommitment(email ?? null, flowType, objective);
-    res.json({ id: c.id, objective: c.objective, createdAt: c.createdAt });
-  });
+router.post("/commitment", (req, res) => {
+  const { email, flowType, objective } = req.body as {
+    email?: string;
+    flowType?: string;
+    objective?: string;
+  };
+  if (!flowType || !objective) {
+    res.status(400).json({ error: "flowType and objective are required" });
+    return;
+  }
+  const c = createCommitment(email ?? null, flowType, objective);
+  res.json({ id: c.id, objective: c.objective, createdAt: c.createdAt });
+});
 
-  router.get("/commitment/:id", (req, res) => {
-    const c = getCommitment(req.params.id);
-    if (!c) { res.status(404).json({ error: "Not found" }); return; }
-    res.json(c);
-  });
+router.get("/commitment/:id", (req, res) => {
+  const c = getCommitment(req.params.id);
+  if (!c) { res.status(404).json({ error: "Not found" }); return; }
+  res.json(c);
+});
 
-  router.post("/commitment/:id/checkin", (req, res) => {
-    const { followedThrough } = req.body as { followedThrough?: boolean };
-    if (typeof followedThrough !== "boolean") {
-      res.status(400).json({ error: "followedThrough (boolean) is required" });
-      return;
-    }
-    const c = checkIn(req.params.id, followedThrough);
-    if (!c) { res.status(404).json({ error: "Not found" }); return; }
-    res.json(c);
-  });
+router.post("/commitment/:id/checkin", (req, res) => {
+  const { followedThrough } = req.body as { followedThrough?: boolean };
+  if (typeof followedThrough !== "boolean") {
+    res.status(400).json({ error: "followedThrough (boolean) is required" });
+    return;
+  }
+  const c = checkIn(req.params.id, followedThrough);
+  if (!c) { res.status(404).json({ error: "Not found" }); return; }
+  res.json(c);
+});
 
-  router.get("/pending", (req, res) => {
-    const { email } = req.query as { email?: string };
-    if (!email) { res.status(400).json({ error: "email query param required" }); return; }
-    res.json(pendingForEmail(email));
-  });
+router.get("/pending", (req, res) => {
+  const { email } = req.query as { email?: string };
+  if (!email) { res.status(400).json({ error: "email query param required" }); return; }
+  res.json(pendingForEmail(email));
+});
 
-  export default router;
+export default router;
