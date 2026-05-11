@@ -56,22 +56,17 @@ interface Question {
 // ============================================================
 
 const C = {
+  bg: "#0a0a14",
+  card: "rgba(255,255,255,0.04)",
+  cardHover: "rgba(255,255,255,0.07)",
   primary: "#7c3aed",
-  primaryLight: "#f5f3ff",
-  primaryForeground: "#ffffff",
-  accent: "#d4a017",
-  accentLight: "#fef9ee",
-  background: "#faf8ff",
-  card: "#ffffff",
-  foreground: "#1a1a2e",
-  secondary: "#f3eeff",
-  border: "#e8e0f5",
-  muted: "rgba(26,26,46,0.55)",
-  destructive: "#ef4444",
+  primaryLight: "rgba(124,58,237,0.12)",
+  primaryBorder: "rgba(124,58,237,0.25)",
   gold: "#d4a017",
-  goldLight: "#fef9ee",
-  dark: "#1a1a2e",
-  darkCard: "#1a1a2e",
+  text: "#ffffff",
+  muted: "rgba(255,255,255,0.5)",
+  dim: "rgba(255,255,255,0.3)",
+  border: "rgba(255,255,255,0.1)",
 };
 
 const FLOWS = [
@@ -163,10 +158,10 @@ class ErrorBoundary extends Component<{ children: ReactNode }, EBState> {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ minHeight: "100vh", background: C.background, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <div style={{ maxWidth: 400, textAlign: "center" }}>
             <div style={{ fontSize: 40, marginBottom: 16 }}>⚠️</div>
-            <h2 style={{ color: C.foreground, fontFamily: "Inter, sans-serif", marginBottom: 12 }}>Something went wrong</h2>
+            <h2 style={{ color: C.text, fontFamily: "Inter, sans-serif", marginBottom: 12 }}>Something went wrong</h2>
             <p style={{ color: C.muted, fontFamily: "Inter, sans-serif", marginBottom: 24, lineHeight: 1.6 }}>Please refresh the page to try again.</p>
             <button onClick={() => window.location.reload()} style={{ background: C.primary, color: "#fff", border: "none", borderRadius: 12, padding: "14px 28px", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
               Refresh
@@ -245,11 +240,11 @@ function OnboardingScreen({ onComplete }: { onComplete: (p: UserProfile) => void
 
   const inputStyle: React.CSSProperties = { width: "100%", background: "rgba(255,255,255,0.06)", borderRadius: 12, border: `1px solid rgba(255,255,255,0.12)`, padding: "14px 16px", fontSize: 16, color: "#fff", fontFamily: "Inter, sans-serif", marginBottom: 20, boxSizing: "border-box", outline: "none" };
   const eyebrow = (text: string) => <p style={{ fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: C.primary, fontWeight: 700, fontFamily: "Inter, sans-serif", marginBottom: 10 }}>{text}</p>;
-  const title = (text: string) => <h2 style={{ fontSize: 26, fontWeight: 800, color: C.foreground, fontFamily: "Inter, sans-serif", lineHeight: 1.3, marginBottom: 8 }}>{text}</h2>;
+  const title = (text: string) => <h2 style={{ fontSize: 26, fontWeight: 800, color: C.text, fontFamily: "Inter, sans-serif", lineHeight: 1.3, marginBottom: 8 }}>{text}</h2>;
   const sub = (text: string) => <p style={{ fontSize: 14, color: C.muted, fontFamily: "Inter, sans-serif", lineHeight: 1.6, marginBottom: 20 }}>{text}</p>;
 
   return (
-    <div style={{ minHeight: "100vh", background: C.background, padding: "24px 20px" }}>
+    <div style={{ minHeight: "100vh", background: C.bg, padding: "24px 20px" }}>
       <div style={{ maxWidth: 480, margin: "0 auto" }}>
         <p style={{ fontSize: 12, letterSpacing: 2, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontFamily: "Inter, sans-serif", fontWeight: 600, marginBottom: 16 }}>AMPLIFY X</p>
         <div style={{ height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2, marginBottom: 32 }}>
@@ -319,25 +314,25 @@ function OnboardingScreen({ onComplete }: { onComplete: (p: UserProfile) => void
 
 function HomeScreen({ profile, onSelectFlow, onReset }: { profile: UserProfile; onSelectFlow: (f: FlowType) => void; onReset: () => void }) {
   return (
-    <div style={{ minHeight: "100vh", background: C.background, padding: "24px 20px 60px" }}>
+    <div style={{ minHeight: "100vh", background: C.bg, padding: "24px 20px 60px" }}>
       <div style={{ maxWidth: 480, margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
           <p style={{ fontSize: 12, letterSpacing: 2, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontFamily: "Inter, sans-serif", fontWeight: 600, margin: 0 }}>AMPLIFY X</p>
           <button onClick={onReset} style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>Reset profile</button>
         </div>
         <p style={{ fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: C.gold, fontWeight: 700, fontFamily: "Inter, sans-serif", marginBottom: 8 }}>Welcome back</p>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: C.foreground, fontFamily: "Inter, sans-serif", lineHeight: 1.25, marginBottom: 8 }}>Good to have you, {profile.name}.</h1>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: C.text, fontFamily: "Inter, sans-serif", lineHeight: 1.25, marginBottom: 8 }}>Good to have you, {profile.name}.</h1>
         <p style={{ fontSize: 15, color: C.muted, fontFamily: "Inter, sans-serif", lineHeight: 1.6, marginBottom: 32 }}>What do you need to move on today?</p>
         {FLOWS.map(flow => (
           <button key={flow.type} onClick={() => onSelectFlow(flow.type)} style={{ width: "100%", textAlign: "left", background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: "20px", marginBottom: 12, cursor: "pointer", display: "flex", alignItems: "flex-start", gap: 16 }}>
             <span style={{ fontSize: 24, lineHeight: 1 }}>{flow.icon}</span>
             <div>
-              <p style={{ fontSize: 16, fontWeight: 700, color: C.foreground, fontFamily: "Inter, sans-serif", margin: "0 0 4px 0" }}>{flow.title}</p>
+              <p style={{ fontSize: 16, fontWeight: 700, color: C.text, fontFamily: "Inter, sans-serif", margin: "0 0 4px 0" }}>{flow.title}</p>
               <p style={{ fontSize: 13, color: C.muted, fontFamily: "Inter, sans-serif", margin: 0, lineHeight: 1.5 }}>{flow.desc}</p>
             </div>
           </button>
         ))}
-        <p style={{ fontSize: 12, color: C.muted, fontFamily: "Inter, sans-serif", textAlign: "center", marginTop: 24 }}>Amplify X — AI executive coaching for professional women</p>
+        <p style={{ fontSize: 12, color: C.dim, fontFamily: "Inter, sans-serif", textAlign: "center", marginTop: 24 }}>Amplify X — AI executive coaching for professional women</p>
       </div>
     </div>
   );
@@ -380,8 +375,8 @@ function QuestionsScreen({ flow, onComplete, onBack }: { flow: FlowType; onCompl
   };
 
   const optBtn = (label: string, selected: boolean, onPress: () => void) => (
-    <button key={label} onClick={onPress} style={{ width: "100%", textAlign: "left", background: selected ? C.primaryLight : "rgba(255,255,255,0.04)", border: `1px solid ${selected ? C.primary : C.border}`, borderRadius: 12, padding: "16px 18px", marginBottom: 10, cursor: "pointer", color: selected ? C.foreground : "rgba(255,255,255,0.7)", fontFamily: "Inter, sans-serif", fontSize: 15, fontWeight: selected ? 600 : 400 }}>
-      {q.type === "multiselect" && <span style={{ marginRight: 10, color: selected ? C.primary : C.muted }}>{selected ? "✓" : "○"}</span>}
+    <button key={label} onClick={onPress} style={{ width: "100%", textAlign: "left", background: selected ? C.primaryLight : "rgba(255,255,255,0.04)", border: `1px solid ${selected ? C.primary : C.border}`, borderRadius: 12, padding: "16px 18px", marginBottom: 10, cursor: "pointer", color: selected ? C.text : "rgba(255,255,255,0.7)", fontFamily: "Inter, sans-serif", fontSize: 15, fontWeight: selected ? 600 : 400 }}>
+      {q.type === "multiselect" && <span style={{ marginRight: 10, color: selected ? C.primary : C.dim }}>{selected ? "✓" : "○"}</span>}
       {label}
     </button>
   );
@@ -389,7 +384,7 @@ function QuestionsScreen({ flow, onComplete, onBack }: { flow: FlowType; onCompl
   const inputStyle: React.CSSProperties = { width: "100%", background: "rgba(255,255,255,0.06)", borderRadius: 12, border: `1px solid rgba(255,255,255,0.12)`, padding: "14px 16px", fontSize: 16, color: "#fff", fontFamily: "Inter, sans-serif", marginBottom: 20, boxSizing: "border-box", outline: "none" };
 
   return (
-    <div style={{ minHeight: "100vh", background: C.background, padding: "24px 20px" }}>
+    <div style={{ minHeight: "100vh", background: C.bg, padding: "24px 20px" }}>
       <div style={{ maxWidth: 480, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
           <button onClick={qIndex === 0 ? onBack : () => setQIndex(qIndex - 1)} style={{ background: "none", border: "none", color: C.muted, fontSize: 20, cursor: "pointer", padding: 0, lineHeight: 1 }}>←</button>
@@ -402,7 +397,7 @@ function QuestionsScreen({ flow, onComplete, onBack }: { flow: FlowType; onCompl
         </div>
 
         <p style={{ fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: C.primary, fontWeight: 700, fontFamily: "Inter, sans-serif", marginBottom: 10 }}>{qIndex + 1} / {total}</p>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: C.foreground, fontFamily: "Inter, sans-serif", lineHeight: 1.35, marginBottom: q.sublabel ? 8 : 20 }}>{q.label}</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: C.text, fontFamily: "Inter, sans-serif", lineHeight: 1.35, marginBottom: q.sublabel ? 8 : 20 }}>{q.label}</h2>
         {q.sublabel && <p style={{ fontSize: 14, color: C.muted, fontFamily: "Inter, sans-serif", lineHeight: 1.6, marginBottom: 20 }}>{q.sublabel}</p>}
 
         {q.type === "text" && (
@@ -438,11 +433,11 @@ function QuestionsScreen({ flow, onComplete, onBack }: { flow: FlowType; onCompl
 function StrategyScreen({ recommendation, onSelect, onBack }: { recommendation: StrategyRecommendation; onSelect: (s: Strategy) => void; onBack: () => void }) {
   const strategies: Strategy[] = ["DIRECT_CONVERSATION", "INDIRECT_INFLUENCE", "STRATEGIC_CONTAINMENT"];
   return (
-    <div style={{ minHeight: "100vh", background: C.background, padding: "24px 20px" }}>
+    <div style={{ minHeight: "100vh", background: C.bg, padding: "24px 20px" }}>
       <div style={{ maxWidth: 480, margin: "0 auto" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: C.muted, fontFamily: "Inter, sans-serif", fontSize: 14, cursor: "pointer", padding: "0 0 24px 0" }}>← Back</button>
         <p style={{ fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: C.primary, fontWeight: 700, fontFamily: "Inter, sans-serif", marginBottom: 10 }}>Your Diagnosis</p>
-        <h2 style={{ fontSize: 24, fontWeight: 800, color: C.foreground, fontFamily: "Inter, sans-serif", lineHeight: 1.35, marginBottom: 8 }}>Choose your approach</h2>
+        <h2 style={{ fontSize: 24, fontWeight: 800, color: C.text, fontFamily: "Inter, sans-serif", lineHeight: 1.35, marginBottom: 8 }}>Choose your approach</h2>
         {recommendation.powerDiagnosis && <p style={{ fontSize: 14, color: C.muted, fontFamily: "Inter, sans-serif", lineHeight: 1.6, marginBottom: 24 }}>{recommendation.powerDiagnosis}</p>}
         {strategies.map(s => {
           const cfg = STRATEGY_CFG[s];
@@ -451,7 +446,7 @@ function StrategyScreen({ recommendation, onSelect, onBack }: { recommendation: 
             <button key={s} onClick={() => onSelect(s)} style={{ width: "100%", textAlign: "left", background: isRec ? C.primaryLight : "rgba(255,255,255,0.04)", border: `${isRec ? 2 : 1}px solid ${isRec ? cfg.color : C.border}`, borderRadius: 16, padding: "18px", marginBottom: 12, cursor: "pointer" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                 <span style={{ fontSize: 20 }}>{cfg.icon}</span>
-                <span style={{ fontSize: 16, fontWeight: 700, color: C.foreground, fontFamily: "Inter, sans-serif" }}>{cfg.label}</span>
+                <span style={{ fontSize: 16, fontWeight: 700, color: C.text, fontFamily: "Inter, sans-serif" }}>{cfg.label}</span>
                 {isRec && <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: cfg.color, fontFamily: "Inter, sans-serif", textTransform: "uppercase", letterSpacing: 1 }}>Recommended</span>}
               </div>
               {recommendation.assessment[s] && <p style={{ fontSize: 13, color: C.muted, fontFamily: "Inter, sans-serif", lineHeight: 1.5, margin: 0 }}>{recommendation.assessment[s]}</p>}
@@ -474,10 +469,10 @@ function ThinkingScreen() {
     return () => clearInterval(t);
   }, []);
   return (
-    <div style={{ minHeight: "100vh", background: C.background, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+    <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ textAlign: "center", maxWidth: 320 }}>
         <div style={{ fontSize: 40, marginBottom: 20 }}>⚡</div>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: C.foreground, fontFamily: "Inter, sans-serif", marginBottom: 8 }}>Analysing your situation{"...".slice(0, dot)}</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: C.text, fontFamily: "Inter, sans-serif", marginBottom: 8 }}>Analysing your situation{"...".slice(0, dot)}</h2>
         <p style={{ fontSize: 14, color: C.muted, fontFamily: "Inter, sans-serif", lineHeight: 1.6 }}>Building your personalised coaching plan.</p>
         <Spinner />
       </div>
@@ -496,7 +491,7 @@ function ResultScreen({ result, onReset }: { result: CoachingResult; onReset: ()
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: C.background, padding: "24px 20px 60px" }}>
+    <div style={{ minHeight: "100vh", background: C.bg, padding: "24px 20px 60px" }}>
       <div style={{ maxWidth: 480, margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
           <p style={{ fontSize: 12, letterSpacing: 2, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontFamily: "Inter, sans-serif", fontWeight: 600, margin: 0 }}>AMPLIFY X</p>
@@ -540,7 +535,7 @@ function ResultScreen({ result, onReset }: { result: CoachingResult; onReset: ()
         {result.reframe && (
           <div style={{ borderRadius: 14, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.04)", padding: 18, marginBottom: 12 }}>
             <p style={{ fontSize: 9, fontWeight: 700, color: C.primary, textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "Inter, sans-serif", marginBottom: 10 }}>Reframe</p>
-            <p style={{ fontSize: 18, fontWeight: 700, color: C.foreground, fontFamily: "Inter, sans-serif", lineHeight: 1.5, margin: 0 }}>"{result.reframe}"</p>
+            <p style={{ fontSize: 18, fontWeight: 700, color: C.text, fontFamily: "Inter, sans-serif", lineHeight: 1.5, margin: 0 }}>"{result.reframe}"</p>
           </div>
         )}
 
@@ -795,7 +790,7 @@ function App() {
   }, []);
 
   if (screen === "loading") return (
-    <div style={{ minHeight: "100vh", background: C.background, display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <Spinner />
     </div>
   );
@@ -821,7 +816,7 @@ function App() {
   if (screen === "result" && result) return <ResultScreen result={result} onReset={handleReset} />;
 
   return (
-    <div style={{ minHeight: "100vh", background: C.background, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+    <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ textAlign: "center" }}>
         <p style={{ color: C.muted, fontFamily: "Inter, sans-serif" }}>Something went wrong.</p>
         <button onClick={handleReset} style={{ background: C.primary, color: "#fff", border: "none", borderRadius: 10, padding: "12px 24px", cursor: "pointer", fontFamily: "Inter, sans-serif", marginTop: 16 }}>Back to home</button>
