@@ -56,17 +56,17 @@ interface Question {
 // ============================================================
 
 const C = {
-  bg: "#0a0a14",
-  card: "rgba(255,255,255,0.04)",
-  cardHover: "rgba(255,255,255,0.07)",
+  bg: "#faf8ff",
+  card: "#ffffff",
+  cardHover: "#f3eeff",
   primary: "#7c3aed",
-  primaryLight: "rgba(124,58,237,0.12)",
-  primaryBorder: "rgba(124,58,237,0.25)",
+  primaryLight: "rgba(124,58,237,0.08)",
+  primaryBorder: "#e8e0f5",
   gold: "#d4a017",
-  text: "#ffffff",
-  muted: "rgba(255,255,255,0.5)",
-  dim: "rgba(255,255,255,0.3)",
-  border: "rgba(255,255,255,0.1)",
+  text: "#1a1a2e",
+  muted: "rgba(26,26,46,0.55)",
+  dim: "rgba(26,26,46,0.35)",
+  border: "#e8e0f5",
 };
 
 const FLOWS = [
