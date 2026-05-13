@@ -194,7 +194,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={styles.brand}>Amplify X Momentum</Text>
+          <Text style={styles.brand}>Suxess X</Text>
           <Text style={styles.heading}>
             What's happening{"\n"}
             <Text style={styles.headingAccent}>right now?</Text>
