@@ -241,7 +241,7 @@ export default function PaywallScreen() {
       <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
         <View style={s.hero}>
           <View style={s.badge}>
-            <Text style={s.badgeText}>Suxess X</Text>
+            <Text style={s.badgeText}>Amplify X Momentum</Text>
           </View>
           <Text style={s.headline}>
             Stop overthinking.{"\n"}Take control of what{"\n"}you do next.
