@@ -1,34 +1,26 @@
 {
   "expo": {
-    "name": "Suxess X",
-    "slug": "suxess-x",
+    "name": "Amplify X Momentum",
+    "slug": "amplify-x-momentum",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "suxess-x",
-    "userInterfaceStyle": "automatic",
+    "scheme": "amplify-x-momentum",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "co.amplify-x.momentum"
     },
-    "android": {},
+    "android": {
+      "package": "co.amplify_x.momentum"
+    },
     "web": {
       "bundler": "metro",
-      "output": "single",
-      "favicon": "./assets/images/favicon.png"
+      "output": "single"
     },
     "plugins": [
-      [
-        "expo-router",
-        {
-          "origin": "https://suxess-x.vercel.app"
-        }
-      ],
+      ["expo-router", { "origin": "https://momentum.amplify-x.co" }],
       "expo-font",
       "expo-web-browser"
     ],
