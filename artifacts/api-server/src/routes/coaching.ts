@@ -150,8 +150,8 @@ OUTPUT — use this exact JSON structure, all fields personalised to their answe
   "problemType": "OVERWHELMED",
   "strategy": null,
   "mode": "Coach",
-  "roleShift": "exact mindset Passenger pattern (Self-Doubt/Comparison/Victim thought) — exact Captain mindset shift. Max 5 words each side. Must relate to their specific mindset pattern ONLY.",
-  "behavioralObjective": "one specific MINDSET RESET action in the next 30 minutes — must be a physical state-change action (movement, breathing, writing, or saying something aloud). NOT a career strategy, relationship, or negotiation action. Verb first.",
+  "roleShift": "exact Passenger pattern they are in — exact Captain choice they are making. Max 5 words each side.",
+  "behavioralObjective": "the specific mindset pattern being interrupted and the state being moved toward — in one sentence. NOT a physical action. Example: Interrupt the comparison spiral and return to executing your own plan within the next 30 minutes.",
   "reframe": "story vs grounded fact. One sentence. Under 15 words. Punchy.",
   "breakdown": "two sentences. First: exact Passenger pattern and story. Second: the fact stripped bare and the Captain choice now available.",
   "trigger": {
@@ -333,6 +333,9 @@ THREE ROOT CAUSES OF CAREER PROBLEMS:
 3. Something or someone standing in the way
 Diagnose which one before prescribing.
 
+CRITICAL FOR ROOT CAUSE 3 (Something or someone in the way):
+If the user says an obstacle or person is in their way — DO NOT reframe this as their own inaction. The obstacle is real. Acknowledge it directly in the breakdown. Then prescribe the Captain response to navigating it. The Captain does not pretend obstacles do not exist — they act on what they can control while the obstacle is real.
+
 DRAMA CYCLE EXIT:
 Victim becomes Captain by taking 100% responsibility and being assertive.
 Rescuer becomes Coach by empowering others to solve their own problems.
@@ -417,32 +420,48 @@ NEGOTIATION PRINCIPLES (embedded, never named):
 - Never leave without a specific next step. Vague commitments compound the problem.
 - Plant seeds early. The ask should never be the first time they hear about the topic.
 - Know your walk-away point and be genuinely willing to use it. That is where your leverage lives.
-- Create urgency: signal you are a flight risk, that you have options, that you are 100% committed but not 100% loyal. Most people negotiate from fear of loss — use that.
-- Complement first: acknowledge the organisation and the leader genuinely before naming the ask. This opens the door.
-- Plant seeds: the ask should never be the first time they hear about the topic. Raise it in passing before the formal conversation.
-- Shut up after the ask: silence is leverage. The first person to fill the silence loses positioning.`;
+- Create urgency without desperation: signal that you have options, that you are 100% committed to this role but 100% open to the market. Most decisions are driven by fear of loss.
+- Complement before you ask: acknowledge the organisation or the leader genuinely before naming the ask. This opens the door without closing your position.
+- Plant seeds before the formal ask: the compensation conversation should never be the first time they have heard the topic.
+- Shut up after the ask: silence is leverage. The first person to fill it loses positioning.`;
 
-  if (situationType === "A salary increase" || situationType === "I believe I am underpaid") {
+  // Market alignment — underpaid or under-resourced
+  if (situationType === "A salary increase" || situationType === "I believe I am underpaid or under-resourced" || situationType === "I believe I am underpaid") {
     return `${base}
 
-SITUATION: Currently employed. Pay is below market rate. This is a market alignment conversation, not a performance review.
-FRAME: The compensation is out of step with the market. Market data is the argument, not personal effort or loyalty.
+SITUATION: Currently employed. Pay is below market rate for the role and level. This is a market alignment conversation, not a performance review.
+FRAME: Compensation is out of step with the market. Market data is the argument — not personal effort, loyalty, or tenure. Facts hold the position.
+CRITICAL: Do NOT reference client relationships, job offers, or contract terms. This is an internal salary conversation.
 ALL FIELDS MUST use market-rate framing.
 ${NEGOTIATE_PROMPT_SHARED_SUFFIX}`;
   }
 
+  // Scope or resources — role has grown, additional scope or resources needed, promotion
   if (situationType === "Additional scope or resources" || situationType === "A promotion" || situationType === "My role has grown") {
     return `${base}
 
-SITUATION: Currently employed. Responsibilities have expanded materially since compensation was last set.
-FRAME: The role changed. The compensation did not. Scope evidence is the argument.
+SITUATION: Currently employed. Responsibilities or scope have expanded materially since compensation was last set, or promotion is being sought.
+FRAME: The role changed or grew. The compensation or title did not. Scope evidence and business impact are the arguments.
+CRITICAL: Do NOT reference client relationships, job offers, or market salary data as the primary argument. This is a scope-evolution or promotion conversation.
 ALL FIELDS MUST use scope-evolution framing.
 ${NEGOTIATE_PROMPT_SHARED_SUFFIX}`;
   }
 
+  // Role change or new opportunity within the organisation
+  if (situationType === "A role change or new opportunity") {
+    return `${base}
+
+SITUATION: A new internal role or opportunity is on the table. This is a transition negotiation — securing the right terms before committing.
+FRAME: This is the highest-leverage window for this role. The terms agreed now set the baseline. Move before accepting.
+CRITICAL: This is an internal role change, not an external offer. Frame around internal value, track record, and what the role requires — not external market comparisons.
+ALL FIELDS MUST use internal transition framing.
+${NEGOTIATE_PROMPT_SHARED_SUFFIX}`;
+  }
+
+  // Terms of an offer — external job offer
   return `${base}
 
-SITUATION: Negotiating terms on a new job offer or a role change opportunity. Has not accepted yet.
+SITUATION: Has received an external job offer. Has not accepted yet. This is the full-leverage window.
 FRAME: The first number agreed to becomes the baseline for every future raise. Move before accepting.
 CRITICAL: Do NOT use language like "I am excited about this opportunity" — this is a compensation negotiation, not a thank-you. Stay focused on their target number, their leverage, and securing a commitment.
 ALL FIELDS MUST use offer-negotiation framing. Do not use "my role has grown" or market underpay language.
@@ -532,7 +551,7 @@ router.post("/generate", async (req, res) => {
     try { parsed = JSON.parse(stripped); } catch {
       console.log("JSON PARSE FAILED for flowType:", flowType);
       console.log("RAW AI RESPONSE (first 500):", raw.substring(0, 500));
-      parsed = buildFallback(problemType, strategy, userProfile?.name);
+      parsed = buildFallback(problemType, strategy, userProfile?.name, flowType);
     }
     if (parsed.problemType === "PASSENGER") parsed.problemType = "VICTIM";
 
@@ -615,7 +634,7 @@ function enforceNegotiateSections(parsed: Record<string, unknown>, answers: Reco
       { title: "Bridge to Compensation", premium: false, content: "Once you have walked through scope and outcomes, make the direct connection.\n\nWhat I have described is materially different from the role I was in when my compensation was last reviewed. I want to make sure what I am paid reflects what I am delivering.\n\nThen name the number. No preamble.\n\nIf they need to think: Of course. When can we pick this up? Name a specific date. Do not leave it open." },
       { title: "If They Resist", premium: true, content: "If they say budget is tight or timing is not right:\n\n1. Acknowledge without backing down: I hear you on timing. Pause.\n2. Re-anchor: The scope and results are real — that is not changing. Pause.\n3. Ask: What would need to be true for us to revisit this?\n4. Lock criteria: So if I deliver X by Y date, we can revisit compensation — can we put that in writing?\n\nA named date with documented milestones is a commitment. Let us revisit soon is not." },
     ];
-  } else if (sit === "A salary increase" || sit === "I believe I am underpaid") {
+  } else if (sit === "A salary increase" || sit === "I believe I am underpaid or under-resourced" || sit === "I believe I am underpaid") {
     identityAnchor = "You are not asking for a favour. You are correcting an imbalance — calmly, clearly, and with evidence.";
     nextSteps = ["Five actions before the conversation:\n1. Pull 3 market data points for your role, level, and location — specific figures.\n2. Write your target number grounded in that data.\n3. Set your walk-away: the minimum acceptable outcome and what you do if it is not met.\n4. Prepare your opening line word for word. Say it aloud twice.\n5. Schedule the conversation within 48 hours — name the day."];
     sections = [
