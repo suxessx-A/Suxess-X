@@ -246,7 +246,7 @@ export const flows: Record<string, FlowStep[]> = {
       options: [
         "Starting a new role",
         "My role has grown",
-        "I believe I am underpaid",
+        "I believe I am underpaid or under-resourced",
       ],
     },
     {
@@ -255,9 +255,7 @@ export const flows: Record<string, FlowStep[]> = {
       options: [
         "Salary or total compensation",
         "A promotion or title change",
-        "Project scope or delivery timelines",
         "Resources, budget, or headcount",
-        "Contract terms with a client or partner",
       ],
     },
     {
@@ -291,6 +289,9 @@ export const flows: Record<string, FlowStep[]> = {
         "External offer or market data",
         "Unique skills or knowledge the organisation needs",
         "Key relationships and trust at senior level",
+        "A business case showing cost of not resourcing this",
+        "Track record of delivering more with less than needed",
+        "Clear view of what gets dropped if scope is not adjusted",
         "I am not sure — I need help identifying it",
       ],
     },
