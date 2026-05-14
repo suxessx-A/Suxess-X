@@ -246,7 +246,7 @@ export default function OnboardingScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={s.header}>
-          <Text style={s.brand}>SUXESS X</Text>
+          <Text style={s.brand}>AMPLIFY X MOMENTUM</Text>
           <View style={s.progressBar}>
             <View style={[s.progressFill, { width: `${progress}%` }]} />
           </View>
