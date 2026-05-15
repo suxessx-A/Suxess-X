@@ -20,13 +20,24 @@
       "output": "single"
     },
     "plugins": [
-      ["expo-router", { "origin": "https://momentum.amplify-x.co" }],
+      [
+        "expo-router",
+        {
+          "origin": "https://momentum.amplify-x.co"
+        }
+      ],
       "expo-font",
       "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e3232c56-3948-4a13-97a0-c2953d995847"
+      }
+    },
+    "owner": "suxessx"
   }
 }
