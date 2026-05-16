@@ -1,0 +1,12 @@
+build:
+  name: Build iOS production
+  on:
+    push:
+      branches: [main]
+  jobs:
+    build:
+      name: iOS production build
+      type: build
+      params:
+        platform: ios
+        profile: production
