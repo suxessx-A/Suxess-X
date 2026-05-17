@@ -92,7 +92,8 @@ function getBase(): string {
     return window.location.origin;
   }
   const domain = process.env.EXPO_PUBLIC_DOMAIN;
-  return domain ? `https://${domain}` : "";
+  if (domain) return `https://${domain}`;
+  return "https://workspaceapi-server-production-ec91.up.railway.app";
 }
 
 function str(v: unknown, fallback: string): string {
