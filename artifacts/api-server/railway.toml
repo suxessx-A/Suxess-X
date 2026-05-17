@@ -1,8 +1,11 @@
 [build]
-builder = "NIXPACKS"
-buildCommand = "npm install --legacy-peer-deps && node build.mjs"
+builder = "nixpacks"
+
+[build.nixpacksPlan.phases.install]
+cmds = ["npm install -g pnpm", "pnpm install --ignore-scripts"]
+
+[build.nixpacksPlan.phases.build]
+cmds = ["node build.mjs"]
 
 [deploy]
-startCommand = "node dist/index.mjs"
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 3
+startCommand = "node --enable-source-maps dist/index.mjs"
