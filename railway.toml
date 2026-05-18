@@ -1,0 +1,6 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm install -g pnpm && pnpm install --ignore-scripts && cd artifacts/api-server && node build.mjs"
+
+[deploy]
+startCommand = "cd artifacts/api-server && node --enable-source-maps dist/index.mjs"
