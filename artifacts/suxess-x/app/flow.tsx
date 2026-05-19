@@ -18,6 +18,14 @@ import { OptionChip } from "@/components/OptionChip";
 import { CoachingResultCard } from "@/components/CoachingResultCard";
 import { flows } from "@/data/flows";
 
+// Flows where the 3-strategy choice is a false choice — the backend always
+// generates the same strategy regardless of what the user picks. Skip the
+// picker and generate directly, the same way mindset already does via its
+// non-AVOIDING_CHALLENGER problemType. conversation is excluded: there the
+// strategy choice is real (DIRECT / INDIRECT / CONTAINMENT each route to a
+// distinct prompt).
+const SKIP_STRATEGY_PICKER_FLOWS = ["speak_up", "executive_visibility", "negotiate"];
+
 const flowTitles: Record<string, string> = {
   conversation: "Tough Conversation",
   stuck: "Career Clarity",
@@ -394,7 +402,11 @@ export default function FlowScreen() {
   }, [activeFlow]);
 
   useEffect(() => {
-    if (recommendation && !result && !isLoading && recommendation.problemType !== "AVOIDING_CHALLENGER") {
+    if (
+      recommendation && !result && !isLoading &&
+      (recommendation.problemType !== "AVOIDING_CHALLENGER" ||
+        (activeFlow !== null && SKIP_STRATEGY_PICKER_FLOWS.includes(activeFlow)))
+    ) {
       submitFlow(null);
     }
   }, [recommendation]);

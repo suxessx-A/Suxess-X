@@ -811,7 +811,7 @@ function enforceNegotiateSections(parsed: Record<string, unknown>, answers: Reco
   return { ...parsed, problemType: "AVOIDING_CHALLENGER", strategy: "DIRECT_CONVERSATION", mode: "Challenger", identityAnchor, nextSteps, sections };
 }
 
-function buildFallback(problemType: string, strategy: string | null, name?: string) {
+function buildFallback(problemType: string, strategy: string | null, name?: string, _flowType?: string) {
   const nameStr = name ? `, ${name}` : "";
   return {
     problemType, strategy,
