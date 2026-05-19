@@ -12,6 +12,7 @@ interface CoachingResultCardProps {
   ctaButton?: { label: string; onPress: () => void };
   flowType?: string;
   answers?: Record<string, string | string[]>;
+  onRefined?: (result: CoachingResult) => void;
 }
 
 type ThemeConfig = { color: string; bg: string; border: string };
@@ -534,7 +535,7 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
 
       {result.trigger ? <TriggerCard trigger={result.trigger} /> : null}
 
-      {result.sections
+      {(result.sections ?? [])
         .filter((s) => s.title === "State Set" || s.title === "Internal Clarity")
         .map((section, i) => (
           <SectionCard key={`pre-${i}`} section={section} problemType={result.problemType} strategy={result.strategy} />
@@ -544,7 +545,7 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
         <ScriptSection script={result.script} strategy={result.strategy} />
       )}
 
-      {result.sections
+      {(result.sections ?? [])
         .filter((s) => s.title !== "State Set" && s.title !== "Internal Clarity")
         .map((section, i) =>
           section.premium ? (
