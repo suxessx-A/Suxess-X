@@ -37,6 +37,7 @@ function RootLayoutNav() {
       <Stack.Screen name="example" />
       <Stack.Screen name="paywall" />
       <Stack.Screen name="onboarding" />
+      <Stack.Screen name="settings" />
     </Stack>
   );
 }

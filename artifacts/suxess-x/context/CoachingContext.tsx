@@ -7,6 +7,8 @@ const TESTING_MODE = true;
 
 const STRIPE_MONTHLY = "https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00";
 const WAITLIST_URL   = "https://waitlist.amplify-x.co?source=momentum";
+const TERMS_URL      = "https://waitlist.amplify-x.co/terms-of-service";
+const PRIVACY_URL    = "https://waitlist.amplify-x.co/privacy-policy";
 
 export type FlowType = "conversation" | "stuck" | "speak_up" | "executive_visibility" | "negotiate" | "mindset";
 export type ProblemType = "VICTIM" | "AVOIDING_CHALLENGER" | "OVERWHELMED";
@@ -87,7 +89,7 @@ const CoachingContext = createContext<CoachingContextValue | null>(null);
 const SKIP_EVALUATE_FLOWS: FlowType[] = ["mindset", "speak_up", "executive_visibility"];
 
 // THIS IS THE CRITICAL FIX — getBase was missing from this file
-function getBase(): string {
+export function getBase(): string {
   if (typeof window !== "undefined" && window.location && window.location.origin && window.location.origin !== "null") {
     return window.location.origin;
   }
@@ -450,6 +452,8 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
     btnWaitlistText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#7c3aed" },
     dismiss: { alignItems: "center", paddingVertical: 8 },
     dismissText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#9ca3af" },
+    disclosure: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#9ca3af", lineHeight: 16, textAlign: "center", marginTop: 2, marginBottom: 14, paddingHorizontal: 6 },
+    disclosureLink: { color: "#7c3aed", fontFamily: "Inter_600SemiBold", textDecorationLine: "underline" },
   });
 
   return (
@@ -472,6 +476,12 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
             <TouchableOpacity style={gm.btnPrimary} activeOpacity={0.85} onPress={() => Linking.openURL(STRIPE_MONTHLY)}>
               <Text style={gm.btnPrimaryText}>Unlock Premium — $20/month</Text>
             </TouchableOpacity>
+            <Text style={gm.disclosure}>
+              Subscription auto-renews at AUD $20 per month until cancelled. Cancel anytime in Settings, at least 24 hours before the end of your current billing period. By subscribing, you agree to our{" "}
+              <Text style={gm.disclosureLink} onPress={() => Linking.openURL(TERMS_URL)}>Terms of Service</Text>
+              {" "}and{" "}
+              <Text style={gm.disclosureLink} onPress={() => Linking.openURL(PRIVACY_URL)}>Privacy Policy</Text>.
+            </Text>
             <TouchableOpacity style={gm.btnWaitlist} activeOpacity={0.85} onPress={() => Linking.openURL(WAITLIST_URL)}>
               <Text style={gm.btnWaitlistText}>Join Premium Plus Waitlist</Text>
             </TouchableOpacity>

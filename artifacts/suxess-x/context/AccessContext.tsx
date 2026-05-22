@@ -28,7 +28,13 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
 
   const markPaid = async () => {
     try {
-      await AsyncStorage.setItem(ACCESS_KEY, "true");
+      // Set both unlock flags so a fresh payment lands in the same fully
+      // unlocked state as Restore Purchases: ACCESS_KEY ("suxess_paid") gates
+      // the home flow tiles, "suxess_premium" gates per-flow free-tier limits.
+      await AsyncStorage.multiSet([
+        [ACCESS_KEY, "true"],
+        ["suxess_premium", "true"],
+      ]);
     } catch {}
     setIsPaid(true);
   };

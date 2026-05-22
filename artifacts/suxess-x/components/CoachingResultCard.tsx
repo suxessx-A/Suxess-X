@@ -545,15 +545,30 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
         <ScriptSection script={result.script} strategy={result.strategy} />
       )}
 
-      {(result.sections ?? [])
-        .filter((s) => s.title !== "State Set" && s.title !== "Internal Clarity")
-        .map((section, i) =>
-          section.premium ? (
-            <PremiumLockCard key={i} section={section} />
-          ) : (
-            <SectionCard key={i} section={section} problemType={result.problemType} strategy={result.strategy} />
-          )
-        )}
+      {(() => {
+        // Render every non-premium section in order, then a SINGLE premium
+        // lock card if any premium section exists. Some flows (influence,
+        // containment) emit two premium sections, which previously rendered
+        // two identical "Unlock Premium" cards back-to-back.
+        const rest = (result.sections ?? []).filter(
+          (sec) => sec.title !== "State Set" && sec.title !== "Internal Clarity"
+        );
+        const visible = rest.filter((sec) => !sec.premium);
+        const premiumSection = rest.find((sec) => sec.premium);
+        return (
+          <>
+            {visible.map((section, i) => (
+              <SectionCard
+                key={`sec-${i}`}
+                section={section}
+                problemType={result.problemType}
+                strategy={result.strategy}
+              />
+            ))}
+            {premiumSection ? <PremiumLockCard key="premium-lock" section={premiumSection} /> : null}
+          </>
+        );
+      })()}
 
       {result.identityAnchor ? <IdentityAnchorCard anchor={result.identityAnchor} /> : null}
 

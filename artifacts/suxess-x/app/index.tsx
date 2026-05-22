@@ -96,13 +96,30 @@ export default function HomeScreen() {
       paddingBottom: 28,
       backgroundColor: colors.primary,
     },
+    headerTopRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 10,
+    },
     brand: {
       fontSize: 13,
       fontFamily: "Inter_600SemiBold",
       color: "rgba(255,255,255,0.7)",
       letterSpacing: 2,
       textTransform: "uppercase",
-      marginBottom: 10,
+      marginBottom: 0,
+    },
+    settingsBtn: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: "rgba(255,255,255,0.14)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    settingsIcon: {
+      fontSize: 17,
     },
     heading: {
       fontSize: 26,
@@ -194,7 +211,19 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={styles.brand}>Amplify X Momentum</Text>
+          <View style={styles.headerTopRow}>
+            <Text style={styles.brand}>Amplify X Momentum</Text>
+            <TouchableOpacity
+              style={styles.settingsBtn}
+              onPress={() => router.push("/settings")}
+              activeOpacity={0.8}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel="Settings"
+            >
+              <Text style={styles.settingsIcon}>⚙️</Text>
+            </TouchableOpacity>
+          </View>
           <Text style={styles.heading}>
             What's happening{"\n"}
             <Text style={styles.headingAccent}>right now?</Text>
