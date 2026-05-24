@@ -85,8 +85,12 @@ interface CoachingContextValue {
 
 const CoachingContext = createContext<CoachingContextValue | null>(null);
 
-// Flows that have hardcoded problem types — skip evaluate, go straight to generate
-const SKIP_EVALUATE_FLOWS: FlowType[] = ["mindset", "speak_up", "executive_visibility"];
+// Flows that have hardcoded problem types: skip evaluate, go straight to
+// generate. negotiate belongs here too. The strategy picker is a false choice
+// for it (the backend ignores the strategy and always runs getNegotiatePrompt),
+// so there is no reason to spend an evaluate round-trip producing a picker that
+// flow.tsx then auto-skips.
+const SKIP_EVALUATE_FLOWS: FlowType[] = ["mindset", "speak_up", "executive_visibility", "negotiate"];
 
 // THIS IS THE CRITICAL FIX — getBase was missing from this file
 export function getBase(): string {

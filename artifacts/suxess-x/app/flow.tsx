@@ -18,13 +18,12 @@ import { OptionChip } from "@/components/OptionChip";
 import { CoachingResultCard } from "@/components/CoachingResultCard";
 import { flows } from "@/data/flows";
 
-// Flows where the 3-strategy choice is a false choice — the backend always
-// generates the same strategy regardless of what the user picks. Skip the
-// picker and generate directly, the same way mindset already does via its
-// non-AVOIDING_CHALLENGER problemType. conversation is excluded: there the
-// strategy choice is real (DIRECT / INDIRECT / CONTAINMENT each route to a
-// distinct prompt).
-const SKIP_STRATEGY_PICKER_FLOWS = ["speak_up", "executive_visibility", "negotiate"];
+// The 3-strategy picker (Challenge directly / Shift the dynamic / Hold the
+// standard) is only meaningful for the conversation flow, where each strategy
+// routes to a distinct backend prompt. Every other flow has a single dedicated
+// prompt, so the choice is a false one. This list is therefore every flow
+// EXCEPT conversation: those go straight from the questions to the result.
+const SKIP_STRATEGY_PICKER_FLOWS = ["stuck", "speak_up", "executive_visibility", "negotiate", "mindset"];
 
 const flowTitles: Record<string, string> = {
   conversation: "Tough Conversation",
@@ -397,16 +396,20 @@ export default function FlowScreen() {
   const topInset = Platform.OS === "web" ? 67 : insets.top;
   const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
 
+  // The strategy picker only applies to the conversation flow. For every other
+  // flow we auto-submit with no strategy as soon as the recommendation lands,
+  // so the picker is never presented as a choice.
+  const shouldSkipPicker =
+    recommendation != null &&
+    (recommendation.problemType !== "AVOIDING_CHALLENGER" ||
+      (activeFlow != null && SKIP_STRATEGY_PICKER_FLOWS.includes(activeFlow)));
+
   useEffect(() => {
     setCurrentStep(0);
   }, [activeFlow]);
 
   useEffect(() => {
-    if (
-      recommendation && !result && !isLoading &&
-      (recommendation.problemType !== "AVOIDING_CHALLENGER" ||
-        (activeFlow !== null && SKIP_STRATEGY_PICKER_FLOWS.includes(activeFlow)))
-    ) {
+    if (recommendation && !result && !isLoading && shouldSkipPicker) {
       submitFlow(null);
     }
   }, [recommendation]);
@@ -569,7 +572,10 @@ export default function FlowScreen() {
     );
   }
 
-  if (isLoading) {
+  // Show the loading screen while we auto-skip the picker, so it never flashes
+  // for non-conversation flows. The picker block below is then only reachable
+  // for the conversation flow.
+  if (isLoading || (recommendation && !result && shouldSkipPicker)) {
     return (
       <View style={styles.container}>
         <View style={styles.header}>

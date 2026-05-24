@@ -19,7 +19,7 @@ type ThemeConfig = { color: string; bg: string; border: string };
 
 const STRATEGY_THEME: Record<CoachingStrategy, ThemeConfig & { label: string; icon: string; eyebrow: string }> = {
   DIRECT_CONVERSATION:   { label: "Challenge It Directly", eyebrow: "Challenger Mode",  icon: "⚡", color: "#7c3aed", bg: "#faf5ff", border: "#ddd6fe" },
-  INDIRECT_INFLUENCE:    { label: "Shift the Dynamic",     eyebrow: "Strategist Mode",  icon: "♟", color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd" },
+  INDIRECT_INFLUENCE:    { label: "Shift the Dynamic",     eyebrow: "Coach Mode",       icon: "♟", color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd" },
   STRATEGIC_CONTAINMENT: { label: "Hold the Standard",     eyebrow: "Strategist Mode",  icon: "🛡", color: "#b45309", bg: "#fffbeb", border: "#fde68a" },
 };
 
@@ -76,6 +76,19 @@ const SECTION_ICONS: Record<string, string> = {
   "Interrupt": "⚡",
   "Direct": "🎯",
   "Power Questions": "🔍",
+  // Negotiate (rebuilt: compensation and resource branches)
+  "Your Target and Your Walk-Away": "🎯",
+  "Your Ask and Your Walk-Away": "🎯",
+  "Open With the Number, Then Stop": "📢",
+  "Make the Business Case": "📊",
+  "When They Push Back": "🛡",
+  "The Wider Package": "🔑",
+  "If the Answer Is Not Yet": "📅",
+  // Stuck (Captain mode rebuild)
+  "Get Clear on What You Want": "🔍",
+  "Where You Are on the Clock": "⏱",
+  "Map the Path and the Gaps": "🗺",
+  "Work Every Channel": "🔗",
 };
 
 const MODE_CONFIG = {
@@ -207,17 +220,32 @@ function ClosingQuestionCard({ question }: { question: string }) {
   );
 }
 
+// Parse a roleShift into its two halves. The prompts instruct the model to use
+// the "→" separator, but we accept the common fallbacks a model might emit.
+// Symbol separators (→, ->, em/en dash) are tried first; the words "to"/"vs"
+// are a last resort because they can legitimately appear inside a phrase (e.g.
+// "waiting to be chosen"). Returns ["", ""] when no separator is found, so the
+// caller renders nothing rather than dumping the whole string into "from".
+function splitRoleShift(roleShift?: string): [string, string] {
+  if (!roleShift) return ["", ""];
+  const symbolSep = roleShift.match(/\s*(→|->|—|–)\s*/);
+  const sep = symbolSep ?? roleShift.match(/\s+(?:to|vs\.?)\s+/i);
+  if (!sep || sep.index === undefined) return ["", ""];
+  const from = roleShift.slice(0, sep.index).trim();
+  const to = roleShift.slice(sep.index + sep[0].length).trim();
+  if (!from || !to) return ["", ""];
+  return [from, to];
+}
+
 function ExecutionHeader({ roleShift, behavioralObjective }: {
   roleShift?: string;
   behavioralObjective?: string;
   tacticalTools?: string[];
 }) {
-  if (!roleShift && !behavioralObjective) return null;
+  const [from, to] = splitRoleShift(roleShift);
+  const hasRoleShift = !!(from && to);
 
-  const separatorMatch = roleShift?.match(/\s*(→|–|—|--|-)\s*/);
-  const [from, to] = separatorMatch && roleShift
-    ? roleShift.split(separatorMatch[0]).map((s) => s.trim())
-    : [roleShift, ""];
+  if (!hasRoleShift && !behavioralObjective) return null;
 
   const s = StyleSheet.create({
     card: { borderRadius: 14, borderWidth: 1.5, borderColor: "#1a1a2e", backgroundColor: "#1a1a2e", marginBottom: 10, overflow: "hidden" },
@@ -238,30 +266,26 @@ function ExecutionHeader({ roleShift, behavioralObjective }: {
 
   return (
     <View style={s.card}>
-      {roleShift ? (
+      {hasRoleShift ? (
         <>
           <Text style={s.shiftLabel}>Role Shift</Text>
           <View style={s.shiftRow}>
-            {from ? (
-              <View style={s.fromBox}>
-                <Text style={s.fromLabel}>From</Text>
-                <Text style={s.fromText}>{from}</Text>
-              </View>
-            ) : null}
-            {to ? <Text style={s.arrow}>→</Text> : null}
-            {to ? (
-              <View style={s.toBox}>
-                <Text style={s.toLabel}>To</Text>
-                <Text style={s.toText}>{to}</Text>
-              </View>
-            ) : null}
+            <View style={s.fromBox}>
+              <Text style={s.fromLabel}>From</Text>
+              <Text style={s.fromText}>{from}</Text>
+            </View>
+            <Text style={s.arrow}>→</Text>
+            <View style={s.toBox}>
+              <Text style={s.toLabel}>To</Text>
+              <Text style={s.toText}>{to}</Text>
+            </View>
           </View>
         </>
       ) : null}
 
       {behavioralObjective ? (
         <>
-          <View style={s.divider} />
+          {hasRoleShift ? <View style={s.divider} /> : null}
           <View style={s.objectiveWrap}>
             <Text style={s.objectiveLabel}>Objective</Text>
             <Text style={s.objectiveText}>{behavioralObjective}</Text>
