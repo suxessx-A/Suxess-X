@@ -10,7 +10,11 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "co.amplify-x.momentum"
+      "bundleIdentifier": "co.amplify-x.momentum",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "buildNumber": "8"
     },
     "android": {
       "package": "co.amplify_x.momentum"
