@@ -747,20 +747,36 @@ router.post("/generate", async (req, res) => {
   const userPrompt = buildUserPrompt(flowType, answers, userProfile ?? null);
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      max_completion_tokens: 16000,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-    });
-    const raw = (completion.choices[0]?.message?.content ?? "{}").trim();
-    const stripped = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
-    let parsed;
-    try { parsed = JSON.parse(stripped); } catch {
-      console.log("JSON PARSE FAILED for flowType:", flowType);
-      console.log("RAW AI RESPONSE (first 500):", raw.substring(0, 500));
+    // One model call. Returns parsed JSON, or null if the response does not parse.
+    const attempt = async (label: string): Promise<Record<string, unknown> | null> => {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        max_completion_tokens: 16000,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      });
+      const raw = (completion.choices[0]?.message?.content ?? "{}").trim();
+      const stripped = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+      try {
+        return JSON.parse(stripped) as Record<string, unknown>;
+      } catch {
+        console.log(`JSON PARSE FAILED (${label}) for flowType:`, flowType);
+        console.log("RAW AI RESPONSE (first 500):", raw.substring(0, 500));
+        return null;
+      }
+    };
+
+    // Most parse failures are transient. Try once, then retry once. Only fall
+    // back to flow-appropriate static content if both attempts fail to parse.
+    let parsed: Record<string, unknown> | null = await attempt("attempt 1");
+    if (!parsed) {
+      console.log("Retrying generate once for flowType:", flowType);
+      parsed = await attempt("attempt 2 (retry)");
+    }
+    if (!parsed) {
+      console.log("Both attempts failed to parse, using fallback for flowType:", flowType);
       parsed = buildFallback(problemType, strategy, userProfile?.name, flowType);
     }
     if (parsed.problemType === "PASSENGER") parsed.problemType = "VICTIM";
@@ -863,12 +879,84 @@ function enforceNegotiateSections(parsed: Record<string, unknown>, answers: Reco
   return { ...parsed, problemType: "AVOIDING_CHALLENGER", strategy: "DIRECT_CONVERSATION", mode: "Challenger", identityAnchor, nextSteps, sections };
 }
 
-function buildFallback(problemType: string, strategy: string | null, name?: string, _flowType?: string) {
+function buildFallback(problemType: string, strategy: string | null, name?: string, flowType?: string) {
   const nameStr = name ? `, ${name}` : "";
+
+  // Flow-appropriate core fields for the rare case both model attempts fail to
+  // parse. None of these use a STYLE_RULES-banned phrase, and every roleShift
+  // uses the arrow with both sides populated so the result card renders cleanly.
+  type Core = { roleShift: string; behavioralObjective: string; reframe: string; breakdown: string };
+
+  const conversationByStrategy: Record<string, Core> = {
+    INDIRECT_INFLUENCE: {
+      roleShift: "forcing the outcome → shifting it through influence",
+      behavioralObjective: "Make one influence move this week that plants the idea, not a confrontation.",
+      reframe: "You cannot push someone into agreement. You can shift how they see it.",
+      breakdown: `The dynamic will not change through a single confrontation${nameStr}. Influence is built by understanding what the other person cares about and connecting your ask to it. Pick one person, get curious before you pitch, and plant one seed this week.`,
+    },
+    STRATEGIC_CONTAINMENT: {
+      roleShift: "reacting to the situation → owning your response",
+      behavioralObjective: "Put one expectation in writing within 48 hours and manage the situation deliberately.",
+      reframe: "Your conditions do not shape your career. Your response to them does.",
+      breakdown: `The situation is not yours to control, but your response is${nameStr}. Reacting keeps you stuck inside it. Write down the facts, confirm one expectation in writing, and hold your standard while you decide your next move.`,
+    },
+  };
+
+  const byFlow: Record<string, Core> = {
+    conversation: {
+      roleShift: "avoiding the conversation → naming it directly",
+      behavioralObjective: "Have the conversation you have been avoiding within 48 hours and name the one change you need.",
+      reframe: "Silence protects the discomfort, not the relationship. Naming the issue moves it.",
+      breakdown: `You are carrying a conversation you have not had yet${nameStr}. The longer it waits, the larger it feels and the more it costs the working relationship. Name the specific behavior, the impact, and the change you need, clearly and once.`,
+    },
+    stuck: {
+      roleShift: "waiting to be chosen → choosing the direction",
+      behavioralObjective: "Name what you do not want and flip it into what you do want, within 48 hours.",
+      reframe: "Stuck is not a verdict. It is a direction you have not chosen yet.",
+      breakdown: `You feel stuck because the next direction is not yet chosen, not because the options are gone${nameStr}. Clarity comes from contrast: name what drains you, flip it into what you want, and move on one piece this week.`,
+    },
+    speak_up: {
+      roleShift: "staying quiet → speaking early",
+      behavioralObjective: "Speak once in the first ten minutes of your next meeting. Decide the contribution now.",
+      reframe: "Silence reads as agreement, not as listening. One early contribution changes the room.",
+      breakdown: `You hold back to avoid getting it wrong, but staying quiet costs you more than an imperfect point ever would${nameStr}. Decide your one contribution before the meeting and say it early, in two sentences.`,
+    },
+    executive_visibility: {
+      roleShift: "reporting tasks → naming the impact",
+      behavioralObjective: "Reframe one recent deliverable as a business outcome and share it with leadership this week.",
+      reframe: "Effort described is forgotten. Impact named is remembered. Lead with the result.",
+      breakdown: `Your work is strong, but it is framed as tasks rather than outcomes, so leaders read you as execution rather than strategy${nameStr}. State what one deliverable changed for the business and put it in front of the right audience.`,
+    },
+    negotiate: {
+      roleShift: "hoping they offer → naming my ask",
+      behavioralObjective: "Decide your target and your walk-away, then make the ask within 48 hours.",
+      reframe: "Waiting to be offered hands them the anchor. Name your ask and let the silence work.",
+      breakdown: `You are waiting to be given what you could ask for${nameStr}. Decide your target and the point past which the answer is no, open with a specific ask, then stop talking and let them respond.`,
+    },
+    mindset: {
+      roleShift: "this proves I am not enough → this is one data point",
+      behavioralObjective: "Name the story you are telling yourself, separate it from the fact, and take one action today.",
+      reframe: "One hard moment is data, not a verdict. You decide what it means.",
+      breakdown: `A single setback is being treated as proof of your worth${nameStr}. That is a story, not a fact. Name the story, state what actually happened, and take one small action before the feeling decides for you.`,
+    },
+  };
+
+  let core: Core | undefined;
+  if (flowType === "conversation" && strategy) core = conversationByStrategy[strategy];
+  if (!core && flowType) core = byFlow[flowType];
+  if (!core) core = {
+    roleShift: "needing certainty first → choosing to act now",
+    behavioralObjective: "Choose one action within your control and take it within 24 hours.",
+    reframe: "Certainty comes after the action, not before it. Choose, then move.",
+    breakdown: `You are waiting for conditions to feel right before acting${nameStr}. They rarely will. Pick the one action you can control today and take it, then reassess with new information.`,
+  };
+
   return {
     problemType, strategy,
-    reframe: "Waiting for the right moment is the pattern. The moment is now.",
-    breakdown: `The next move is clear${nameStr}. The question is whether you take it today or keep building the case for why the timing is not right. Every day you wait is still a decision, just not the one you intended to make.`,
+    roleShift: core.roleShift,
+    behavioralObjective: core.behavioralObjective,
+    reframe: core.reframe,
+    breakdown: core.breakdown,
     script: strategy === "DIRECT_CONVERSATION" ? {
       opening: "I want to address something that is affecting my work. Is now a good time?",
       issue: "There is a specific pattern I need to name. Here is what I have observed.",
@@ -876,8 +964,8 @@ function buildFallback(problemType: string, strategy: string | null, name?: stri
       ask: "What I need is a specific change, agreed on today. Then pause and say nothing.",
       pushback: "I hear you. This still needs to be resolved. What would need to happen to move this forward?",
     } : null,
-    sections: [{ title: "What to Do Now", content: `1. Name the highest-leverage action available to you in the next 24 hours${nameStr}.\n2. Execute it before anything else today.\n3. Reassess tomorrow with new information, not the same story.`, premium: false }],
-    nextSteps: ["Identify the one action you have been avoiding. That is your first move. Do it before anything else today."],
+    sections: [{ title: "What to Do Now", content: `1. Choose the one action within your control that moves this forward today${nameStr}.\n2. Take it before anything else.\n3. Reassess tomorrow with new information, not the same story.`, premium: false }],
+    nextSteps: ["Identify the one action you have been avoiding. That is your first move. Take it before anything else today."],
   };
 }
 
