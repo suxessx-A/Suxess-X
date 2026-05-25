@@ -12,7 +12,6 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAccess } from "@/context/AccessContext";
 
-const WEEKLY_URL = process.env.EXPO_PUBLIC_STRIPE_WEEKLY_URL ?? "";
 const MONTHLY_URL = process.env.EXPO_PUBLIC_STRIPE_MONTHLY_URL ?? "";
 
 const VALUE_POINTS = [
@@ -21,22 +20,19 @@ const VALUE_POINTS = [
   "Take control of your career direction",
 ];
 
-type Plan = "weekly" | "monthly";
-
 export default function PaywallScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { markPaid } = useAccess();
-  const [selectedPlan, setSelectedPlan] = useState<Plan>("monthly");
   const [isLoading, setIsLoading] = useState(false);
 
   const topInset = Platform.OS === "web" ? 0 : insets.top;
   const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
 
   const handleUnlock = async () => {
-    const url = selectedPlan === "weekly" ? WEEKLY_URL : MONTHLY_URL;
+    const url = MONTHLY_URL;
     if (!url) {
-      alert("Payment integration coming soon. Set EXPO_PUBLIC_STRIPE_WEEKLY_URL and EXPO_PUBLIC_STRIPE_MONTHLY_URL.");
+      alert("Payment integration coming soon. Set EXPO_PUBLIC_STRIPE_MONTHLY_URL.");
       return;
     }
     setIsLoading(true);
@@ -146,10 +142,6 @@ export default function PaywallScreen() {
       alignItems: "center",
       justifyContent: "space-between",
     },
-    pricingCardUnselected: {
-      borderColor: "rgba(255,255,255,0.12)",
-      backgroundColor: "rgba(255,255,255,0.04)",
-    },
     pricingCardSelected: {
       borderColor: "#7c3aed",
       backgroundColor: "rgba(124,58,237,0.12)",
@@ -165,34 +157,6 @@ export default function PaywallScreen() {
       fontSize: 13,
       fontFamily: "Inter_400Regular",
       color: "rgba(255,255,255,0.5)",
-    },
-    popularBadge: {
-      backgroundColor: "#d4a017",
-      borderRadius: 6,
-      paddingVertical: 3,
-      paddingHorizontal: 9,
-    },
-    popularText: {
-      fontSize: 9,
-      fontFamily: "Inter_700Bold",
-      color: "#1a1a2e",
-      textTransform: "uppercase",
-      letterSpacing: 1,
-    },
-    radioOuter: {
-      width: 20,
-      height: 20,
-      borderRadius: 10,
-      borderWidth: 2,
-      alignItems: "center",
-      justifyContent: "center",
-      marginLeft: 14,
-    },
-    radioInner: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: "#7c3aed",
     },
     footer: {
       paddingHorizontal: 20,
@@ -241,7 +205,7 @@ export default function PaywallScreen() {
       <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
         <View style={s.hero}>
           <View style={s.badge}>
-            <Text style={s.badgeText}>Suxess X</Text>
+            <Text style={s.badgeText}>Amplify X</Text>
           </View>
           <Text style={s.headline}>
             Stop overthinking.{"\n"}Take control of what{"\n"}you do next.
@@ -267,66 +231,12 @@ export default function PaywallScreen() {
         </View>
 
         <View style={s.pricingSection}>
-          <TouchableOpacity
-            style={[
-              s.pricingCard,
-              selectedPlan === "weekly"
-                ? s.pricingCardSelected
-                : s.pricingCardUnselected,
-            ]}
-            onPress={() => setSelectedPlan("weekly")}
-            activeOpacity={0.82}
-          >
-            <View style={s.pricingLeft}>
-              <Text style={s.pricingLabel}>Weekly</Text>
-              <Text style={s.pricingAmount}>$6 per week</Text>
-            </View>
-            <View
-              style={[
-                s.radioOuter,
-                {
-                  borderColor:
-                    selectedPlan === "weekly"
-                      ? "#7c3aed"
-                      : "rgba(255,255,255,0.2)",
-                },
-              ]}
-            >
-              {selectedPlan === "weekly" && <View style={s.radioInner} />}
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              s.pricingCard,
-              selectedPlan === "monthly"
-                ? s.pricingCardSelected
-                : s.pricingCardUnselected,
-            ]}
-            onPress={() => setSelectedPlan("monthly")}
-            activeOpacity={0.82}
-          >
+          <View style={[s.pricingCard, s.pricingCardSelected]}>
             <View style={s.pricingLeft}>
               <Text style={s.pricingLabel}>Monthly</Text>
               <Text style={s.pricingAmount}>$20 per month</Text>
             </View>
-            <View
-              style={[
-                s.radioOuter,
-                {
-                  borderColor:
-                    selectedPlan === "monthly"
-                      ? "#7c3aed"
-                      : "rgba(255,255,255,0.2)",
-                },
-              ]}
-            >
-              {selectedPlan === "monthly" && <View style={s.radioInner} />}
-            </View>
-            <View style={s.popularBadge}>
-              <Text style={s.popularText}>Most Popular</Text>
-            </View>
-          </TouchableOpacity>
+          </View>
         </View>
 
         <View style={{ height: 8 }} />
@@ -347,7 +257,7 @@ export default function PaywallScreen() {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity style={s.backLink} onPress={() => router.back()} activeOpacity={0.7}>
-          <Text style={s.backLinkText}>Back to Example</Text>
+          <Text style={s.backLinkText}>Not now</Text>
         </TouchableOpacity>
       </View>
     </View>

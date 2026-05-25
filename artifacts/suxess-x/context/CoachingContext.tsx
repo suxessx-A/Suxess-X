@@ -75,7 +75,7 @@ interface CoachingContextValue {
   isEvaluating: boolean;
   isLoading: boolean;
   error: string | null;
-  setActiveFlow: (flow: FlowType | null) => void;
+  setActiveFlow: (flow: FlowType | null) => Promise<boolean>;
   setAnswer: (key: string, value: string | string[]) => void;
   setResult: (result: CoachingResult | null) => void;
   resetFlow: () => void;
@@ -320,24 +320,27 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const setActiveFlow = (flow: FlowType | null) => {
+  const setActiveFlow = async (flow: FlowType | null): Promise<boolean> => {
     if (flow === null) {
       setActiveFlowState(null);
       setAnswers({});
       setRecommendation(null);
       setResult(null);
       setError(null);
-      return;
+      return false;
     }
-    checkFlowAccess(flow).then((allowed) => {
-      if (allowed) {
-        setActiveFlowState(flow);
-        setAnswers({});
-        setRecommendation(null);
-        setResult(null);
-        setError(null);
-      }
-    });
+    // checkFlowAccess enforces the free-tier limit and shows the upgrade gate
+    // modal when blocked. Return whether the flow was actually activated so the
+    // caller knows whether to navigate into it.
+    const allowed = await checkFlowAccess(flow);
+    if (allowed) {
+      setActiveFlowState(flow);
+      setAnswers({});
+      setRecommendation(null);
+      setResult(null);
+      setError(null);
+    }
+    return allowed;
   };
 
   const setAnswer = (key: string, value: string | string[]) => {

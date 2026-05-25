@@ -59,7 +59,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ payment_success?: string; unlock?: string }>();
   const { setActiveFlow } = useCoaching();
-  const { isPaid, isCheckingAccess, markPaid } = useAccess();
+  const { isPaid, markPaid } = useAccess();
 
   const topInset = Platform.OS === "web" ? 67 : insets.top;
   const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
@@ -73,13 +73,12 @@ export default function HomeScreen() {
     }
   }, [params.payment_success, params.unlock]);
 
-  const handleFlowPress = (id: FlowType) => {
-    if (!isPaid) {
-      router.push("/paywall");
-      return;
-    }
-    setActiveFlow(id);
-    router.push("/flow");
+  const handleFlowPress = async (id: FlowType) => {
+    // All users can run flows up to the free-tier limit. setActiveFlow runs
+    // checkFlowAccess, which shows the upgrade gate on the 4th flow or a repeat
+    // and returns false. Only navigate when the flow was actually activated.
+    const allowed = await setActiveFlow(id);
+    if (allowed) router.push("/flow");
   };
 
   const styles = StyleSheet.create({
@@ -184,24 +183,6 @@ export default function HomeScreen() {
       letterSpacing: 1.2,
       marginBottom: 16,
     },
-    lockNotice: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 6,
-      marginBottom: 12,
-      paddingHorizontal: 4,
-    },
-    lockIcon: { fontSize: 12, color: colors.mutedForeground },
-    lockText: {
-      fontSize: 12,
-      fontFamily: "Inter_400Regular",
-      color: colors.mutedForeground,
-    },
-    lockLink: {
-      fontSize: 12,
-      fontFamily: "Inter_600SemiBold",
-      color: colors.primary,
-    },
   });
 
   return (
@@ -248,21 +229,7 @@ export default function HomeScreen() {
 
           <View style={styles.divider} />
 
-          <Text style={styles.sectionLabel}>
-            {isPaid ? "Choose your situation" : "Your coaching flows"}
-          </Text>
-
-          {!isPaid && !isCheckingAccess && (
-            <View style={styles.lockNotice}>
-              <Text style={styles.lockIcon}>🔒</Text>
-              <Text style={styles.lockText}>
-                Unlock full access.{" "}
-              </Text>
-              <TouchableOpacity onPress={() => router.push("/paywall")}>
-                <Text style={styles.lockLink}>See plans →</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          <Text style={styles.sectionLabel}>Choose your situation</Text>
 
           {flows.map((flow) => (
             <FlowButton
@@ -272,7 +239,6 @@ export default function HomeScreen() {
               icon={flow.icon}
               onPress={() => handleFlowPress(flow.id)}
               variant="secondary"
-              locked={!isPaid}
             />
           ))}
         </View>
