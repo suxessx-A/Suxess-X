@@ -13,7 +13,7 @@ const AccessContext = createContext<AccessContextValue | null>(null);
 
 export function AccessProvider({ children }: { children: React.ReactNode }) {
   // TESTING_MODE: set to false before LinkedIn launch to enable paywall
-  const [isPaid, setIsPaid] = useState(true);
+  const [isPaid, setIsPaid] = useState(false);
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
 
   useEffect(() => {

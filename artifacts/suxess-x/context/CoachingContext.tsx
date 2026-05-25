@@ -3,7 +3,7 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, Linking } from "react-
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUser } from "@/context/UserContext";
 
-const TESTING_MODE = true;
+const TESTING_MODE = false;
 
 const STRIPE_MONTHLY = "https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00";
 const WAITLIST_URL   = "https://waitlist.amplify-x.co?source=momentum";
