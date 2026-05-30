@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -14,10 +14,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useColors } from "@/hooks/useColors";
 import { useUser } from "@/context/UserContext";
+import { useAccess } from "@/context/AccessContext";
 import { getBase } from "@/context/CoachingContext";
 
 const PRIVACY_URL = "https://waitlist.amplify-x.co/privacy-policy";
 const TERMS_URL = "https://waitlist.amplify-x.co/terms-of-service";
+const BRAND_URL = "https://amplify-x.co";
 const FEEDBACK_MAILTO =
   "mailto:support@amplify-x.co?subject=Feedback%20-%20Amplify%20X%20Momentum";
 
@@ -25,81 +27,30 @@ export default function SettingsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { profile, clearProfile } = useUser();
+  const { clearProfile } = useUser();
+  const { user, isPaid, signOut } = useAccess();
 
-  const email = (profile?.email ?? "").trim();
+  const email = user?.email ?? "";
   const hasEmail = email.length > 0;
 
-  const [isPremium, setIsPremium] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = React.useState(false);
 
   const topInset = Platform.OS === "web" ? 67 : insets.top;
   const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const stored = await AsyncStorage.getItem("suxess_premium");
-        setIsPremium(stored === "true");
-      } catch {}
-    })();
-  }, []);
-
-  const handleManageSubscription = async () => {
-    if (!hasEmail || busy) return;
-    if (!isPremium) {
-      Alert.alert("Manage Subscription", "You don't have an active subscription.");
-      return;
-    }
-    setBusy(true);
-    try {
-      const res = await fetch(
-        `${getBase()}/api/users/${encodeURIComponent(email)}/portal-session`,
-        { method: "POST", headers: { "Content-Type": "application/json" } },
-      );
-      if (!res.ok) throw new Error(`Server error ${res.status}`);
-      const data = await res.json();
-      if (!data?.url) throw new Error("Missing portal url");
-      await Linking.openURL(data.url);
-    } catch (err) {
-      console.error("portal-session error:", err);
-      Alert.alert(
-        "Manage Subscription",
-        "Could not open subscription management. Please try again or email support@amplify-x.co.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleRestore = async () => {
-    if (!hasEmail || busy) return;
-    setBusy(true);
-    try {
-      const res = await fetch(`${getBase()}/api/users/${encodeURIComponent(email)}/premium`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.isPremium === true) {
-          // Set both flags so restore lands in the same fully unlocked state
-          // as a fresh payment: suxess_paid gates home tiles, suxess_premium
-          // gates per-flow free-tier limits.
-          await AsyncStorage.multiSet([
-            ["suxess_premium", "true"],
-            ["suxess_paid", "true"],
-          ]);
-          setIsPremium(true);
-          Alert.alert("Restore Purchases", "Premium restored.");
-          return;
-        }
-      }
-      // 200-but-not-premium, or 404 user not found
-      Alert.alert("Restore Purchases", "No active subscription found for this email.");
-    } catch (err) {
-      console.error("restore error:", err);
-      Alert.alert("Restore Purchases", "Could not restore purchases. Please try again.");
-    } finally {
-      setBusy(false);
-    }
+  const handleSignOut = () => {
+    if (busy) return;
+    Alert.alert("Sign Out?", "You will need to sign in again to use the app.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Sign Out",
+        style: "destructive",
+        onPress: async () => {
+          await signOut();
+          // AppGate detects the cleared session and unmounts this screen.
+        },
+      },
+    ]);
   };
 
   const handleDelete = () => {
@@ -115,12 +66,13 @@ export default function SettingsScreen() {
           onPress: async () => {
             setBusy(true);
             try {
-              const res = await fetch(`${getBase()}/api/users/${encodeURIComponent(email)}`, {
-                method: "DELETE",
-              });
+              const res = await fetch(
+                `${getBase()}/api/users/${encodeURIComponent(email)}`,
+                { method: "DELETE" },
+              );
               if (!res.ok) throw new Error(`Server error ${res.status}`);
-              // Clear every app key, then clear the profile. Clearing the
-              // profile flips AppGate back to the onboarding screen.
+              // Scrub every app-owned key, then the profile, then sign the
+              // session out. AppGate will route to LoginScreen.
               await AsyncStorage.multiRemove([
                 "suxess_premium",
                 "suxess_paid",
@@ -128,6 +80,7 @@ export default function SettingsScreen() {
                 "suxess_executions",
               ]);
               await clearProfile();
+              await signOut();
             } catch (err) {
               console.error("delete account error:", err);
               Alert.alert(
@@ -200,6 +153,7 @@ export default function SettingsScreen() {
     statusBadge: { borderRadius: 8, paddingVertical: 4, paddingHorizontal: 12 },
     statusBadgeText: { fontSize: 12, fontFamily: "Inter_700Bold", textTransform: "uppercase", letterSpacing: 0.8 },
     disabledRowText: { fontSize: 15, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
+    signOutText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: colors.primary },
     deleteWrap: { marginTop: 40, alignItems: "center", paddingVertical: 8 },
     deleteText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: colors.destructive },
     deleteTextDisabled: { color: colors.mutedForeground },
@@ -232,49 +186,37 @@ export default function SettingsScreen() {
 
         {/* SUBSCRIPTION */}
         <Text style={s.sectionLabel}>Subscription</Text>
-        {hasEmail ? (
-          <View style={s.card}>
-            <View style={s.row}>
-              <View style={s.rowLabelWrap}>
-                <Text style={s.rowLabel}>Status</Text>
-              </View>
-              <View
-                style={[
-                  s.statusBadge,
-                  { backgroundColor: isPremium ? "#f0fdf4" : colors.secondary },
-                ]}
-              >
-                <Text style={[s.statusBadgeText, { color: isPremium ? "#059669" : colors.mutedForeground }]}>
-                  {isPremium ? "Premium" : "Free"}
-                </Text>
-              </View>
+        <View style={s.card}>
+          <View style={s.row}>
+            <View style={s.rowLabelWrap}>
+              <Text style={s.rowLabel}>Status</Text>
             </View>
-            <View style={s.rowDivider} />
-            <TouchableOpacity style={s.row} onPress={handleManageSubscription} activeOpacity={0.7} disabled={busy}>
-              <View style={s.rowLabelWrap}>
-                <Text style={s.rowLabel}>Manage Subscription</Text>
-              </View>
-              <View style={s.rowRight}>
-                <Chevron />
-              </View>
-            </TouchableOpacity>
-            <View style={s.rowDivider} />
-            <TouchableOpacity style={s.row} onPress={handleRestore} activeOpacity={0.7} disabled={busy}>
-              <View style={s.rowLabelWrap}>
-                <Text style={s.rowLabel}>Restore Purchases</Text>
-              </View>
-              <View style={s.rowRight}>
-                <Chevron />
-              </View>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={s.card}>
-            <View style={s.row}>
-              <Text style={s.disabledRowText}>Sign in required</Text>
+            <View
+              style={[
+                s.statusBadge,
+                { backgroundColor: isPaid ? "#f0fdf4" : colors.secondary },
+              ]}
+            >
+              <Text style={[s.statusBadgeText, { color: isPaid ? "#059669" : colors.mutedForeground }]}>
+                {isPaid ? "Active" : "Inactive"}
+              </Text>
             </View>
           </View>
-        )}
+          <View style={s.rowDivider} />
+          <TouchableOpacity
+            style={s.row}
+            onPress={() => Linking.openURL(BRAND_URL)}
+            activeOpacity={0.7}
+          >
+            <View style={s.rowLabelWrap}>
+              <Text style={s.rowLabel}>Manage Account</Text>
+            </View>
+            <View style={s.rowRight}>
+              <Text style={s.rowValue}>amplify-x.co</Text>
+              <Chevron />
+            </View>
+          </TouchableOpacity>
+        </View>
 
         {/* SUPPORT */}
         <Text style={s.sectionLabel}>Support</Text>
@@ -310,6 +252,23 @@ export default function SettingsScreen() {
             </View>
           </TouchableOpacity>
         </View>
+
+        {/* SIGN OUT */}
+        {hasEmail ? (
+          <>
+            <Text style={s.sectionLabel}>Session</Text>
+            <View style={s.card}>
+              <TouchableOpacity style={s.row} onPress={handleSignOut} activeOpacity={0.7} disabled={busy}>
+                <View style={s.rowLabelWrap}>
+                  <Text style={s.signOutText}>Sign Out</Text>
+                </View>
+                <View style={s.rowRight}>
+                  <Chevron />
+                </View>
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : null}
 
         {/* DELETE */}
         {hasEmail ? (

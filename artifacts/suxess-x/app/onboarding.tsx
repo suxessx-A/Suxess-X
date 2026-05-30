@@ -5,6 +5,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUser, UserProfile } from "@/context/UserContext";
+import { useAccess } from "@/context/AccessContext";
 
 const INDUSTRIES = [
   "Mining and Resources",
@@ -29,7 +30,10 @@ const CHALLENGES = [
   "Managing my confidence under pressure",
 ];
 
-const TOTAL_STEPS = 6;
+// v1.2 login-only: the email is known from the magic-link sign-in, so the
+// onboarding email step is gone. Five questions remain: name, industry,
+// level, challenge, goal.
+const TOTAL_STEPS = 5;
 
 interface StepProps {
   onNext: (value: string) => void;
@@ -63,45 +67,11 @@ function Step1Name({ onNext }: StepProps) {
   );
 }
 
-function Step2Email({ onNext, onBack }: StepProps) {
-  const [email, setEmail] = useState("");
-  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-  return (
-    <View style={s.stepWrap}>
-      <Text style={s.stepLabel}>Step 2 of {TOTAL_STEPS}</Text>
-      <Text style={s.stepTitle}>What is your email?</Text>
-      <Text style={s.stepSub}>We use this to save your progress and send you your coaching notes.</Text>
-      <TextInput
-        style={s.textInput}
-        placeholder="you@example.com"
-        placeholderTextColor="rgba(255,255,255,0.3)"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-        returnKeyType="done"
-        onSubmitEditing={() => valid && onNext(email.trim())}
-      />
-      <TouchableOpacity
-        style={[s.nextBtn, !valid && s.nextBtnDisabled]}
-        onPress={() => valid && onNext(email.trim())}
-        disabled={!valid}
-      >
-        <Text style={s.nextBtnText}>Continue</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={s.backBtn} onPress={onBack}>
-        <Text style={s.backBtnText}>Back</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-function Step3Industry({ onNext, onBack }: StepProps) {
+function Step2Industry({ onNext, onBack }: StepProps) {
   const [selected, setSelected] = useState("");
   return (
     <View style={s.stepWrap}>
-      <Text style={s.stepLabel}>Step 3 of {TOTAL_STEPS}</Text>
+      <Text style={s.stepLabel}>Step 2 of {TOTAL_STEPS}</Text>
       <Text style={s.stepTitle}>What is your industry?</Text>
       {INDUSTRIES.map((item) => (
         <TouchableOpacity
@@ -126,11 +96,11 @@ function Step3Industry({ onNext, onBack }: StepProps) {
   );
 }
 
-function Step4Level({ onNext, onBack }: StepProps) {
+function Step3Level({ onNext, onBack }: StepProps) {
   const [selected, setSelected] = useState("");
   return (
     <View style={s.stepWrap}>
-      <Text style={s.stepLabel}>Step 4 of {TOTAL_STEPS}</Text>
+      <Text style={s.stepLabel}>Step 3 of {TOTAL_STEPS}</Text>
       <Text style={s.stepTitle}>What is your level?</Text>
       {LEVELS.map((item) => (
         <TouchableOpacity
@@ -155,11 +125,11 @@ function Step4Level({ onNext, onBack }: StepProps) {
   );
 }
 
-function Step5Challenge({ onNext, onBack }: StepProps) {
+function Step4Challenge({ onNext, onBack }: StepProps) {
   const [selected, setSelected] = useState("");
   return (
     <View style={s.stepWrap}>
-      <Text style={s.stepLabel}>Step 5 of {TOTAL_STEPS}</Text>
+      <Text style={s.stepLabel}>Step 4 of {TOTAL_STEPS}</Text>
       <Text style={s.stepTitle}>What is your biggest challenge right now?</Text>
       {CHALLENGES.map((item) => (
         <TouchableOpacity
@@ -184,11 +154,11 @@ function Step5Challenge({ onNext, onBack }: StepProps) {
   );
 }
 
-function Step6Goal({ onNext, onBack }: StepProps) {
+function Step5Goal({ onNext, onBack }: StepProps) {
   const [goal, setGoal] = useState("");
   return (
     <View style={s.stepWrap}>
-      <Text style={s.stepLabel}>Step 6 of {TOTAL_STEPS}</Text>
+      <Text style={s.stepLabel}>Step 5 of {TOTAL_STEPS}</Text>
       <Text style={s.stepTitle}>What does success look like for you in the next 6 months?</Text>
       <Text style={s.stepSub}>Be specific — this shapes everything that follows.</Text>
       <TextInput
@@ -217,6 +187,7 @@ function Step6Goal({ onNext, onBack }: StepProps) {
 export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const { saveProfile } = useUser();
+  const { user } = useAccess();
   const [step, setStep] = useState(1);
   const [data, setData] = useState<Partial<UserProfile>>({});
 
@@ -229,7 +200,8 @@ export default function OnboardingScreen() {
     if (step < TOTAL_STEPS) {
       setStep(step + 1);
     } else {
-      saveProfile(updated as UserProfile);
+      // Email is taken from the logged-in session, not asked again.
+      saveProfile({ ...updated, email: user?.email ?? "" } as UserProfile);
     }
   };
 
@@ -253,11 +225,10 @@ export default function OnboardingScreen() {
         </View>
 
         {step === 1 && <Step1Name onNext={(v) => handleNext("name", v)} />}
-        {step === 2 && <Step2Email onNext={(v) => handleNext("email", v)} onBack={() => setStep(1)} />}
-        {step === 3 && <Step3Industry onNext={(v) => handleNext("industry", v)} onBack={() => setStep(2)} />}
-        {step === 4 && <Step4Level onNext={(v) => handleNext("level", v)} onBack={() => setStep(3)} />}
-        {step === 5 && <Step5Challenge onNext={(v) => handleNext("challenge", v)} onBack={() => setStep(4)} />}
-        {step === 6 && <Step6Goal onNext={(v) => handleNext("goal", v)} onBack={() => setStep(5)} />}
+        {step === 2 && <Step2Industry onNext={(v) => handleNext("industry", v)} onBack={() => setStep(1)} />}
+        {step === 3 && <Step3Level onNext={(v) => handleNext("level", v)} onBack={() => setStep(2)} />}
+        {step === 4 && <Step4Challenge onNext={(v) => handleNext("challenge", v)} onBack={() => setStep(3)} />}
+        {step === 5 && <Step5Goal onNext={(v) => handleNext("goal", v)} onBack={() => setStep(4)} />}
       </ScrollView>
     </KeyboardAvoidingView>
   );

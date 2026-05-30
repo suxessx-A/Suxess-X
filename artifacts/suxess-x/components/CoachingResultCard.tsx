@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { CoachingResult, CoachingScript, CoachingSection, CoachingStrategy, CoachingTrigger, ProblemType } from "@/context/CoachingContext";
@@ -410,99 +410,6 @@ function SectionCard({ section, problemType, strategy }: {
   );
 }
 
-function PremiumLockCard({ section }: { section: CoachingSection }) {
-  const s = StyleSheet.create({
-    card: {
-      borderRadius: 10, marginBottom: 10,
-      borderWidth: 1.5, borderColor: "#00D4AA",
-      backgroundColor: "rgba(0,212,170,0.06)",
-      paddingVertical: 14, paddingHorizontal: 18,
-      alignItems: "center",
-    },
-    unlockText: {
-      fontSize: 12, fontFamily: "Inter_700Bold",
-      letterSpacing: 2, textTransform: "uppercase",
-      color: "#00D4AA", marginBottom: 4,
-    },
-    subText: {
-      fontSize: 11, fontFamily: "Inter_400Regular",
-      color: "rgba(26,26,46,0.55)", textAlign: "center",
-    },
-  });
-
-  return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      style={s.card}
-      onPress={() => Linking.openURL("https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00")}
-    >
-      <Text style={s.unlockText}>Unlock Premium</Text>
-      <Text style={s.subText}>Less than a coffee a week  ·  $20/month</Text>
-    </TouchableOpacity>
-  );
-}
-
-function PremiumPlusCards() {
-  const items = [
-    {
-      icon: "👥",
-      title: "Peer Accountability",
-      desc: "Get paired with someone working on the same challenges. Both of you see each other's commitments and follow-through.",
-    },
-    {
-      icon: "🎯",
-      title: "Coach Escalation",
-      desc: "Book a session with a vetted coach who already knows your history and patterns. No briefing required. Straight to work.",
-    },
-    {
-      icon: "💬",
-      title: "Personalised AI Coach",
-      desc: "A coach built on your session history and patterns. It already knows who you are and what keeps getting in the way.",
-    },
-  ];
-
-  const s = StyleSheet.create({
-    eyebrow: { ...T.eyebrow, color: "#7c3aed", textAlign: "center", marginBottom: 6, marginTop: 24 },
-    heading: { ...T.cardTitle, textAlign: "center", marginBottom: 16, fontSize: 16 },
-    card: {
-      borderRadius: 12, borderWidth: 1, borderColor: "rgba(124,58,237,0.2)",
-      backgroundColor: "rgba(124,58,237,0.04)", padding: 18, marginBottom: 10,
-    },
-    topRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 8 },
-    iconText: { fontSize: 22 },
-    titleWrap: { flex: 1 },
-    cardEyebrow: { fontSize: 9, fontFamily: "Inter_700Bold", letterSpacing: 1.5, textTransform: "uppercase", color: "#7c3aed", marginBottom: 2 },
-    cardTitle: { ...T.cardTitle, fontSize: 15 },
-    desc: { ...T.bodySmall, marginBottom: 10 },
-    link: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#7c3aed" },
-  });
-
-  return (
-    <>
-      <Text style={s.eyebrow}>Premium Plus — Coming Soon</Text>
-      <Text style={s.heading}>Go further. Move faster.</Text>
-      {items.map((item, i) => (
-        <TouchableOpacity
-          key={i}
-          style={s.card}
-          activeOpacity={0.85}
-          onPress={() => Linking.openURL("https://waitlist.amplify-x.co?source=momentum")}
-        >
-          <View style={s.topRow}>
-            <Text style={s.iconText}>{item.icon}</Text>
-            <View style={s.titleWrap}>
-              <Text style={s.cardEyebrow}>Premium Plus</Text>
-              <Text style={s.cardTitle}>{item.title}</Text>
-            </View>
-          </View>
-          <Text style={s.desc}>{item.desc}</Text>
-          <Text style={s.link}>Join the waitlist →</Text>
-        </TouchableOpacity>
-      ))}
-    </>
-  );
-}
-
 export function CoachingResultCard({ result: initialResult, onReset, ctaButton, flowType, answers }: CoachingResultCardProps) {
   const [result, setResult] = useState<CoachingResult>(initialResult);
   const colors = useColors();
@@ -569,30 +476,20 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
         <ScriptSection script={result.script} strategy={result.strategy} />
       )}
 
-      {(() => {
-        // Render every non-premium section in order, then a SINGLE premium
-        // lock card if any premium section exists. Some flows (influence,
-        // containment) emit two premium sections, which previously rendered
-        // two identical "Unlock Premium" cards back-to-back.
-        const rest = (result.sections ?? []).filter(
-          (sec) => sec.title !== "State Set" && sec.title !== "Internal Clarity"
-        );
-        const visible = rest.filter((sec) => !sec.premium);
-        const premiumSection = rest.find((sec) => sec.premium);
-        return (
-          <>
-            {visible.map((section, i) => (
-              <SectionCard
-                key={`sec-${i}`}
-                section={section}
-                problemType={result.problemType}
-                strategy={result.strategy}
-              />
-            ))}
-            {premiumSection ? <PremiumLockCard key="premium-lock" section={premiumSection} /> : null}
-          </>
-        );
-      })()}
+      {/* v1.2 login-only: every section renders for the signed-in user.
+          The legacy "premium" flag on a section is now informational only
+          (the backend still marks deeper sections as premium); the gate has
+          moved up to the home subscription-inactive view. */}
+      {(result.sections ?? [])
+        .filter((sec) => sec.title !== "State Set" && sec.title !== "Internal Clarity")
+        .map((section, i) => (
+          <SectionCard
+            key={`sec-${i}`}
+            section={section}
+            problemType={result.problemType}
+            strategy={result.strategy}
+          />
+        ))}
 
       {result.identityAnchor ? <IdentityAnchorCard anchor={result.identityAnchor} /> : null}
 
@@ -614,8 +511,6 @@ export function CoachingResultCard({ result: initialResult, onReset, ctaButton, 
         sessionId={sessionId}
         userGoal={profile?.goal}
       />
-
-      <PremiumPlusCards />
 
       {ctaButton ? (
         <>

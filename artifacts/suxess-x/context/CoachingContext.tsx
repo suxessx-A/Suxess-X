@@ -1,14 +1,10 @@
 import React, { createContext, useContext, useState } from "react";
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Linking } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUser } from "@/context/UserContext";
 
-const TESTING_MODE = false;
-
-const STRIPE_MONTHLY = "https://buy.stripe.com/aFa8wReBd99VgpR8HO5kk00";
-const WAITLIST_URL   = "https://waitlist.amplify-x.co?source=momentum";
-const TERMS_URL      = "https://waitlist.amplify-x.co/terms-of-service";
-const PRIVACY_URL    = "https://waitlist.amplify-x.co/privacy-policy";
+// v1.2 login-only: no in-app paywall, no free-tier counter, no upgrade modal.
+// Access control lives in AccessContext + the home-screen subscription-inactive
+// view; CoachingProvider only orchestrates the flow / evaluate / generate
+// round-trips for users who are already past those gates.
 
 export type FlowType = "conversation" | "stuck" | "speak_up" | "executive_visibility" | "negotiate" | "mindset";
 export type ProblemType = "VICTIM" | "AVOIDING_CHALLENGER" | "OVERWHELMED";
@@ -75,7 +71,7 @@ interface CoachingContextValue {
   isEvaluating: boolean;
   isLoading: boolean;
   error: string | null;
-  setActiveFlow: (flow: FlowType | null) => Promise<boolean>;
+  setActiveFlow: (flow: FlowType | null) => void;
   setAnswer: (key: string, value: string | string[]) => void;
   setResult: (result: CoachingResult | null) => void;
   resetFlow: () => void;
@@ -86,13 +82,12 @@ interface CoachingContextValue {
 const CoachingContext = createContext<CoachingContextValue | null>(null);
 
 // Flows that have hardcoded problem types: skip evaluate, go straight to
-// generate. negotiate belongs here too. The strategy picker is a false choice
-// for it (the backend ignores the strategy and always runs getNegotiatePrompt),
-// so there is no reason to spend an evaluate round-trip producing a picker that
-// flow.tsx then auto-skips.
+// generate. The strategy picker is a false choice for these (the backend
+// ignores the strategy and always runs the dedicated prompt), so there is no
+// reason to spend an evaluate round-trip producing a picker that flow.tsx
+// then auto-skips.
 const SKIP_EVALUATE_FLOWS: FlowType[] = ["mindset", "speak_up", "executive_visibility", "negotiate"];
 
-// THIS IS THE CRITICAL FIX — getBase was missing from this file
 export function getBase(): string {
   if (typeof window !== "undefined" && window.location && window.location.origin && window.location.origin !== "null") {
     return window.location.origin;
@@ -277,7 +272,6 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [gateModal, setGateModal] = useState<{ visible: boolean; message?: string }>({ visible: false });
   const { profile } = useUser();
   const userProfile = profile ? {
     name: profile.name,
@@ -287,60 +281,12 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
     goal: profile.goal,
   } : null;
 
-  async function checkFlowAccess(flow: FlowType): Promise<boolean> {
-    if (TESTING_MODE) return true;
-    try {
-      const premium = await AsyncStorage.getItem("suxess_premium");
-      if (premium === "true") return true;
-
-      const stored = await AsyncStorage.getItem("suxess_sessions");
-      const sessions: { flowType: string }[] = stored ? JSON.parse(stored) : [];
-      const usedFlows = [...new Set(sessions.map((s) => s.flowType))];
-
-      const alreadyUsed = usedFlows.includes(flow);
-      if (alreadyUsed) {
-        setGateModal({
-          visible: true,
-          message: "You have already used this flow on the free tier. Upgrade to Premium for unlimited runs across all 6 flows.",
-        });
-        return false;
-      }
-
-      if (usedFlows.length >= 3) {
-        setGateModal({
-          visible: true,
-          message: "You have completed your 3 free flows. Upgrade to Premium to access all 6 flows with unlimited runs.",
-        });
-        return false;
-      }
-
-      return true;
-    } catch {
-      return true;
-    }
-  }
-
-  const setActiveFlow = async (flow: FlowType | null): Promise<boolean> => {
-    if (flow === null) {
-      setActiveFlowState(null);
-      setAnswers({});
-      setRecommendation(null);
-      setResult(null);
-      setError(null);
-      return false;
-    }
-    // checkFlowAccess enforces the free-tier limit and shows the upgrade gate
-    // modal when blocked. Return whether the flow was actually activated so the
-    // caller knows whether to navigate into it.
-    const allowed = await checkFlowAccess(flow);
-    if (allowed) {
-      setActiveFlowState(flow);
-      setAnswers({});
-      setRecommendation(null);
-      setResult(null);
-      setError(null);
-    }
-    return allowed;
+  const setActiveFlow = (flow: FlowType | null) => {
+    setActiveFlowState(flow);
+    setAnswers({});
+    setRecommendation(null);
+    setResult(null);
+    setError(null);
   };
 
   const setAnswer = (key: string, value: string | string[]) => {
@@ -448,21 +394,6 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const gm = StyleSheet.create({
-    overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" },
-    sheet: { backgroundColor: "#fff", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 28, paddingBottom: 40 },
-    eyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#C9952A", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 },
-    title: { fontSize: 18, fontFamily: "Inter_700Bold", color: "#1a1a2e", lineHeight: 26, marginBottom: 20 },
-    btnPrimary: { backgroundColor: "#00D4AA", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginBottom: 10 },
-    btnPrimaryText: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#0A1628" },
-    btnWaitlist: { borderRadius: 14, paddingVertical: 16, alignItems: "center", marginBottom: 10, borderWidth: 1.5, borderColor: "#7c3aed" },
-    btnWaitlistText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#7c3aed" },
-    dismiss: { alignItems: "center", paddingVertical: 8 },
-    dismissText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#9ca3af" },
-    disclosure: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#9ca3af", lineHeight: 16, textAlign: "center", marginTop: 2, marginBottom: 14, paddingHorizontal: 6 },
-    disclosureLink: { color: "#7c3aed", fontFamily: "Inter_600SemiBold", textDecorationLine: "underline" },
-  });
-
   return (
     <CoachingContext.Provider value={{
       activeFlow, answers, recommendation, result,
@@ -470,34 +401,6 @@ export function CoachingProvider({ children }: { children: React.ReactNode }) {
       setActiveFlow, setAnswer, setResult, resetFlow, evaluateFlow, submitFlow,
     }}>
       {children}
-      <Modal
-        visible={gateModal.visible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setGateModal({ visible: false })}
-      >
-        <View style={gm.overlay}>
-          <View style={gm.sheet}>
-            <Text style={gm.eyebrow}>Premium Required</Text>
-            <Text style={gm.title}>{gateModal.visible ? gateModal.message : ""}</Text>
-            <TouchableOpacity style={gm.btnPrimary} activeOpacity={0.85} onPress={() => Linking.openURL(STRIPE_MONTHLY)}>
-              <Text style={gm.btnPrimaryText}>Unlock Premium — $20/month</Text>
-            </TouchableOpacity>
-            <Text style={gm.disclosure}>
-              Subscription auto-renews at AUD $20 per month until cancelled. Cancel anytime in Settings, at least 24 hours before the end of your current billing period. By subscribing, you agree to our{" "}
-              <Text style={gm.disclosureLink} onPress={() => Linking.openURL(TERMS_URL)}>Terms of Service</Text>
-              {" "}and{" "}
-              <Text style={gm.disclosureLink} onPress={() => Linking.openURL(PRIVACY_URL)}>Privacy Policy</Text>.
-            </Text>
-            <TouchableOpacity style={gm.btnWaitlist} activeOpacity={0.85} onPress={() => Linking.openURL(WAITLIST_URL)}>
-              <Text style={gm.btnWaitlistText}>Join Premium Plus Waitlist</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={gm.dismiss} onPress={() => setGateModal({ visible: false })}>
-              <Text style={gm.dismissText}>Not now</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </CoachingContext.Provider>
   );
 }

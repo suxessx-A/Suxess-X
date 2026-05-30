@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -6,13 +6,16 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  Linking,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { FlowButton } from "@/components/FlowButton";
 import { useCoaching, FlowType } from "@/context/CoachingContext";
 import { useAccess } from "@/context/AccessContext";
+
+const BRAND_URL = "https://amplify-x.co";
 
 const flows: { id: FlowType; label: string; subtitle: string; icon: string }[] = [
   {
@@ -57,28 +60,15 @@ export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const params = useLocalSearchParams<{ payment_success?: string; unlock?: string }>();
   const { setActiveFlow } = useCoaching();
-  const { isPaid, markPaid } = useAccess();
+  const { isPaid, signOut } = useAccess();
 
   const topInset = Platform.OS === "web" ? 67 : insets.top;
   const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
 
-  useEffect(() => {
-    if (params.payment_success === "true" && !isPaid) {
-      markPaid();
-    }
-    if (params.unlock === "owner" && !isPaid) {
-      markPaid();
-    }
-  }, [params.payment_success, params.unlock]);
-
-  const handleFlowPress = async (id: FlowType) => {
-    // All users can run flows up to the free-tier limit. setActiveFlow runs
-    // checkFlowAccess, which shows the upgrade gate on the 4th flow or a repeat
-    // and returns false. Only navigate when the flow was actually activated.
-    const allowed = await setActiveFlow(id);
-    if (allowed) router.push("/flow");
+  const handleFlowPress = (id: FlowType) => {
+    setActiveFlow(id);
+    router.push("/flow");
   };
 
   const styles = StyleSheet.create({
@@ -134,47 +124,6 @@ export default function HomeScreen() {
       paddingTop: 24,
       paddingBottom: bottomInset + 20,
     },
-    tryFreeCard: {
-      borderRadius: 16,
-      backgroundColor: "#1a1a2e",
-      padding: 20,
-      marginBottom: 24,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 14,
-    },
-    tryFreeIconWrap: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
-      backgroundColor: "rgba(212,160,23,0.15)",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    tryFreeIcon: { fontSize: 20 },
-    tryFreeTextWrap: { flex: 1 },
-    tryFreeLabel: {
-      fontSize: 15,
-      fontFamily: "Inter_700Bold",
-      color: "#ffffff",
-      marginBottom: 3,
-    },
-    tryFreeSub: {
-      fontSize: 12,
-      fontFamily: "Inter_400Regular",
-      color: "rgba(255,255,255,0.5)",
-      lineHeight: 17,
-    },
-    tryFreeArrow: {
-      fontSize: 18,
-      color: "#d4a017",
-      fontFamily: "Inter_700Bold",
-    },
-    divider: {
-      height: 1,
-      backgroundColor: colors.border,
-      marginBottom: 20,
-    },
     sectionLabel: {
       fontSize: 12,
       fontFamily: "Inter_600SemiBold",
@@ -183,7 +132,110 @@ export default function HomeScreen() {
       letterSpacing: 1.2,
       marginBottom: 16,
     },
+    inactiveWrap: {
+      paddingHorizontal: 24,
+      paddingTop: 40,
+      paddingBottom: bottomInset + 24,
+      alignItems: "center",
+    },
+    inactiveTitle: {
+      fontSize: 22,
+      fontFamily: "Inter_700Bold",
+      color: colors.foreground,
+      textAlign: "center",
+      lineHeight: 30,
+      marginBottom: 12,
+    },
+    inactiveBody: {
+      fontSize: 15,
+      fontFamily: "Inter_400Regular",
+      color: colors.mutedForeground,
+      textAlign: "center",
+      lineHeight: 22,
+      marginBottom: 28,
+      maxWidth: 360,
+    },
+    inactiveLinkBtn: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingVertical: 14,
+      paddingHorizontal: 22,
+      alignSelf: "stretch",
+      maxWidth: 360,
+      alignItems: "center",
+      marginBottom: 12,
+    },
+    inactiveLinkText: {
+      fontSize: 15,
+      fontFamily: "Inter_600SemiBold",
+      color: colors.foreground,
+    },
+    inactiveSignOutBtn: {
+      paddingVertical: 14,
+      paddingHorizontal: 22,
+      alignSelf: "stretch",
+      maxWidth: 360,
+      alignItems: "center",
+    },
+    inactiveSignOutText: {
+      fontSize: 14,
+      fontFamily: "Inter_500Medium",
+      color: colors.mutedForeground,
+    },
   });
+
+  // Subscription-inactive state: sterile screen, no payment links or pricing.
+  // Reachable when a logged-in user's paid_status is false (cancelled or never
+  // subscribed). amplify-x.co handles the marketing / re-subscribe path
+  // off-app to stay clear of Apple anti-steering rules.
+  if (!isPaid) {
+    return (
+      <View style={styles.container}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+          <View style={styles.header}>
+            <View style={styles.headerTopRow}>
+              <Text style={styles.brand}>Amplify X Momentum</Text>
+              <TouchableOpacity
+                style={styles.settingsBtn}
+                onPress={() => router.push("/settings")}
+                activeOpacity={0.8}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityRole="button"
+                accessibilityLabel="Settings"
+              >
+                <Text style={styles.settingsIcon}>⚙️</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.heading}>
+              Welcome back.
+            </Text>
+          </View>
+
+          <View style={styles.inactiveWrap}>
+            <Text style={styles.inactiveTitle}>Your subscription is currently inactive.</Text>
+            <Text style={styles.inactiveBody}>
+              Sign in is still active. Visit amplify-x.co for information on plans and to manage your account.
+            </Text>
+            <TouchableOpacity
+              style={styles.inactiveLinkBtn}
+              onPress={() => Linking.openURL(BRAND_URL)}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.inactiveLinkText}>Visit amplify-x.co</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.inactiveSignOutBtn}
+              onPress={() => void signOut()}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.inactiveSignOutText}>Sign Out</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -212,23 +264,6 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.content}>
-          <TouchableOpacity
-            style={styles.tryFreeCard}
-            onPress={() => router.push("/example")}
-            activeOpacity={0.85}
-          >
-            <View style={styles.tryFreeIconWrap}>
-              <Text style={styles.tryFreeIcon}>👀</Text>
-            </View>
-            <View style={styles.tryFreeTextWrap}>
-              <Text style={styles.tryFreeLabel}>Try Free</Text>
-              <Text style={styles.tryFreeSub}>See a full coaching example — no account needed</Text>
-            </View>
-            <Text style={styles.tryFreeArrow}>›</Text>
-          </TouchableOpacity>
-
-          <View style={styles.divider} />
-
           <Text style={styles.sectionLabel}>Choose your situation</Text>
 
           {flows.map((flow) => (

@@ -17,9 +17,10 @@ import { setBaseUrl } from "@workspace/api-client-react";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CoachingProvider } from "@/context/CoachingContext";
-import { AccessProvider } from "@/context/AccessContext";
+import { AccessProvider, useAccess } from "@/context/AccessContext";
 import { UserProvider, useUser } from "@/context/UserContext";
 import OnboardingScreen from "@/app/onboarding";
+import LoginScreen from "@/app/login";
 
 if (process.env.EXPO_PUBLIC_DOMAIN) {
   setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
@@ -34,24 +35,29 @@ function RootLayoutNav() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="flow" />
-      <Stack.Screen name="example" />
-      <Stack.Screen name="paywall" />
       <Stack.Screen name="onboarding" />
+      <Stack.Screen name="login" />
       <Stack.Screen name="settings" />
     </Stack>
   );
 }
 
+// AppGate sequence (v1.2 login-only):
+//   1. Wait for AsyncStorage hydration in both contexts.
+//   2. No session → LoginScreen (it also handles magic-link deep links).
+//   3. Session but no profile → OnboardingScreen (collects industry/level/etc.,
+//      email is taken from the logged-in user so step 2 is skipped).
+//   4. Session + profile → main app inside CoachingProvider + Stack.
 function AppGate() {
-  const { hasCompletedOnboarding, isLoading } = useUser();
-  if (isLoading) return null;
+  const { isCheckingAccess, sessionToken } = useAccess();
+  const { isLoading: userLoading, hasCompletedOnboarding } = useUser();
+  if (isCheckingAccess || userLoading) return null;
+  if (!sessionToken) return <LoginScreen />;
   if (!hasCompletedOnboarding) return <OnboardingScreen />;
   return (
-    <AccessProvider>
-      <CoachingProvider>
-        <RootLayoutNav />
-      </CoachingProvider>
-    </AccessProvider>
+    <CoachingProvider>
+      <RootLayoutNav />
+    </CoachingProvider>
   );
 }
 
@@ -78,7 +84,9 @@ export default function RootLayout() {
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
               <UserProvider>
-                <AppGate />
+                <AccessProvider>
+                  <AppGate />
+                </AccessProvider>
               </UserProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>

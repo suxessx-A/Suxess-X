@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "amplify-x-momentum",
+    "scheme": "amplifyx",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
@@ -14,7 +14,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "8"
+      "buildNumber": "9"
     },
     "android": {
       "package": "co.amplify_x.momentum"
