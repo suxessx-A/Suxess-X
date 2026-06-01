@@ -19,7 +19,6 @@ import { getBase } from "@/context/CoachingContext";
 
 const PRIVACY_URL = "https://waitlist.amplify-x.co/privacy-policy";
 const TERMS_URL = "https://waitlist.amplify-x.co/terms-of-service";
-const BRAND_URL = "https://amplify-x.co";
 const FEEDBACK_MAILTO =
   "mailto:support@amplify-x.co?subject=Feedback%20-%20Amplify%20X%20Momentum";
 
@@ -184,7 +183,7 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* SUBSCRIPTION */}
+        {/* SUBSCRIPTION — purely visual status indicator, no link, no onPress */}
         <Text style={s.sectionLabel}>Subscription</Text>
         <View style={s.card}>
           <View style={s.row}>
@@ -202,20 +201,6 @@ export default function SettingsScreen() {
               </Text>
             </View>
           </View>
-          <View style={s.rowDivider} />
-          <TouchableOpacity
-            style={s.row}
-            onPress={() => Linking.openURL(BRAND_URL)}
-            activeOpacity={0.7}
-          >
-            <View style={s.rowLabelWrap}>
-              <Text style={s.rowLabel}>Manage Account</Text>
-            </View>
-            <View style={s.rowRight}>
-              <Text style={s.rowValue}>amplify-x.co</Text>
-              <Chevron />
-            </View>
-          </TouchableOpacity>
         </View>
 
         {/* SUPPORT */}
