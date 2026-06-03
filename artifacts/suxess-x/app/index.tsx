@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
-  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -14,8 +13,6 @@ import { useColors } from "@/hooks/useColors";
 import { FlowButton } from "@/components/FlowButton";
 import { useCoaching, FlowType } from "@/context/CoachingContext";
 import { useAccess } from "@/context/AccessContext";
-
-const BRAND_URL = "https://amplify-x.co";
 
 const flows: { id: FlowType; label: string; subtitle: string; icon: string }[] = [
   {
@@ -185,10 +182,10 @@ export default function HomeScreen() {
     },
   });
 
-  // Subscription-inactive state: sterile screen, no payment links or pricing.
-  // Reachable when a logged-in user's paid_status is false (cancelled or never
-  // subscribed). amplify-x.co handles the marketing / re-subscribe path
-  // off-app to stay clear of Apple anti-steering rules.
+  // Subscription-inactive state: sterile informational screen with no
+  // external links and no payment copy. Reachable when a logged-in user's
+  // paid_status is false (cancelled or never subscribed). Re-activation is
+  // handled entirely off-app; the only affordance in this view is Sign Out.
   if (!isPaid) {
     return (
       <View style={styles.container}>
@@ -215,15 +212,8 @@ export default function HomeScreen() {
           <View style={styles.inactiveWrap}>
             <Text style={styles.inactiveTitle}>Your subscription is currently inactive.</Text>
             <Text style={styles.inactiveBody}>
-              Sign in is still active. Visit amplify-x.co for information on plans and to manage your account.
+              Please sign out and sign back in once your subscription is reactivated.
             </Text>
-            <TouchableOpacity
-              style={styles.inactiveLinkBtn}
-              onPress={() => Linking.openURL(BRAND_URL)}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.inactiveLinkText}>Visit amplify-x.co</Text>
-            </TouchableOpacity>
             <TouchableOpacity
               style={styles.inactiveSignOutBtn}
               onPress={() => void signOut()}

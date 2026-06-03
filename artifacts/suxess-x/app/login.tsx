@@ -14,7 +14,6 @@ import { getBase } from "@/context/CoachingContext";
 // because AppGate renders this component for any unauthenticated launch,
 // including a cold-launch from the magic-link button.
 
-const BRAND_URL = "https://amplify-x.co";
 const PRIVACY_URL = "https://waitlist.amplify-x.co/privacy-policy";
 const TERMS_URL = "https://waitlist.amplify-x.co/terms-of-service";
 const SUPPORT_MAILTO = "mailto:support@amplify-x.co?subject=Amplify%20X%20Momentum%20Support";
@@ -236,15 +235,6 @@ export default function LoginScreen() {
                 )}
               </TouchableOpacity>
 
-              <View style={s.divider} />
-
-              <TouchableOpacity
-                style={s.secondaryLinkRow}
-                activeOpacity={0.7}
-                onPress={() => RNLinking.openURL(BRAND_URL)}
-              >
-                <Text style={s.secondaryLinkText}>New to Amplify X? Visit amplify-x.co ›</Text>
-              </TouchableOpacity>
             </>
           ) : (
             <>
