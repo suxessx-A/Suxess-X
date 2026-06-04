@@ -210,9 +210,9 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.inactiveWrap}>
-            <Text style={styles.inactiveTitle}>Your subscription is currently inactive.</Text>
+            <Text style={styles.inactiveTitle}>This account is not currently active.</Text>
             <Text style={styles.inactiveBody}>
-              Please sign out and sign back in once your subscription is reactivated.
+              Please sign out and sign back in once access has been enabled.
             </Text>
             <TouchableOpacity
               style={styles.inactiveSignOutBtn}

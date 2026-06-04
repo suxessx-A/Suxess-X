@@ -56,7 +56,7 @@ export default function SettingsScreen() {
     if (!hasEmail || busy) return;
     Alert.alert(
       "Delete Account?",
-      "This will permanently delete your account, all coaching history, and cancel any active subscription. This cannot be undone.",
+      "This will permanently delete your account and all coaching history. This cannot be undone.",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -184,7 +184,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* SUBSCRIPTION — purely visual status indicator, no link, no onPress */}
-        <Text style={s.sectionLabel}>Subscription</Text>
+        <Text style={s.sectionLabel}>Account Status</Text>
         <View style={s.card}>
           <View style={s.row}>
             <View style={s.rowLabelWrap}>
@@ -197,7 +197,7 @@ export default function SettingsScreen() {
               ]}
             >
               <Text style={[s.statusBadgeText, { color: isPaid ? "#059669" : colors.mutedForeground }]}>
-                {isPaid ? "Active" : "Inactive"}
+                {isPaid ? "Active" : "Not Active"}
               </Text>
             </View>
           </View>
