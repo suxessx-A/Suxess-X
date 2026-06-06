@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import crypto from "node:crypto";
-import { SignJWT } from "jose";
+import { SignJWT, jwtVerify } from "jose";
 import { and, count, eq, gt } from "drizzle-orm";
 import {
   db,
@@ -64,6 +64,181 @@ async function signSessionToken(email: string): Promise<string> {
     .setExpirationTime(SESSION_TTL)
     .sign(secret);
 }
+
+/**
+ * Verify a session JWT and return the email claim. Used by endpoints that
+ * accept a session_token in the body (e.g. POST /apple-receipt) since this
+ * project has no shared bearer-auth middleware yet.
+ */
+async function verifySessionToken(token: string): Promise<string> {
+  const secret = getSessionSecret();
+  const { payload } = await jwtVerify(token, secret);
+  if (typeof payload.email !== "string" || !payload.email) {
+    throw new Error("Session token missing email claim");
+  }
+  return payload.email.toLowerCase();
+}
+
+// ── Apple In-App Purchase receipt validation ─────────────────────────────────
+//
+// Legacy verifyReceipt endpoint with APPLE_SHARED_SECRET. App Store Server API
+// migration is a future task; this is intentionally simple for v1 launch.
+
+const APPLE_PROD_URL = "https://buy.itunes.apple.com/verifyReceipt";
+const APPLE_SANDBOX_URL = "https://sandbox.itunes.apple.com/verifyReceipt";
+const MOMENTUM_MONTHLY_PRODUCT_ID = "momentum_monthly";
+
+interface AppleReceiptInfo {
+  product_id?: string;
+  original_transaction_id?: string;
+  transaction_id?: string;
+  expires_date_ms?: string;
+  purchase_date_ms?: string;
+}
+
+interface AppleVerifyResponse {
+  status?: number;
+  environment?: string;
+  latest_receipt_info?: AppleReceiptInfo[];
+  receipt?: { in_app?: AppleReceiptInfo[] };
+}
+
+async function postToAppleVerify(
+  url: string,
+  receiptData: string,
+  sharedSecret: string,
+): Promise<AppleVerifyResponse> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      "receipt-data": receiptData,
+      "password": sharedSecret,
+      "exclude-old-transactions": true,
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`Apple verifyReceipt HTTP ${res.status}`);
+  }
+  return (await res.json()) as AppleVerifyResponse;
+}
+
+async function verifyAppleReceipt(receiptData: string): Promise<AppleVerifyResponse> {
+  const sharedSecret = process.env.APPLE_SHARED_SECRET;
+  if (!sharedSecret) {
+    throw new Error("APPLE_SHARED_SECRET is not set");
+  }
+  // Apple's recommended pattern: hit production first; on 21007 the receipt
+  // is from sandbox and we retry there. This lets a single endpoint serve
+  // both TestFlight / sandbox testing and live production traffic.
+  let res = await postToAppleVerify(APPLE_PROD_URL, receiptData, sharedSecret);
+  if (res.status === 21007) {
+    res = await postToAppleVerify(APPLE_SANDBOX_URL, receiptData, sharedSecret);
+  }
+  return res;
+}
+
+function pickActiveMomentumSubscription(
+  apple: AppleVerifyResponse,
+): AppleReceiptInfo | null {
+  // latest_receipt_info is present for auto-renewable subscriptions; fall
+  // back to receipt.in_app for non-subscription edge cases or first-receipt
+  // verification flows.
+  const entries = apple.latest_receipt_info ?? apple.receipt?.in_app ?? [];
+  const now = Date.now();
+  let best: AppleReceiptInfo | null = null;
+  let bestExpires = 0;
+  for (const entry of entries) {
+    if (entry.product_id !== MOMENTUM_MONTHLY_PRODUCT_ID) continue;
+    const exp = entry.expires_date_ms ? Number(entry.expires_date_ms) : 0;
+    if (!Number.isFinite(exp) || exp <= now) continue;
+    if (exp > bestExpires) {
+      bestExpires = exp;
+      best = entry;
+    }
+  }
+  return best;
+}
+
+router.post("/apple-receipt", async (req, res) => {
+  const sessionToken =
+    typeof req.body?.session_token === "string" ? req.body.session_token : "";
+  const receipt =
+    typeof req.body?.receipt === "string" ? req.body.receipt : "";
+
+  if (!sessionToken || !receipt) {
+    res.status(400).json({ error: "session_token and receipt are required" });
+    return;
+  }
+
+  let email: string;
+  try {
+    email = await verifySessionToken(sessionToken);
+  } catch (err) {
+    req.log.warn({ err }, "Invalid session token on /apple-receipt");
+    res.status(401).json({ error: "Invalid session" });
+    return;
+  }
+
+  let apple: AppleVerifyResponse;
+  try {
+    apple = await verifyAppleReceipt(receipt);
+  } catch (err) {
+    req.log.error({ err, email }, "Apple verifyReceipt call failed");
+    res.status(500).json({ error: "Receipt validation upstream error" });
+    return;
+  }
+
+  if (apple.status !== 0) {
+    req.log.warn(
+      { appleStatus: apple.status, environment: apple.environment, email },
+      "Apple verifyReceipt rejected the receipt",
+    );
+    res.status(401).json({ error: "Receipt validation failed" });
+    return;
+  }
+
+  const active = pickActiveMomentumSubscription(apple);
+  if (!active) {
+    req.log.info(
+      { email, environment: apple.environment },
+      "Apple receipt valid but no active momentum_monthly subscription found",
+    );
+    res.status(401).json({ error: "Receipt validation failed" });
+    return;
+  }
+
+  const originalTxnId =
+    active.original_transaction_id ?? active.transaction_id ?? null;
+  const productId = active.product_id ?? MOMENTUM_MONTHLY_PRODUCT_ID;
+  const expiresAt = new Date(Number(active.expires_date_ms));
+
+  const tier: SubscriptionTier = "premium";
+  await db
+    .update(users)
+    .set({
+      paidStatus: true,
+      subscriptionTier: tier,
+      isPremium: true,
+      isPremiumPlus: false,
+      appleOriginalTransactionId: originalTxnId,
+      appleProductId: productId,
+      appleExpiresAt: expiresAt,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.email, email));
+
+  req.log.info(
+    { email, productId, originalTxnId, environment: apple.environment },
+    "User upgraded via Apple IAP receipt",
+  );
+
+  res.json({
+    success: true,
+    paid_status: true,
+    subscription_tier: tier,
+  });
+});
 
 /**
  * Issue a magic-link sign-in for an email: inserts a fresh token row and

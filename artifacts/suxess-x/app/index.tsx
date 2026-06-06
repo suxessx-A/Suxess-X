@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -13,6 +15,16 @@ import { useColors } from "@/hooks/useColors";
 import { FlowButton } from "@/components/FlowButton";
 import { useCoaching, FlowType } from "@/context/CoachingContext";
 import { useAccess } from "@/context/AccessContext";
+import { getBase } from "@/context/CoachingContext";
+import {
+  initIAP,
+  purchaseMembership,
+  finishMembershipTransaction,
+  isUserCancellation,
+  getIapErrorMessage,
+  FALLBACK_PRICE_LABEL,
+} from "@/lib/iap";
+import type { ProductSubscriptionIOS } from "react-native-iap";
 
 const flows: { id: FlowType; label: string; subtitle: string; icon: string }[] = [
   {
@@ -58,15 +70,76 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { setActiveFlow } = useCoaching();
-  const { isPaid, signOut } = useAccess();
+  const { isPaid, signOut, sessionToken, refresh } = useAccess();
 
   const topInset = Platform.OS === "web" ? 67 : insets.top;
   const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
+
+  // IAP state for the !isPaid branch. Fetching the product is best-effort;
+  // if it fails we fall back to a static price label so the Subscribe button
+  // is always tappable (Apple shows the canonical price in its sheet anyway).
+  const [iapProduct, setIapProduct] = useState<ProductSubscriptionIOS | null>(null);
+  const [iapLoading, setIapLoading] = useState(true);
+  const [purchasing, setPurchasing] = useState(false);
+
+  useEffect(() => {
+    if (isPaid) return;
+    let alive = true;
+    (async () => {
+      try {
+        const p = await initIAP();
+        if (alive) setIapProduct(p);
+      } catch (err) {
+        // Stay silent — fallback label will be used. Logged for debugging.
+        console.warn("Home inactive-view IAP init failed:", err);
+      } finally {
+        if (alive) setIapLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [isPaid]);
 
   const handleFlowPress = (id: FlowType) => {
     setActiveFlow(id);
     router.push("/flow");
   };
+
+  const handleSubscribe = async () => {
+    if (purchasing) return;
+    setPurchasing(true);
+    try {
+      const { purchase, receipt } = await purchaseMembership();
+      if (!sessionToken) {
+        throw new Error("Not signed in.");
+      }
+      const res = await fetch(`${getBase()}/api/auth/apple-receipt`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_token: sessionToken, receipt }),
+      });
+      if (!res.ok) {
+        throw new Error(`Server rejected the receipt (HTTP ${res.status}).`);
+      }
+      // Only acknowledge the transaction to Apple after the backend has
+      // recorded it; otherwise a server hiccup would let Apple drop the
+      // receipt on the floor with no way to recover from the client.
+      await finishMembershipTransaction(purchase);
+      await refresh();
+      // refresh() flips isPaid to true; the component re-renders into the
+      // active flow grid below. No navigation needed.
+    } catch (err) {
+      if (isUserCancellation(err)) return;
+      Alert.alert("Purchase failed", getIapErrorMessage(err), [{ text: "OK" }]);
+    } finally {
+      setPurchasing(false);
+    }
+  };
+
+  const subscribeLabel = iapProduct?.displayPrice
+    ? `Subscribe — ${iapProduct.displayPrice}/month`
+    : `Subscribe — ${FALLBACK_PRICE_LABEL}`;
 
   const styles = StyleSheet.create({
     container: {
@@ -152,24 +225,36 @@ export default function HomeScreen() {
       marginBottom: 28,
       maxWidth: 360,
     },
-    inactiveLinkBtn: {
+    // Teal accent for the primary subscribe CTA. The dark on-color text gives
+    // strong contrast against the teal background without relying on a brand
+    // primary that may shift.
+    subscribeBtn: {
       borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors.border,
-      paddingVertical: 14,
+      backgroundColor: "#00D4AA",
+      paddingVertical: 16,
       paddingHorizontal: 22,
       alignSelf: "stretch",
       maxWidth: 360,
       alignItems: "center",
-      marginBottom: 12,
+      justifyContent: "center",
+      minHeight: 52,
+      marginBottom: 14,
     },
-    inactiveLinkText: {
-      fontSize: 15,
-      fontFamily: "Inter_600SemiBold",
-      color: colors.foreground,
+    subscribeBtnDisabled: {
+      opacity: 0.7,
+    },
+    subscribeBtnText: {
+      fontSize: 16,
+      fontFamily: "Inter_700Bold",
+      color: "#0a1628",
+      letterSpacing: 0.2,
+    },
+    subscribeLoading: {
+      height: 18,
+      justifyContent: "center",
     },
     inactiveSignOutBtn: {
-      paddingVertical: 14,
+      paddingVertical: 12,
       paddingHorizontal: 22,
       alignSelf: "stretch",
       maxWidth: 360,
@@ -210,10 +295,24 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.inactiveWrap}>
-            <Text style={styles.inactiveTitle}>This account is not currently active.</Text>
+            <Text style={styles.inactiveTitle}>Activate your membership</Text>
             <Text style={styles.inactiveBody}>
-              Please sign out and sign back in once access has been enabled.
+              Get access to interactive AI coaching for the moments that define your career.
             </Text>
+            <TouchableOpacity
+              style={[styles.subscribeBtn, purchasing && styles.subscribeBtnDisabled]}
+              onPress={() => void handleSubscribe()}
+              disabled={purchasing || iapLoading}
+              activeOpacity={0.85}
+            >
+              {purchasing || iapLoading ? (
+                <View style={styles.subscribeLoading}>
+                  <ActivityIndicator color="#0a1628" />
+                </View>
+              ) : (
+                <Text style={styles.subscribeBtnText}>{subscribeLabel}</Text>
+              )}
+            </TouchableOpacity>
             <TouchableOpacity
               style={styles.inactiveSignOutBtn}
               onPress={() => void signOut()}

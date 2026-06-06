@@ -16,6 +16,7 @@ import { useColors } from "@/hooks/useColors";
 import { useUser } from "@/context/UserContext";
 import { useAccess } from "@/context/AccessContext";
 import { getBase } from "@/context/CoachingContext";
+import { getCurrentPurchaseReceipt, getIapErrorMessage } from "@/lib/iap";
 
 const PRIVACY_URL = "https://waitlist.amplify-x.co/privacy-policy";
 const TERMS_URL = "https://waitlist.amplify-x.co/terms-of-service";
@@ -27,7 +28,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { clearProfile } = useUser();
-  const { user, isPaid, signOut } = useAccess();
+  const { user, isPaid, signOut, sessionToken, refresh } = useAccess();
 
   const email = user?.email ?? "";
   const hasEmail = email.length > 0;
@@ -36,6 +37,38 @@ export default function SettingsScreen() {
 
   const topInset = Platform.OS === "web" ? 67 : insets.top;
   const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
+
+  // Restore Purchases is required by Apple to be discoverable from the app
+  // regardless of paid_status — a user who switches devices or reinstalls
+  // needs an unconditional path back to their existing subscription.
+  const handleRestore = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const receipt = await getCurrentPurchaseReceipt();
+      if (!receipt) {
+        Alert.alert("Restore Purchases", "No active purchase found on this Apple ID.");
+        return;
+      }
+      if (!sessionToken) {
+        throw new Error("Not signed in.");
+      }
+      const res = await fetch(`${getBase()}/api/auth/apple-receipt`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_token: sessionToken, receipt }),
+      });
+      if (!res.ok) {
+        throw new Error(`Server rejected the receipt (HTTP ${res.status}).`);
+      }
+      await refresh();
+      Alert.alert("Membership restored");
+    } catch (err) {
+      Alert.alert("Restore Purchases", getIapErrorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const handleSignOut = () => {
     if (busy) return;
@@ -183,7 +216,9 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* SUBSCRIPTION — purely visual status indicator, no link, no onPress */}
+        {/* ACCOUNT STATUS — status badge + Apple Restore Purchases. The
+            Status row is purely visual (no onPress, no link); Restore is
+            always tappable per Apple's discoverability requirement. */}
         <Text style={s.sectionLabel}>Account Status</Text>
         <View style={s.card}>
           <View style={s.row}>
@@ -201,6 +236,20 @@ export default function SettingsScreen() {
               </Text>
             </View>
           </View>
+          <View style={s.rowDivider} />
+          <TouchableOpacity
+            style={s.row}
+            onPress={() => void handleRestore()}
+            activeOpacity={0.7}
+            disabled={busy}
+          >
+            <View style={s.rowLabelWrap}>
+              <Text style={s.rowLabel}>Restore Purchases</Text>
+            </View>
+            <View style={s.rowRight}>
+              <Chevron />
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* SUPPORT */}

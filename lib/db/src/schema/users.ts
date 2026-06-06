@@ -1,4 +1,4 @@
-import { pgTable, text, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, boolean, timestamp, index } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
@@ -11,23 +11,41 @@ import { z } from "zod/v4";
 export const SUBSCRIPTION_TIERS = ["none", "premium", "premium_plus"] as const;
 export type SubscriptionTier = (typeof SUBSCRIPTION_TIERS)[number];
 
-export const users = pgTable("users", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
-  email: text("email").notNull().unique(),
-  stripeCustomerId: text("stripe_customer_id"),
-  stripeSubscriptionId: text("stripe_subscription_id"),
-  paidStatus: boolean("paid_status").notNull().default(false),
-  subscriptionTier: text("subscription_tier").notNull().default("none"),
-  isPremium: boolean("is_premium").notNull().default(false),
-  isPremiumPlus: boolean("is_premium_plus").notNull().default(false),
-  name: text("name"),
-  industry: text("industry"),
-  level: text("level"),
-  challenge: text("challenge"),
-  goal: text("goal"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+export const users = pgTable(
+  "users",
+  {
+    id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
+    email: text("email").notNull().unique(),
+    stripeCustomerId: text("stripe_customer_id"),
+    stripeSubscriptionId: text("stripe_subscription_id"),
+    // Apple IAP fields. Populated by POST /api/auth/apple-receipt on a
+    // successful verifyReceipt round-trip. Orthogonal to the stripe_* fields
+    // by design (no CHECK constraint between providers) so a user can in
+    // principle have both, though the app only ever issues one at a time.
+    appleOriginalTransactionId: text("apple_original_transaction_id"),
+    appleProductId: text("apple_product_id"),
+    appleExpiresAt: timestamp("apple_expires_at"),
+    paidStatus: boolean("paid_status").notNull().default(false),
+    subscriptionTier: text("subscription_tier").notNull().default("none"),
+    isPremium: boolean("is_premium").notNull().default(false),
+    isPremiumPlus: boolean("is_premium_plus").notNull().default(false),
+    name: text("name"),
+    industry: text("industry"),
+    level: text("level"),
+    challenge: text("challenge"),
+    goal: text("goal"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    // Future App Store Server Notifications will look users up by the Apple
+    // original transaction id; index it now so that webhook stays fast as the
+    // table grows.
+    appleOriginalTxnIdx: index("users_apple_original_transaction_id_idx").on(
+      table.appleOriginalTransactionId,
+    ),
+  }),
+);
 
 export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,

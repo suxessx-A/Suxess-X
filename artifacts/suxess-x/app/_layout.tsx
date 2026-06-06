@@ -21,6 +21,7 @@ import { AccessProvider, useAccess } from "@/context/AccessContext";
 import { UserProvider, useUser } from "@/context/UserContext";
 import OnboardingScreen from "@/app/onboarding";
 import LoginScreen from "@/app/login";
+import { initIAP, teardownIAP } from "@/lib/iap";
 
 if (process.env.EXPO_PUBLIC_DOMAIN) {
   setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
@@ -74,6 +75,19 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
+
+  // Warm up the StoreKit connection at app root once on mount so the home
+  // inactive view's Subscribe button can render the localized price
+  // immediately rather than waiting on its own first connect. Both surfaces
+  // call initIAP() defensively; the underlying connection is idempotent.
+  useEffect(() => {
+    void initIAP().catch((err) => {
+      console.warn("Root IAP warm-up failed:", err);
+    });
+    return () => {
+      void teardownIAP();
+    };
+  }, []);
 
   if (!fontsLoaded && !fontError) return null;
 
