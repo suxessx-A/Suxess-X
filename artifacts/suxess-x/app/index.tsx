@@ -15,13 +15,11 @@ import { useColors } from "@/hooks/useColors";
 import { FlowButton } from "@/components/FlowButton";
 import { useCoaching, FlowType } from "@/context/CoachingContext";
 import { useAccess } from "@/context/AccessContext";
-import { getBase } from "@/context/CoachingContext";
 import {
   initIAP,
-  purchaseMembership,
-  finishMembershipTransaction,
-  isUserCancellation,
-  getIapErrorMessage,
+  startMembershipPurchase,
+  setPurchaseStatusListener,
+  type PurchasePhase,
   FALLBACK_PRICE_LABEL,
 } from "@/lib/iap";
 import type { ProductSubscriptionIOS } from "react-native-iap";
@@ -70,7 +68,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { setActiveFlow } = useCoaching();
-  const { isPaid, signOut, sessionToken, refresh } = useAccess();
+  const { isPaid, signOut } = useAccess();
 
   const topInset = Platform.OS === "web" ? 67 : insets.top;
   const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
@@ -80,7 +78,8 @@ export default function HomeScreen() {
   // is always tappable (Apple shows the canonical price in its sheet anyway).
   const [iapProduct, setIapProduct] = useState<ProductSubscriptionIOS | null>(null);
   const [iapLoading, setIapLoading] = useState(true);
-  const [purchasing, setPurchasing] = useState(false);
+  const [purchasePhase, setPurchasePhase] = useState<PurchasePhase>("idle");
+  const purchasing = purchasePhase === "purchasing" || purchasePhase === "verifying";
 
   useEffect(() => {
     if (isPaid) return;
@@ -101,40 +100,33 @@ export default function HomeScreen() {
     };
   }, [isPaid]);
 
+  // Observe purchase status emitted by the module-level StoreKit listener. The
+  // receipt POST, finishTransaction, and entitlement refresh all happen inside
+  // lib/iap; this screen only reflects the outcome. The listener body in
+  // lib/iap is fully guarded, so nothing here can be reached by a thrown Apple
+  // event.
+  useEffect(() => {
+    setPurchaseStatusListener((s) => {
+      setPurchasePhase(s.phase);
+      if (s.phase === "error" && s.message) {
+        Alert.alert("Purchase failed", s.message, [{ text: "OK" }]);
+      }
+      // On "active", AccessContext's entitlement callback runs refresh(), which
+      // flips isPaid and re-renders this component into the active flow grid.
+    });
+    return () => setPurchaseStatusListener(null);
+  }, []);
+
   const handleFlowPress = (id: FlowType) => {
     setActiveFlow(id);
     router.push("/flow");
   };
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = () => {
     if (purchasing) return;
-    setPurchasing(true);
-    try {
-      const { purchase, receipt } = await purchaseMembership();
-      if (!sessionToken) {
-        throw new Error("Not signed in.");
-      }
-      const res = await fetch(`${getBase()}/api/auth/apple-receipt`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_token: sessionToken, receipt }),
-      });
-      if (!res.ok) {
-        throw new Error(`Server rejected the receipt (HTTP ${res.status}).`);
-      }
-      // Only acknowledge the transaction to Apple after the backend has
-      // recorded it; otherwise a server hiccup would let Apple drop the
-      // receipt on the floor with no way to recover from the client.
-      await finishMembershipTransaction(purchase);
-      await refresh();
-      // refresh() flips isPaid to true; the component re-renders into the
-      // active flow grid below. No navigation needed.
-    } catch (err) {
-      if (isUserCancellation(err)) return;
-      Alert.alert("Purchase failed", getIapErrorMessage(err), [{ text: "OK" }]);
-    } finally {
-      setPurchasing(false);
-    }
+    // Fire-and-forget: startMembershipPurchase is total (never throws) and the
+    // purchaseUpdatedListener delivers the result through the status callback.
+    void startMembershipPurchase();
   };
 
   const subscribeLabel = iapProduct?.displayPrice

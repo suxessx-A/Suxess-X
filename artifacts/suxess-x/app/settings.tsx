@@ -16,7 +16,7 @@ import { useColors } from "@/hooks/useColors";
 import { useUser } from "@/context/UserContext";
 import { useAccess } from "@/context/AccessContext";
 import { getBase } from "@/context/CoachingContext";
-import { getCurrentPurchaseReceipt, getIapErrorMessage } from "@/lib/iap";
+import { processAvailablePurchases, getIapErrorMessage } from "@/lib/iap";
 
 const PRIVACY_URL = "https://waitlist.amplify-x.co/privacy-policy";
 const TERMS_URL = "https://waitlist.amplify-x.co/terms-of-service";
@@ -28,7 +28,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { clearProfile } = useUser();
-  const { user, isPaid, signOut, sessionToken, refresh } = useAccess();
+  const { user, isPaid, signOut, refresh } = useAccess();
 
   const email = user?.email ?? "";
   const hasEmail = email.length > 0;
@@ -45,24 +45,25 @@ export default function SettingsScreen() {
     if (busy) return;
     setBusy(true);
     try {
-      const receipt = await getCurrentPurchaseReceipt();
-      if (!receipt) {
+      // processAvailablePurchases is total — it validates each active
+      // momentum_monthly purchase against the backend and returns a summary
+      // rather than throwing. The outer try/catch is belt-and-suspenders.
+      const result = await processAvailablePurchases();
+      if (result.handled === 0) {
         Alert.alert("Restore Purchases", "No active purchase found on this Apple ID.");
         return;
       }
-      if (!sessionToken) {
-        throw new Error("Not signed in.");
+      if (result.activated) {
+        await refresh();
+        Alert.alert("Membership restored");
+      } else {
+        Alert.alert(
+          "Restore Purchases",
+          result.error
+            ? `Could not restore your purchase (${result.error}).`
+            : "Could not restore your purchase. Please try again.",
+        );
       }
-      const res = await fetch(`${getBase()}/api/auth/apple-receipt`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_token: sessionToken, receipt }),
-      });
-      if (!res.ok) {
-        throw new Error(`Server rejected the receipt (HTTP ${res.status}).`);
-      }
-      await refresh();
-      Alert.alert("Membership restored");
     } catch (err) {
       Alert.alert("Restore Purchases", getIapErrorMessage(err));
     } finally {
