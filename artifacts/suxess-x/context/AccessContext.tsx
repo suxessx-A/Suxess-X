@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getBase } from "@/context/CoachingContext";
-import { setOnEntitlementChange, processAvailablePurchases } from "@/lib/iap";
+import { setOnEntitlementChange } from "@/lib/iap";
 
 // v1.2 login-only model. The backend issues a session JWT after magic-link
 // verify; this context persists it (with the user object) in AsyncStorage and
@@ -154,24 +154,6 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
     });
     return () => setOnEntitlementChange(null);
   }, [refresh]);
-
-  // Once a session exists, flush any unfinished StoreKit transaction (e.g. the
-  // stuck sandbox purchase Apple keeps replaying) and validate it server-side.
-  // Containment: processAvailablePurchases is already total, but we belt-and-
-  // suspenders the call so the sign-in flow always completes even if IAP fails.
-  useEffect(() => {
-    if (!sessionToken) return;
-    void (async () => {
-      try {
-        const r = await processAvailablePurchases();
-        if (r.activated) await refresh();
-      } catch (e) {
-        console.warn("launch IAP reconcile failed:", e);
-      }
-    })();
-    // Intentionally keyed on sessionToken only: run once per established session.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionToken]);
 
   const isPaid = user?.paid_status ?? false;
 
