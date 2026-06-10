@@ -119,6 +119,17 @@ async function ensureConnected(): Promise<void> {
  *  product, or null if the SKU is not configured for this build. */
 export async function initIAP(): Promise<ProductSubscriptionIOS | null> {
   await ensureConnected();
+  // Attach the StoreKit listeners now that initConnection() has completed and
+  // the Nitro runtime is ready. Attaching before initConnection (the old
+  // _layout ordering) left the v15 native listener inert, so purchase events
+  // never reached handleIncomingPurchase and the Subscribe spinner hung
+  // forever. Guarded so a registration failure can neither crash the app nor
+  // block the product fetch below; idempotent via the listenersRegistered guard.
+  try {
+    registerIapListeners();
+  } catch (err) {
+    console.warn("registerIapListeners failed:", err);
+  }
   if (cachedProduct) return cachedProduct;
   const result = await fetchProducts({ skus: [MOMENTUM_MONTHLY_SKU], type: "subs" });
   const list = Array.isArray(result) ? result : null;
@@ -127,21 +138,21 @@ export async function initIAP(): Promise<ProductSubscriptionIOS | null> {
   return cachedProduct;
 }
 
-/** Register the StoreKit event listeners exactly once. Called from _layout.tsx
- *  at launch. The handlers read the session token lazily at fire-time, so this
- *  is safe to call before AccessContext has hydrated. Each callback body is
- *  fully guarded so a malformed Apple event can never crash the app. */
+/** Register the StoreKit event listeners exactly once. Called from initIAP()
+ *  AFTER ensureConnected() resolves — v15 only wires the native listener if
+ *  initConnection() has completed (Nitro ready); attaching earlier leaves it
+ *  inert. The handlers read the session token lazily at fire-time. Each callback
+ *  body is fully guarded so a malformed Apple event can never crash the app. */
 export function registerIapListeners(): void {
   if (listenersRegistered) return;
-  listenersRegistered = true;
-  purchaseSub = purchaseUpdatedListener((purchase) => {
+  const pSub = purchaseUpdatedListener((purchase) => {
     try {
       void handleIncomingPurchase(purchase, true);
     } catch (err) {
       console.warn("purchaseUpdatedListener handler threw:", err);
     }
   });
-  errorSub = purchaseErrorListener((error: PurchaseError) => {
+  const eSub = purchaseErrorListener((error: PurchaseError) => {
     try {
       if (isUserCancellation(error)) {
         emitStatus({ phase: "idle" });
@@ -152,6 +163,11 @@ export function registerIapListeners(): void {
       console.warn("purchaseErrorListener handler threw:", err);
     }
   });
+  // Mark registered only after BOTH attaches succeed. If an attach throws, the
+  // flag stays false and the next initIAP() retries — no half-attached state.
+  purchaseSub = pSub;
+  errorSub = eSub;
+  listenersRegistered = true;
 }
 
 /** Kick off Apple's purchase sheet. Fire-and-forget: the outcome is delivered

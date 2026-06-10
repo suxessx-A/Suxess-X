@@ -21,7 +21,7 @@ import { AccessProvider, useAccess } from "@/context/AccessContext";
 import { UserProvider, useUser } from "@/context/UserContext";
 import OnboardingScreen from "@/app/onboarding";
 import LoginScreen from "@/app/login";
-import { initIAP, registerIapListeners, teardownIAP } from "@/lib/iap";
+import { initIAP, teardownIAP } from "@/lib/iap";
 
 if (process.env.EXPO_PUBLIC_DOMAIN) {
   setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
@@ -81,14 +81,9 @@ export default function RootLayout() {
   // immediately rather than waiting on its own first connect. Both surfaces
   // call initIAP() defensively; the underlying connection is idempotent.
   useEffect(() => {
-    // Register StoreKit listeners once before anything can trigger a purchase.
-    // Containment: if registration throws (e.g. native module unavailable), the
-    // app must still launch — log and continue.
-    try {
-      registerIapListeners();
-    } catch (err) {
-      console.warn("registerIapListeners failed:", err);
-    }
+    // initIAP() warms up the StoreKit connection and, only AFTER initConnection()
+    // succeeds, attaches the purchase listeners (see lib/iap.ts). Ordering matters:
+    // in v15 the native listener is inert unless attached post-connect.
     void initIAP().catch((err) => {
       console.warn("Root IAP warm-up failed:", err);
     });
