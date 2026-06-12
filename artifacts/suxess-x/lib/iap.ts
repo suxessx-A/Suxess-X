@@ -70,6 +70,21 @@ let errorSub: EventSubscription | null = null;
 // same transaction id concurrently.
 const inFlight = new Set<string>();
 
+// DEBUG — remove before submit
+// Fire-and-forget breadcrumb to the server log so the on-device IAP flow is
+// traceable in the Railway logs. Total: swallows all errors, never throws.
+async function debugLog(tag: string, data?: unknown): Promise<void> {
+  try {
+    await fetch(`${getBase()}/api/debug/log`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tag, data }),
+    });
+  } catch {
+    // Best-effort.
+  }
+}
+
 // Notify the foreground screen of a status change. Wrapped: a throwing UI
 // callback (e.g. an Alert that fails) must never escape into StoreKit code.
 function emitStatus(s: PurchaseStatus): void {
@@ -144,8 +159,10 @@ export async function initIAP(): Promise<ProductSubscriptionIOS | null> {
  *  inert. The handlers read the session token lazily at fire-time. Each callback
  *  body is fully guarded so a malformed Apple event can never crash the app. */
 export function registerIapListeners(): void {
+  void debugLog("listeners:enter", { alreadyRegistered: listenersRegistered }); // DEBUG — remove before submit
   if (listenersRegistered) return;
   const pSub = purchaseUpdatedListener((purchase) => {
+    void debugLog("event:received", { productId: purchase?.productId }); // DEBUG — remove before submit
     try {
       void handleIncomingPurchase(purchase, true);
     } catch (err) {
@@ -168,6 +185,7 @@ export function registerIapListeners(): void {
   purchaseSub = pSub;
   errorSub = eSub;
   listenersRegistered = true;
+  void debugLog("listeners:attached"); // DEBUG — remove before submit
 }
 
 /** Kick off Apple's purchase sheet. Fire-and-forget: the outcome is delivered
@@ -176,12 +194,14 @@ export async function startMembershipPurchase(): Promise<void> {
   emitStatus({ phase: "purchasing" });
   try {
     await ensureConnected();
+    void debugLog("purchase:requesting"); // DEBUG — remove before submit
     await requestPurchase({
       request: { apple: { sku: MOMENTUM_MONTHLY_SKU } },
       type: "subs",
     });
     // Result intentionally ignored — purchaseUpdatedListener handles delivery.
   } catch (err) {
+    void debugLog("purchase:threw", { msg: getIapErrorMessage(err) }); // DEBUG — remove before submit
     if (isUserCancellation(err)) {
       emitStatus({ phase: "idle" });
       return;

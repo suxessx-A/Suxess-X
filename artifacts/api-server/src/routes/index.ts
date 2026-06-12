@@ -5,6 +5,7 @@ import stripeRouter from "./stripe";
 import usersRouter from "./users";
 import authRouter from "./auth";
 import webhooksRouter from "./webhooks";
+import debugRouter from "./debug";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use("/stripe", stripeRouter);
 router.use("/users", usersRouter);
 router.use("/auth", authRouter);
 router.use("/webhooks", webhooksRouter);
+router.use("/debug", debugRouter);
 
 export default router;
