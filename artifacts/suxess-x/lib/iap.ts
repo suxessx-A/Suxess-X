@@ -161,6 +161,7 @@ export async function initIAP(): Promise<ProductSubscriptionIOS | null> {
 export function registerIapListeners(): void {
   if (listenersRegistered) return;
   const pSub = purchaseUpdatedListener((purchase) => {
+    void debugLog("event:received", { productId: purchase?.productId }); // DEBUG — remove before submit
     try {
       void handleIncomingPurchase(purchase, true);
     } catch (err) {
