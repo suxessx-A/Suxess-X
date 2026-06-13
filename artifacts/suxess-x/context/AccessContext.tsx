@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getBase } from "@/context/CoachingContext";
-import { setOnEntitlementChange } from "@/lib/iap";
+import { setOnEntitlementChange, processAvailablePurchases } from "@/lib/iap";
 
 // v1.2 login-only model. The backend issues a session JWT after magic-link
 // verify; this context persists it (with the user object) in AsyncStorage and
@@ -95,6 +95,11 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
     }
     setSessionToken(token);
     setUser(u);
+    // Reconcile any pending/replayed StoreKit transaction now that the session
+    // token is persisted. Fire-and-forget; a reconcile failure must never break sign-in.
+    void processAvailablePurchases({ emitStatus: false }).catch((e) => {
+      console.warn("post-signIn purchase reconcile failed:", e);
+    });
   }, []);
 
   const signOut = useCallback(async () => {
