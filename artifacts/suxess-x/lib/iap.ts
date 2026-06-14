@@ -250,8 +250,9 @@ async function handleIncomingPurchase(
     }
 
     let receipt = await getReceiptIOS();
+    void debugLog("handle:receipt-initial", { len: receipt ? receipt.length : 0 }); // DEBUG — remove before submit
     if (!receipt) receipt = await requestReceiptRefreshIOS(); // fresh-sandbox fallback
-    void debugLog("handle:receipt", { len: receipt ? receipt.length : 0 }); // DEBUG — remove before submit
+    void debugLog("handle:receipt-fallback", { len: receipt ? receipt.length : 0 }); // DEBUG — remove before submit
     if (!receipt) {
       status({ phase: "error", message: "StoreKit returned an empty receipt." });
       return { error: "empty-receipt" };
@@ -271,6 +272,7 @@ async function handleIncomingPurchase(
     }
 
     await finishTransaction({ purchase, isConsumable: false });
+    void debugLog("handle:finished"); // DEBUG — remove before submit
     emitEntitlementChanged();
     status({ phase: "active" });
     return { activated: true };
