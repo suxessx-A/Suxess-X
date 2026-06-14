@@ -70,21 +70,6 @@ let errorSub: EventSubscription | null = null;
 // same transaction id concurrently.
 const inFlight = new Set<string>();
 
-// DEBUG — remove before submit
-// Fire-and-forget breadcrumb to the server log so the on-device IAP flow is
-// traceable in the Railway logs. Total: swallows all errors, never throws.
-async function debugLog(tag: string, data?: unknown): Promise<void> {
-  try {
-    await fetch(`${getBase()}/api/debug/log`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tag, data }),
-    });
-  } catch {
-    // Best-effort.
-  }
-}
-
 // Notify the foreground screen of a status change. Wrapped: a throwing UI
 // callback (e.g. an Alert that fails) must never escape into StoreKit code.
 function emitStatus(s: PurchaseStatus): void {
@@ -161,7 +146,6 @@ export async function initIAP(): Promise<ProductSubscriptionIOS | null> {
 export function registerIapListeners(): void {
   if (listenersRegistered) return;
   const pSub = purchaseUpdatedListener((purchase) => {
-    void debugLog("event:received", { productId: purchase?.productId }); // DEBUG — remove before submit
     try {
       void handleIncomingPurchase(purchase, true);
     } catch (err) {
@@ -169,7 +153,6 @@ export function registerIapListeners(): void {
     }
   });
   const eSub = purchaseErrorListener((error: PurchaseError) => {
-    void debugLog("event:error", { code: (error as any)?.code, message: error?.message }); // DEBUG — remove before submit
     try {
       if (isUserCancellation(error)) {
         emitStatus({ phase: "idle" });
@@ -193,12 +176,10 @@ export async function startMembershipPurchase(): Promise<void> {
   emitStatus({ phase: "purchasing" });
   try {
     await ensureConnected();
-    void debugLog("purchase:requesting"); // DEBUG — remove before submit
     await requestPurchase({
       request: { apple: { sku: MOMENTUM_MONTHLY_SKU } },
       type: "subs",
     });
-    void debugLog("purchase:returned"); // DEBUG — remove before submit
     // Result intentionally ignored — purchaseUpdatedListener handles delivery.
   } catch (err) {
     if (isUserCancellation(err)) {
@@ -220,17 +201,12 @@ async function handleIncomingPurchase(
   purchase: Purchase,
   emit: boolean,
 ): Promise<HandleResult> {
-  void debugLog("handle:enter", { productId: purchase?.productId, id: purchase?.id }); // DEBUG — remove before submit
   // Defensive: a malformed event could hand us a null/partial purchase.
   if (!purchase || purchase.productId !== MOMENTUM_MONTHLY_SKU) {
-    void debugLog("handle:skip-product"); // DEBUG — remove before submit
     return { skipped: true };
   }
   const key = purchase.id;
-  if (key && inFlight.has(key)) {
-    void debugLog("handle:skip-inflight"); // DEBUG — remove before submit
-    return { skipped: true };
-  }
+  if (key && inFlight.has(key)) return { skipped: true };
   if (key) inFlight.add(key);
 
   const status = (s: PurchaseStatus) => {
@@ -241,7 +217,6 @@ async function handleIncomingPurchase(
     status({ phase: "verifying" });
 
     const token = await AsyncStorage.getItem(SESSION_TOKEN_KEY);
-    void debugLog("handle:token", { hasToken: !!token }); // DEBUG — remove before submit
     if (!token) {
       // No session to attach the purchase to. Do NOT finish — it will replay
       // and reconcile once the user is signed in.
@@ -250,21 +225,17 @@ async function handleIncomingPurchase(
     }
 
     let receipt = await getReceiptIOS();
-    void debugLog("handle:receipt-initial", { len: receipt ? receipt.length : 0 }); // DEBUG — remove before submit
     if (!receipt) receipt = await requestReceiptRefreshIOS(); // fresh-sandbox fallback
-    void debugLog("handle:receipt-fallback", { len: receipt ? receipt.length : 0 }); // DEBUG — remove before submit
     if (!receipt) {
       status({ phase: "error", message: "StoreKit returned an empty receipt." });
       return { error: "empty-receipt" };
     }
 
-    void debugLog("handle:posting"); // DEBUG — remove before submit
     const res = await fetch(`${getBase()}/api/auth/apple-receipt`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ session_token: token, receipt }),
     });
-    void debugLog("handle:posted", { status: res.status }); // DEBUG — remove before submit
     if (!res.ok) {
       // Leave the transaction unfinished so it can be retried/reconciled.
       status({ phase: "error", message: `Server rejected the receipt (HTTP ${res.status}).` });
@@ -272,7 +243,6 @@ async function handleIncomingPurchase(
     }
 
     await finishTransaction({ purchase, isConsumable: false });
-    void debugLog("handle:finished"); // DEBUG — remove before submit
     emitEntitlementChanged();
     status({ phase: "active" });
     return { activated: true };
