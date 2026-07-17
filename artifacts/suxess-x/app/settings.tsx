@@ -16,7 +16,6 @@ import { useColors } from "@/hooks/useColors";
 import { useUser } from "@/context/UserContext";
 import { useAccess } from "@/context/AccessContext";
 import { getBase } from "@/context/CoachingContext";
-import { processAvailablePurchases, getIapErrorMessage } from "@/lib/iap";
 
 const PRIVACY_URL = "https://waitlist.amplify-x.co/privacy-policy";
 const TERMS_URL = "https://waitlist.amplify-x.co/terms-of-service";
@@ -28,7 +27,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { clearProfile } = useUser();
-  const { user, isPaid, signOut, refresh } = useAccess();
+  const { user, signOut } = useAccess();
 
   const email = user?.email ?? "";
   const hasEmail = email.length > 0;
@@ -37,39 +36,6 @@ export default function SettingsScreen() {
 
   const topInset = Platform.OS === "web" ? 67 : insets.top;
   const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
-
-  // Restore Purchases is required by Apple to be discoverable from the app
-  // regardless of paid_status — a user who switches devices or reinstalls
-  // needs an unconditional path back to their existing subscription.
-  const handleRestore = async () => {
-    if (busy) return;
-    setBusy(true);
-    try {
-      // processAvailablePurchases is total — it validates each active
-      // momentum_monthly purchase against the backend and returns a summary
-      // rather than throwing. The outer try/catch is belt-and-suspenders.
-      const result = await processAvailablePurchases();
-      if (result.handled === 0) {
-        Alert.alert("Restore Purchases", "No active purchase found on this Apple ID.");
-        return;
-      }
-      if (result.activated) {
-        await refresh();
-        Alert.alert("Membership restored");
-      } else {
-        Alert.alert(
-          "Restore Purchases",
-          result.error
-            ? `Could not restore your purchase (${result.error}).`
-            : "Could not restore your purchase. Please try again.",
-        );
-      }
-    } catch (err) {
-      Alert.alert("Restore Purchases", getIapErrorMessage(err));
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const handleSignOut = () => {
     if (busy) return;
@@ -181,10 +147,7 @@ export default function SettingsScreen() {
     rowLabelWrap: { flex: 1, paddingRight: 12 },
     rowLabel: { fontSize: 15, fontFamily: "Inter_500Medium", color: colors.foreground },
     rowRight: { flexDirection: "row", alignItems: "center" },
-    rowValue: { fontSize: 14, fontFamily: "Inter_400Regular", color: colors.mutedForeground, marginRight: 4 },
     chevron: { fontSize: 20, color: colors.mutedForeground, marginLeft: 2 },
-    statusBadge: { borderRadius: 8, paddingVertical: 4, paddingHorizontal: 12 },
-    statusBadgeText: { fontSize: 12, fontFamily: "Inter_700Bold", textTransform: "uppercase", letterSpacing: 0.8 },
     disabledRowText: { fontSize: 15, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
     signOutText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: colors.primary },
     deleteWrap: { marginTop: 40, alignItems: "center", paddingVertical: 8 },
@@ -204,55 +167,6 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView style={s.content} contentContainerStyle={s.contentInner} showsVerticalScrollIndicator={false}>
-        {/* ACCOUNT */}
-        <Text style={s.sectionLabel}>Account</Text>
-        <View style={s.card}>
-          <View style={s.row}>
-            <View style={s.rowLabelWrap}>
-              <Text style={s.rowLabel}>Email</Text>
-            </View>
-            <Text style={s.rowValue} numberOfLines={1}>
-              {hasEmail ? email : "Not signed in"}
-            </Text>
-          </View>
-        </View>
-
-        {/* ACCOUNT STATUS — status badge + Apple Restore Purchases. The
-            Status row is purely visual (no onPress, no link); Restore is
-            always tappable per Apple's discoverability requirement. */}
-        <Text style={s.sectionLabel}>Account Status</Text>
-        <View style={s.card}>
-          <View style={s.row}>
-            <View style={s.rowLabelWrap}>
-              <Text style={s.rowLabel}>Status</Text>
-            </View>
-            <View
-              style={[
-                s.statusBadge,
-                { backgroundColor: isPaid ? "#f0fdf4" : colors.secondary },
-              ]}
-            >
-              <Text style={[s.statusBadgeText, { color: isPaid ? "#059669" : colors.mutedForeground }]}>
-                {isPaid ? "Active" : "Not Active"}
-              </Text>
-            </View>
-          </View>
-          <View style={s.rowDivider} />
-          <TouchableOpacity
-            style={s.row}
-            onPress={() => void handleRestore()}
-            activeOpacity={0.7}
-            disabled={busy}
-          >
-            <View style={s.rowLabelWrap}>
-              <Text style={s.rowLabel}>Restore Purchases</Text>
-            </View>
-            <View style={s.rowRight}>
-              <Chevron />
-            </View>
-          </TouchableOpacity>
-        </View>
-
         {/* SUPPORT */}
         <Text style={s.sectionLabel}>Support</Text>
         <View style={s.card}>

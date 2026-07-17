@@ -1,7 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getBase } from "@/context/CoachingContext";
-import { setOnEntitlementChange, processAvailablePurchases } from "@/lib/iap";
 
 // v1.2 login-only model. The backend issues a session JWT after magic-link
 // verify; this context persists it (with the user object) in AsyncStorage and
@@ -95,11 +94,6 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
     }
     setSessionToken(token);
     setUser(u);
-    // Reconcile any pending/replayed StoreKit transaction now that the session
-    // token is persisted. Fire-and-forget; a reconcile failure must never break sign-in.
-    void processAvailablePurchases({ emitStatus: false }).catch((e) => {
-      console.warn("post-signIn purchase reconcile failed:", e);
-    });
   }, []);
 
   const signOut = useCallback(async () => {
@@ -144,21 +138,6 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
       console.warn("AccessProvider refresh error:", e);
     }
   }, [user]);
-
-  // Wire the IAP module's entitlement-changed callback to refresh(), so a
-  // purchase verified by the module-level listener flips isPaid in the UI. The
-  // module guards this call, but the callback itself also swallows errors so a
-  // refresh failure can never destabilize the listener.
-  useEffect(() => {
-    setOnEntitlementChange(() => {
-      try {
-        void refresh();
-      } catch (e) {
-        console.warn("entitlement refresh threw:", e);
-      }
-    });
-    return () => setOnEntitlementChange(null);
-  }, [refresh]);
 
   const isPaid = user?.paid_status ?? false;
 

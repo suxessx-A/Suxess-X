@@ -293,10 +293,32 @@ router.post("/request-link", async (req, res) => {
       return;
     }
 
+    const isReviewer = email === REVIEWER_EMAIL;
+
+    // Paid-only gate. A sign-in code is only ever issued to an account that
+    // has already paid. Unknown or unpaid emails get the exact same generic
+    // success response below with no email sent and no token row created, so
+    // this endpoint never reveals whether an account exists.
+    //
+    // The reviewer is exempt and must skip this check: Apple's reviewer
+    // account has no users row until /verify creates it, so gating on
+    // paidStatus would permanently lock the reviewer out.
+    if (!isReviewer) {
+      const existing = await db
+        .select({ paidStatus: users.paidStatus })
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+      if (existing.length === 0 || existing[0]?.paidStatus !== true) {
+        res.json({ success: true, message: "Check your email" });
+        return;
+      }
+    }
+
     // Reviewer email: still create the token row so the regular code/url_token
     // path could be used, but skip the actual email send to avoid Resend errors
     // on a mailbox that may not exist.
-    const skipEmail = email === REVIEWER_EMAIL;
+    const skipEmail = isReviewer;
     await issueMagicLinkForEmail(email, { skipEmail });
 
     res.json({ success: true, message: "Check your email" });

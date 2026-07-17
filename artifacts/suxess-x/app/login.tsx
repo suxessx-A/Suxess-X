@@ -231,7 +231,7 @@ export default function LoginScreen() {
                 {busy ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={s.primaryBtnText}>Continue</Text>
+                  <Text style={s.primaryBtnText}>Send sign-in code</Text>
                 )}
               </TouchableOpacity>
 
